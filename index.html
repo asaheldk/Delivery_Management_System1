@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="tab-title">수산물 물류 자동화 시스템</title>
+    <title>수산물 물류 시스템 - 발주처</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
         body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.02em; }
-        .blink-fast { animation: pulse-blink 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse-blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(0.98); } }
     </style>
 </head>
 <body class="bg-[#f3f4f6] text-[#1e293b] antialiased pb-28">
@@ -20,47 +18,27 @@
                 <span id="sync-indicator" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                 <h1 id="brand-logo" class="text-lg font-black tracking-wider text-slate-100">FISH-NET LOGISTICS</h1>
             </div>
-            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 실시간 채널: fish_net_777</span>
+            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 모바일 발주 시스템</span>
         </div>
-        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition border border-slate-700/60">
-            ⚙️ 시스템 설정
-        </button>
+        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition border border-slate-700/60">⚙️ 채널 설정</button>
     </header>
 
-    <div class="sticky top-[72px] z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm">
-        <div class="max-w-md mx-auto bg-slate-100 p-1.5 rounded-2xl flex justify-around text-base font-black shadow-inner">
-            <button id="tab-owner" onclick="toggleView('owner')" class="w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md">
-                🏪 점주 발주하기
-            </button>
-            <button id="tab-driver" onclick="toggleView('driver')" class="w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500 relative flex items-center justify-center gap-2">
-                🚚 배송원 대시보드
-                <span id="badge-count" class="hidden bg-rose-500 text-white text-xs font-black px-2 py-0.5 rounded-full blink-fast shadow-md">0</span>
-            </button>
-        </div>
-    </div>
-
     <main class="max-w-md mx-auto p-4 space-y-5">
-
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
-                <h2 class="text-base font-black text-slate-900">⚙️ 원격 단말기 실시간 연동 세팅</h2>
-                <p class="text-xs text-slate-400 mt-1">⚠️ 주의: 공유 코드는 무조건 영문과 숫자로만 적으셔야 실시간 연동됩니다.</p>
+                <h2 class="text-base font-black text-slate-900">⚙️ 시스템 설정</h2>
             </div>
             <div class="space-y-2">
-                <label class="block text-sm font-black text-slate-600">🔗 우리 회사 고유 연결 코드 (영문/숫자 필선택)</label>
-                <input id="input-sync-code" type="text" value="fish_net_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
+                <label class="block text-sm font-black text-slate-600">🔗 연동 코드 (배송원과 동일해야 함)</label>
+                <input id="input-sync-code" type="text" value="fish_net_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
             </div>
-            <div class="space-y-2">
-                <label class="block text-sm font-black text-slate-600">회사명 / 브랜드명 변경</label>
-                <input id="input-brand" type="text" value="FISH-NET LOGISTICS" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
-            </div>
-            <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition shadow-lg">설정 정보 원격 동기화</button>
+            <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
-                <p class="text-sm text-slate-400 font-medium mt-0.5">작성 후 전송하면 다른 핸드폰 기사 화면으로 실시간 무선 도달합니다.</p>
+                <p class="text-sm text-slate-400 font-medium mt-0.5">항목을 입력하시면 담당 배송원에게 실시간 전송됩니다.</p>
             </div>
             
             <div class="space-y-5">
@@ -69,12 +47,12 @@
                     
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-700">📅 납품 요청 날짜</label>
-                        <input id="order-date" type="date" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm text-center">
+                        <input id="order-date" type="date" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none text-center">
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-700">점포 상호 이름</label>
-                        <select id="sel-store" onchange="handleSelectChange(this, 'input-store')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                        <select id="sel-store" onchange="handleSelectChange(this, 'input-store')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="자갈치상회">자갈치상회</option>
                             <option value="영도수산">영도수산</option>
                             <option value="해운대대게">해운대대게</option>
@@ -85,7 +63,7 @@
 
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-700">연락처</label>
-                        <select id="sel-phone" onchange="handleSelectChange(this, 'input-phone')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                        <select id="sel-phone" onchange="handleSelectChange(this, 'input-phone')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="010-1234-5678">010-1234-5678</option>
                             <option value="010-9876-5432">010-9876-5432</option>
                             <option value="custom">✍️ 직접 입력</option>
@@ -95,7 +73,7 @@
 
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-700">배송 주소</label>
-                        <select id="sel-address" onchange="handleSelectChange(this, 'input-address')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                        <select id="sel-address" onchange="handleSelectChange(this, 'input-address')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="부산 중구 구덕로 10">부산 중구 구덕로 10</option>
                             <option value="부산 영도구 대교로 20">부산 영도구 대교로 20</option>
                             <option value="custom">✍️ 직접 입력</option>
@@ -109,163 +87,42 @@
                     <div id="dynamic-form-container" class="space-y-5"></div>
                 </div>
 
-                <button type="button" onclick="addFormRow()" class="w-full bg-white hover:bg-slate-50 text-blue-600 border-3 border-dashed border-blue-300 py-4 rounded-2xl text-base font-black tracking-wide transition flex items-center justify-center gap-2 shadow-sm active:scale-[0.99]">
+                <button type="button" onclick="addFormRow()" class="w-full bg-white hover:bg-slate-50 text-blue-600 border-3 border-dashed border-blue-300 py-4 rounded-2xl text-base font-black tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
                     ➕ 새 발주 품목 추가하기
                 </button>
             </div>
             
-            <button onclick="submitOrderToLiveNetwork()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-lg shadow-blue-600/20 active:scale-[0.98]">
-                🚀 작성된 모든 품목 실시간 발주 전송
+            <button onclick="submitOrderToLiveNetwork()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-lg active:scale-[0.98]">
+                🚀 실시간 발주 전송하기
             </button>
-        </section>
-
-        <section id="view-driver" class="hidden space-y-5">
-            <div id="alarm-banner" class="hidden bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast">
-                <div class="flex items-center space-x-3">
-                    <span class="text-3xl">🚨</span>
-                    <div>
-                        <h4 class="text-base font-black tracking-tight">원격 신규 발주서가 도착했습니다!</h4>
-                        <p class="text-xs text-rose-100 opacity-90 mt-0.5">내용 확인 후 확인 완료 버튼을 터치해 꺼주세요.</p>
-                    </div>
-                </div>
-                <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition active:scale-95">확인 완료</button>
-            </div>
-
-            <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md">
-                <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역</p>
-                <h3 class="text-3xl font-black mt-1 font-mono text-slate-100">3,450,000 원</h3>
-            </div>
-
-            <div id="driver-main-ledger" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
-                <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
-                    <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider">Order Ledger Summary</h3>
-                    <span class="text-xs font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-md" id="drv-store-badge">상회명</span>
-                </div>
-                
-                <div class="bg-slate-50 p-4 rounded-2xl text-sm space-y-2 text-slate-700 border border-slate-100">
-                    <div class="flex justify-between"><span class="text-slate-400">📅 납품 요청일:</span><span id="lbl-drv-date" class="font-black text-blue-600 text-base"></span></div>
-                    <hr class="border-slate-200">
-                    <div>• <b>인수처 상호:</b> <span id="lbl-drv-store" class="font-bold text-slate-900"></span></div>
-                    <div>• <b>현장 연락처:</b> <span id="lbl-drv-phone"></span></div>
-                    <div>• <b>최종 주소지:</b> <span id="lbl-drv-address" class="block text-slate-500 mt-0.5 leading-relaxed"></span></div>
-                </div>
-
-                <div id="drv-items-container" class="space-y-4"></div>
-
-                <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center shadow-inner text-white mt-5">
-                    <span class="text-sm font-black text-slate-400">최종 마감 정산 총액:</span>
-                    <span id="text-total-price" class="text-2xl font-black font-mono text-white">0 원</span>
-                </div>
-
-                <button onclick="openConfirmPopup()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-base transition shadow-md active:scale-95">
-                    💾 전체 품목 정산 마감 및 라벨 인쇄
-                </button>
-            </div>
-
-            <div id="driver-empty-ledger" class="bg-white p-12 rounded-3xl shadow-xl border border-slate-200/60 text-center text-slate-400 font-bold text-lg">
-                📭 접수된 실시간 발주 오더 원장이 없습니다.
-            </div>
         </section>
     </main>
 
-    <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border border-slate-200">
-            <div class="flex items-center space-x-2 text-amber-500">
-                <span class="text-2xl">⚠️</span>
-                <h3 class="text-lg font-black text-slate-900">입력 정보 최종 검증</h3>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-2xl text-sm space-y-3 text-slate-700 border border-slate-100 font-bold">
-                <div class="flex justify-between border-b pb-2"><span>납품처:</span><span id="pop-store" class="text-slate-900 text-base"></span></div>
-                <div id="pop-items-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
-                <div class="flex justify-between border-t border-slate-200 pt-3 mt-1 font-black text-blue-600 text-base">
-                    <span>최종 정산 총액:</span>
-                    <span id="pop-total" class="font-mono text-lg"></span>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="closeConfirmPopup()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl text-sm font-bold transition">돌아가서 수정</button>
-                <button onclick="executeFinalSubmit()" class="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-sm font-bold transition shadow-md">정확히 맞습니다</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="label-output-section" class="max-w-md mx-auto px-4 hidden mb-20">
-        <div class="bg-white border-3 border-slate-900 p-6 rounded-2xl shadow-xl space-y-4 relative bg-mono text-slate-900">
-            <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
-            <div class="text-center border-b-2 border-slate-900 pb-3">
-                <h4 id="label-brand" class="font-black text-xl tracking-widest">FISH-NET LOGISTICS</h4>
-                <p class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">DIGITAL MANAGEMENT SYSTEM LABELLING</p>
-            </div>
-            <div class="grid grid-cols-1 gap-2 text-sm font-bold">
-                <div class="flex justify-between text-base"><span class="text-blue-600">• 납품 지정일 (DATE):</span><span id="lbl-lbl-date" class="font-black text-blue-600 underline decoration-2"></span></div>
-                <div class="flex justify-between"><span>• 상호 (STORE):</span><span id="lbl-lbl-store" class="font-black"></span></div>
-                <div class="flex justify-between"><span>• 연락 (TEL):</span><span id="lbl-lbl-phone"></span></div>
-                <div class="flex justify-between"><span>• 주소 (DEST):</span><span id="lbl-lbl-address" class="truncate max-w-[220px]"></span></div>
-                <hr class="border-dashed border-slate-400 my-1">
-                <div class="grid grid-cols-4 text-xs text-slate-400 border-b pb-1 mb-1">
-                    <span class="col-span-2">품목명 명세</span>
-                    <span class="text-center">실측량</span>
-                    <span class="text-right">금액</span>
-                </div>
-                <div id="lbl-lbl-items-area" class="space-y-2 text-sm"></div>
-                <hr class="border-dashed border-slate-400 my-1">
-                <div class="border-t-2 border-slate-900 pt-3 mt-1 flex justify-between text-lg font-black">
-                    <span>★ TOTAL 정산합계액:</span>
-                    <span id="lbl-lbl-total" class="text-blue-600 font-mono text-lg"></span>
-                </div>
-            </div>
-            <div class="bg-slate-100 h-12 w-full mt-4 flex items-center justify-center tracking-[0.5em] font-mono text-sm text-slate-400 border border-slate-200 rounded-lg">|||| | ||||| ||| | ||| ||</div>
-        </div>
-    </div>
-
     <script>
-        let rowIdx = 0;
-        let activeRows = [];
-        let currentOrderItems = []; 
-        let audioCtx = null;
-        let alarmInterval = null;
-        let syncTimer = null;
-        let latestTimestamp = 0; 
-
+        let rowIdx = 0; let activeRows = [];
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
 
         if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', 'fish_net_777');
         document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
-        document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${localStorage.getItem('sync_code')}`;
 
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
 
         function handleRowSelectChange(selectEl, id, fieldName) {
             const inputEl = document.getElementById(`input-${fieldName}-${id}`);
-            if (selectEl.value === 'custom') {
-                inputEl.classList.remove('hidden');
-                inputEl.focus();
-            } else {
-                inputEl.classList.add('hidden');
-                inputEl.value = '';
-            }
+            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
+            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
         }
-
         function handleSelectChange(selectEl, inputId) {
             const inputEl = document.getElementById(inputId);
-            if (selectEl.value === 'custom') {
-                inputEl.classList.remove('hidden');
-                inputEl.focus();
-            } else {
-                inputEl.classList.add('hidden');
-                inputEl.value = '';
-            }
+            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
+            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
         }
-
         function getRowResolvedValue(id, fieldName) {
             const selectEl = document.getElementById(`sel-${fieldName}-${id}`);
             const inputEl = document.getElementById(`input-${fieldName}-${id}`);
             return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
         }
-
         function getResolvedValue(selectId, inputId) {
             const selectEl = document.getElementById(selectId);
             const inputEl = document.getElementById(inputId);
@@ -273,17 +130,16 @@
         }
 
         function addFormRow() {
-            const id = rowIdx++;
-            activeRows.push(id);
+            const id = rowIdx++; activeRows.push(id);
             const rowHtml = `
                 <div id="form-row-${id}" class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 relative space-y-4 shadow-sm">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-2">
                         <span class="text-base font-black text-slate-700">📋 발주 품목 정보</span>
-                        <button type="button" onclick="removeFormRow(${id})" class="text-sm text-rose-600 font-bold hover:text-rose-800 bg-white border-2 border-rose-100 px-3 py-1.5 rounded-xl shadow-sm">❌ 품목 취소</button>
+                        <button type="button" onclick="removeFormRow(${id})" class="text-sm text-rose-600 font-bold bg-white border-2 border-rose-100 px-3 py-1.5 rounded-xl">❌ 품목 취소</button>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
-                        <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                        <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option>
                             <option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option>
                             <option value="custom">✍️ 직접 입력</option>
@@ -292,7 +148,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
-                        <select id="sel-item-${id}" onchange="handleRowSelectChange(this, ${id}, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                        <select id="sel-item-${id}" onchange="handleRowSelectChange(this, ${id}, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="광어">광어</option><option value="도미">도미</option><option value="농어">농어</option>
                             <option value="점성어">점성어</option><option value="연어">연어</option><option value="우니(성게알)">우니(성게알)</option>
                             <option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option>
@@ -305,7 +161,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">원산지 선택</label>
-                            <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, ${id}, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                            <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, ${id}, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option>
                                 <option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option>
                                 <option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option>
@@ -315,7 +171,7 @@
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">작업 및 보관 방식</label>
-                            <select id="sel-process-${id}" onchange="handleRowSelectChange(this, ${id}, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                            <select id="sel-process-${id}" onchange="handleRowSelectChange(this, ${id}, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="찍어바리">찍어바리</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option>
                                 <option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option>
                                 <option value="custom">✍️ 직접 입력</option>
@@ -326,7 +182,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">주문 수량</label>
-                            <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, ${id}, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                            <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, ${id}, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
                                 <option value="custom">✍️ 직접 입력</option>
                             </select>
@@ -334,10 +190,9 @@
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-700">단위</label>
-                            <select id="sel-unit-${id}" onchange="handleRowSelectChange(this, ${id}, 'unit')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
+                            <select id="sel-unit-${id}" onchange="handleSelectChange(this, 'input-unit-${id}')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option>
-                                <option value="봉지">봉지</option><option value="kg">kg</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-unit-${id}" type="text" placeholder="단위명" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
@@ -352,307 +207,51 @@
         }
 
         function removeFormRow(id) {
-            const el = document.getElementById(`form-row-${id}`);
-            if (el) el.remove();
-            activeRows = activeRows.filter(item => item !== id);
-            if(activeRows.length === 0) addFormRow();
-        }
-
-        function playBeep() {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = "sine";
-            osc.frequency.value = 950;
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            const el = document.getElementById(`form-row-${id}`); if (el) el.remove();
+            activeRows = activeRows.filter(item => item !== id); if(activeRows.length === 0) addFormRow();
         }
 
         function updateSettingsMaster() {
             const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
-            const brand = document.getElementById('input-brand').value.trim();
-            if(!code) { alert("영문/숫자 형태의 올바른 연결 코드를 입력하세요."); return; }
-            
-            localStorage.setItem('sync_code', code);
-            document.getElementById('input-sync-code').value = code;
-            document.getElementById('brand-logo').innerText = brand.toUpperCase();
-            document.getElementById('label-brand').innerText = brand.toUpperCase();
+            if(!code) return; localStorage.setItem('sync_code', code);
             document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${code}`;
-            
-            alert("⚙️ 기기 동기화 설정이 완료되었습니다. 무선망을 재구동합니다.");
-            startCloudSync();
             toggleView('owner');
         }
 
         function submitOrderToLiveNetwork() {
-            if(activeRows.length === 0) { alert("⚠️ 품목을 기재해 주세요."); return; }
+            if(activeRows.length === 0) return;
             const orderDate = document.getElementById('order-date').value;
             const store = getResolvedValue('sel-store', 'input-store');
             const phone = getResolvedValue('sel-phone', 'input-phone');
             const address = getResolvedValue('sel-address', 'input-address');
-            if(!store) { alert("⚠️ 상호를 지정해 주세요."); return; }
+            if(!store) return;
 
             let items = [];
             for (let id of activeRows) {
-                const category = getRowResolvedValue(id, 'category');
-                const item = getRowResolvedValue(id, 'item');
-                const origin = getRowResolvedValue(id, 'origin');
-                const process = getRowResolvedValue(id, 'process');
-                const qty = getRowResolvedValue(id, 'qty');
-                const unit = getRowResolvedValue(id, 'unit');
+                const category = getRowResolvedValue(id, 'category'); const item = getRowResolvedValue(id, 'item');
+                const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process');
+                const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit');
                 const memo = document.getElementById(`input-memo-${id}`).value || "없음";
-                if(!item || !qty) { alert("⚠️ 누락된 품목 정보를 채워주세요."); return; }
-                items.push({ category, item, origin, process, qty, unit, memo });
+                if(!item || !qty) return; items.push({ category, item, origin, process, qty, unit, memo });
             }
 
             const currentStamp = Date.now();
-            const orderPacket = {
-                status: "ordered",
-                orderDate, store, phone, address, items,
-                alarmActive: true,
-                serverTimestamp: currentStamp
-            };
-
+            const uniqueOrderId = `${store.replace(/\s+/g, '')}_${currentStamp}`;
+            const orderPacket = { orderId: uniqueOrderId, status: "ordered", orderDate, store, phone, address, items, alarmActive: true, serverTimestamp: currentStamp };
             const syncCode = localStorage.getItem('sync_code');
-            document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-orange-500 animate-bounce";
 
-            fetch(`${cloudRelayUrl}${syncCode}`, {
-                method: 'POST',
-                body: JSON.stringify(orderPacket)
-            })
+            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(orderPacket) })
             .then(res => {
-                if(!res.ok) throw new Error("네트워크 오류");
-                document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
-                alert("🚀 점포 발주 원장이 고속 무선망을 통과하여 기사 단말기 대시보드로 실시간 전달되었습니다!");
-                
-                document.getElementById('dynamic-form-container').innerHTML = "";
-                activeRows = [];
-                addFormRow();
-                toggleView('driver');
-            })
-            .catch(err => {
-                document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-rose-500";
-                alert("❌ 무선 송출 오류: 설정 코드에 한글이 섞여있거나 인터넷 상태가 불안정합니다. 설정에서 영문 코드로 확인해 주세요.");
-            });
-        }
-
-        function stopAlarmServer() {
-            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-            document.getElementById('alarm-banner').className = "hidden";
-            document.getElementById('badge-count').classList.add('hidden');
-            
-            const syncCode = localStorage.getItem('sync_code');
-            if(currentOrderItems && currentOrderItems.length > 0) {
-                const oDate = document.getElementById('lbl-drv-date').innerText;
-                const store = document.getElementById('lbl-drv-store').innerText;
-                const phone = document.getElementById('lbl-drv-phone').innerText;
-                const addr = document.getElementById('lbl-drv-address').innerText;
-                
-                const updatePacket = {
-                    status: "ordered",
-                    orderDate: oDate, store, phone, address: addr,
-                    items: currentOrderItems,
-                    alarmActive: false,
-                    serverTimestamp: latestTimestamp
-                };
-
-                fetch(`${cloudRelayUrl}${syncCode}`, {
-                    method: 'POST',
-                    body: JSON.stringify(updatePacket)
-                });
-            }
-        }
-
-        function startCloudSync() {
-            if(syncTimer) clearInterval(syncTimer);
-            
-            syncTimer = setInterval(() => {
-                const syncCode = localStorage.getItem('sync_code');
-                
-                fetch(`${cloudRelayUrl}${syncCode}/json?poll=1&limit=1`)
-                .then(res => res.text())
-                .then(text => {
-                    if(!text.trim()) return;
-                    const lines = text.trim().split('\n');
-                    const rawData = JSON.parse(lines[lines.length - 1]);
-                    
-                    if(!rawData.message) return;
-                    const data = JSON.parse(rawData.message);
-
-                    if(!data || Object.keys(data).length === 0) {
-                        document.getElementById('driver-main-ledger').classList.add('hidden');
-                        document.getElementById('driver-empty-ledger').classList.remove('hidden');
-                        return;
-                    }
-
-                    if(data.status === "ordered") {
-                        document.getElementById('driver-main-ledger').classList.remove('hidden');
-                        document.getElementById('driver-empty-ledger').classList.add('hidden');
-
-                        currentOrderItems = data.items;
-                        
-                        document.getElementById('lbl-drv-date').innerText = data.orderDate;
-                        document.getElementById('lbl-drv-store').innerText = data.store;
-                        document.getElementById('drv-store-badge').innerText = data.store;
-                        document.getElementById('lbl-drv-phone').innerText = data.phone;
-                        document.getElementById('lbl-drv-address').innerText = data.address;
-
-                        if(data.alarmActive) {
-                            document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast";
-                            document.getElementById('badge-count').innerText = "1";
-                            document.getElementById('badge-count').classList.remove('hidden');
-                            
-                            if(latestTimestamp !== data.serverTimestamp) {
-                                latestTimestamp = data.serverTimestamp;
-                                if(!alarmInterval) alarmInterval = setInterval(playBeep, 500);
-                            }
-                        } else {
-                            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-                            document.getElementById('alarm-banner').className = "hidden";
-                            document.getElementById('badge-count').classList.add('hidden');
-                        }
-
-                        const drvContainer = document.getElementById('drv-items-container');
-                        if(drvContainer.children.length !== data.items.length) {
-                            drvContainer.innerHTML = data.items.map((p, idx) => `
-                                <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-md space-y-3">
-                                    <div>
-                                        <span class="bg-slate-900 text-white font-black text-xs px-2.5 py-1 rounded-md">${p.category}</span>
-                                        <h4 class="font-black text-slate-900 text-lg mt-2">${p.item} <span class="text-slate-400 text-sm font-bold">(${p.origin})</span></h4>
-                                        <p class="text-sm text-slate-500 font-bold mt-1">방식: ${p.process} | 발주요청량: <span class="font-black text-slate-900 text-base">${p.qty} ${p.unit}</span></p>
-                                        <p class="text-sm text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-xl font-bold inline-block mt-2">💬 요청메모: ${p.memo}</p>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-                                        <div class="space-y-1">
-                                            <label class="block text-xs font-black text-slate-400">⚖️ 계근 실측 중량 (${p.unit})</label>
-                                            <input id="drv-weight-${idx}" type="number" value="${p.qty}" step="0.1" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
-                                        </div>
-                                        <div class="space-y-1">
-                                            <label class="block text-xs font-black text-slate-400">💰 현장 확정 단가 (원)</label>
-                                            <input id="drv-price-${idx}" type="number" value="25000" step="100" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('');
-                            calculateTotal();
-                        }
-                    } else if(data.status === "completed") {
-                        document.getElementById('driver-main-ledger').classList.add('hidden');
-                        document.getElementById('driver-empty-ledger').classList.remove('hidden');
-                        document.getElementById('drv-items-container').innerHTML = "";
-                        if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-                        document.getElementById('alarm-banner').className = "hidden";
-                        document.getElementById('badge-count').classList.add('hidden');
-                    }
-                })
-                .catch(err => {});
-            }, 3000);
-        }
-
-        function calculateTotal() {
-            let totalSum = 0;
-            currentOrderItems.forEach((item, idx) => {
-                const wEl = document.getElementById(`drv-weight-${idx}`);
-                const pEl = document.getElementById(`drv-price-${idx}`);
-                if(wEl && pEl) {
-                    const w = parseFloat(wEl.value) || 0;
-                    const p = parseInt(pEl.value) || 0;
-                    totalSum += Math.round(w * p);
-                }
-            });
-            document.getElementById('text-total-price').innerText = totalSum.toLocaleString() + " 원";
-        }
-
-        function openConfirmPopup() {
-            const store = document.getElementById('lbl-drv-store').innerText;
-            document.getElementById('pop-store').innerText = store;
-            const popListContainer = document.getElementById('pop-items-list');
-            let rowsHtml = '';
-            
-            currentOrderItems.forEach((item, idx) => {
-                const w = document.getElementById(`drv-weight-${idx}`).value;
-                const p = parseInt(document.getElementById(`drv-price-${idx}`).value).toLocaleString();
-                rowsHtml += `
-                    <div class="flex justify-between items-center text-sm bg-white p-3 rounded-xl border border-slate-200 shadow-sm font-bold">
-                        <span class="text-slate-900 text-base">${item.item}</span>
-                        <span class="text-slate-500 font-mono">${w}${item.unit} × ${p}원</span>
-                    </div>
-                `;
-            });
-            popListContainer.innerHTML = rowsHtml;
-            document.getElementById('pop-total').innerText = document.getElementById('text-total-price').innerText;
-            document.getElementById('confirm-popup').classList.remove('hidden');
-        }
-
-        function closeConfirmPopup() {
-            document.getElementById('confirm-popup').classList.add('hidden');
-        }
-
-        function executeFinalSubmit() {
-            closeConfirmPopup();
-            const syncCode = localStorage.getItem('sync_code');
-
-            document.getElementById('lbl-lbl-date').innerText = document.getElementById('lbl-drv-date').innerText;
-            document.getElementById('lbl-lbl-store').innerText = document.getElementById('lbl-drv-store').innerText;
-            document.getElementById('lbl-lbl-phone').innerText = document.getElementById('lbl-drv-phone').innerText;
-            document.getElementById('lbl-lbl-address').innerText = document.getElementById('lbl-drv-address').innerText;
-            
-            const labelArea = document.getElementById('lbl-lbl-items-area');
-            let labelLinesHtml = '';
-            
-            currentOrderItems.forEach((item, idx) => {
-                const w = document.getElementById(`drv-weight-${idx}`).value;
-                const p = parseInt(document.getElementById(`drv-price-${idx}`).value);
-                const lineTotal = Math.round(w * p).toLocaleString();
-                
-                labelLinesHtml += `
-                    <div class="grid grid-cols-4 items-center border-b border-slate-200 pb-2 font-bold text-sm">
-                        <div class="col-span-2">
-                            <p class="font-black text-slate-900 text-base">${item.item}</p>
-                            <p class="text-xs text-slate-500 font-medium">${item.origin} / ${item.process}</p>
-                        </div>
-                        <div class="text-center font-mono text-base">${w} ${item.unit}</div>
-                        <div class="text-right font-black font-mono text-base text-blue-600">${lineTotal}원</div>
-                    </div>
-                `;
-            });
-            
-            labelArea.innerHTML = labelLinesHtml;
-            document.getElementById('lbl-lbl-total').innerText = document.getElementById('text-total-price').innerText;
-            document.getElementById('label-output-section').classList.remove('hidden');
-
-            fetch(`${cloudRelayUrl}${syncCode}`, {
-                method: 'POST',
-                body: JSON.stringify({ status: "completed" })
-            }).then(() => {
-                document.getElementById('drv-items-container').innerHTML = "";
-                alert("✅ 정산 마감 완료! 중앙 클라우드 원장에 영구 기록되었으며 배송 라벨이 즉시 하단에 인쇄되었습니다.");
+                alert(`🚀 [${store}] 발주가 배송망으로 정상 전송되었습니다!`);
+                document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = []; addFormRow();
             });
         }
 
         function toggleView(viewName) {
-            document.getElementById('view-owner').classList.add('hidden');
-            document.getElementById('view-driver').classList.add('hidden');
-            document.getElementById('view-settings').classList.add('hidden');
-            document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500";
-            document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500 relative flex items-center justify-center gap-2";
-
-            if (viewName === 'owner') {
-                document.getElementById('view-owner').classList.remove('hidden');
-                document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md";
-            } else if (viewName === 'driver') {
-                document.getElementById('view-driver').classList.remove('hidden');
-                document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md relative flex items-center justify-center gap-2";
-            } else if (viewName === 'settings') {
-                document.getElementById('view-settings').classList.remove('hidden');
-            }
+            if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden');
+            else document.getElementById('view-settings').classList.add('hidden');
         }
-
         addFormRow();
-        startCloudSync();
     </script>
 </body>
 </html>
