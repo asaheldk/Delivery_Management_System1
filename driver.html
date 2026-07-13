@@ -193,16 +193,28 @@
         window.toggleStoreFolder = toggleStoreFolder;
         function saveCurrentInputsToMemory() { const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); }); }
 
-        // 🚨 [신규 기능]: 기사가 취소 알림 카드에서 확인완료를 누르면 화면에서 소거시키는 로직
         function acknowledgeCancellation(orderId) {
             let acked = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
-            acked.push(orderId);
-            localStorage.setItem('driver_acked_cancels', JSON.stringify(acked));
-            
+            acked.push(orderId); localStorage.setItem('driver_acked_cancels', JSON.stringify(acked));
             if(currentExpandedOrderId === orderId) currentExpandedOrderId = null;
             refreshQueueDOM();
         }
         window.acknowledgeCancellation = acknowledgeCancellation;
+
+        // ❌ [신규 로직]: 기사가 대시보드에서 직접 발주를 강제 소거시키는 실시간 네트워크 명령식
+        function deleteOrderFromDriver(orderId, store) {
+            if(!confirm(`⚠️ [${store}] 발주를 대시보드 목록에서 강제 삭제하시겠습니까?\n삭제 처리된 오더는 목록에 다시 나타나지 않습니다.`)) return;
+            
+            const syncCode = localStorage.getItem('sync_code');
+            const deletePacket = { orderId: orderId, status: "deleted", store: store, serverTimestamp: Date.now() };
+
+            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(deletePacket) })
+            .then(() => {
+                if(currentExpandedOrderId === orderId) currentExpandedOrderId = null;
+                alert(`✅ [${store}] 발주가 목록에서 정상 삭제되었습니다.`);
+            });
+        }
+        window.deleteOrderFromDriver = deleteOrderFromDriver;
 
         function startCloudSync() {
             if(syncTimer) clearInterval(syncTimer);
@@ -221,12 +233,14 @@
                             if(rawData.message) { 
                                 const packet = JSON.parse(rawData.message); 
                                 if(packet.orderId) {
-                                    // ❌ 중요: 취소 패킷 발견 시 기존 발주 카드의 상태값을 cancelled로 전면 치환 개조
-                                    if(packet.status === "cancelled") {
+                                    // 취소(cancelled) 및 기사 삭제(deleted) 상태값 덮어쓰기 분기 개조
+                                    if(packet.status === "cancelled" || packet.status === "deleted") {
                                         if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet;
-                                        else { ordersMap[packet.orderId].status = "cancelled"; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; }
+                                        else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; }
                                     } else {
-                                        ordersMap[packet.orderId] = packet; 
+                                        if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) {
+                                            ordersMap[packet.orderId] = packet;
+                                        }
                                     }
                                 }
                             }
@@ -235,10 +249,9 @@
                     
                     globalOrdersCache = ordersMap;
                     
-                    // 마감완료 안 되었고, 기사가 지우지 않은 오더들 필터링
                     const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
                     const activeOrders = Object.values(ordersMap).filter(o => {
-                        if(o.status === "completed") return false;
+                        if(o.status === "completed" || o.status === "deleted") return false; // 💡 마감 혹은 삭제는 목록 제외
                         if(o.status === "cancelled") return !ackedCancels.includes(o.orderId);
                         return true;
                     });
@@ -248,7 +261,6 @@
                         stopAlarmServer(); return;
                     }
 
-                    // 외상장부 상호 자동 추가
                     let receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]');
                     let isUpdated = false;
                     activeOrders.forEach(order => { if (order.store && order.store.trim() !== "" && order.status === "ordered" && !receivables.some(r => r.name === order.store.trim())) { receivables.push({ name: order.store.trim(), balance: 0 }); isUpdated = true; } });
@@ -269,7 +281,7 @@
         function refreshQueueDOM() {
             const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
             const activeOrders = Object.values(globalOrdersCache).filter(o => {
-                if(o.status === "completed") return false;
+                if(o.status === "completed" || o.status === "deleted") return false;
                 if(o.status === "cancelled") return !ackedCancels.includes(o.orderId);
                 return true;
             });
@@ -277,7 +289,6 @@
             if(activeOrders.length === 0) return;
 
             queueContainer.innerHTML = activeOrders.map((order, orderIdx) => {
-                // ❌ [대형 연동 카드 조립]: 점주가 취소한 오더인 경우 붉은색 알림 경고 카드로 원천 분기 전환
                 if(order.status === "cancelled") {
                     return `
                         <div class="bg-rose-50 rounded-2xl shadow-md border-2 border-rose-300 p-5 space-y-3">
@@ -286,9 +297,7 @@
                                 <span class="text-xl font-black">${order.store}</span>
                             </div>
                             <p class="text-sm text-rose-700 font-bold leading-relaxed">점주님이 발주를 취소하셨습니다. 해당 물량은 탑치 및 배송하지 마세요.</p>
-                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3.5 rounded-xl font-black text-sm transition shadow-sm">
-                                확인 완료 (목록에서 삭제)
-                            </button>
+                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3.5 rounded-xl font-black text-sm transition">확인 완료 (목록에서 삭제)</button>
                         </div>
                     `;
                 }
@@ -304,7 +313,10 @@
                                 </div>
                                 <p class="text-sm text-slate-400 font-bold">📅 요청일: ${order.orderDate} | 품목: <span class="text-blue-600">${order.items.length}개</span></p>
                             </div>
-                            <span class="text-2xl font-bold text-slate-400">${isExpanded ? '▲ 접기' : '▼ 발주서 보기'}</span>
+                            <div class="flex items-center space-x-3" onclick="event.stopPropagation();">
+                                <button onclick="deleteOrderFromDriver('${order.orderId}', '${order.store}')" class="bg-white hover:bg-rose-50 text-rose-600 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">❌ 삭제</button>
+                                <span class="text-base font-bold text-slate-400">${isExpanded ? '▲ 접기' : '▼ 보기'}</span>
+                            </div>
                         </button>
                         <div class="${isExpanded ? 'block' : 'hidden'} p-5 border-t border-slate-100 space-y-4 bg-white">
                             <div class="bg-slate-50 p-4 rounded-xl text-sm space-y-1 text-slate-600 border">
@@ -313,7 +325,7 @@
                             <div class="space-y-3">
                                 ${order.items.map((p, itemIdx) => `
                                     <div class="bg-slate-50/60 p-4 rounded-xl border border-slate-200 space-y-2">
-                                        <div class="text-sm font-bold text-slate-800 font-sans">
+                                        <div class="text-sm font-bold text-slate-800">
                                             [${p.category}] <span class="text-base font-black text-slate-900">${p.item}</span> (${p.origin} / ${p.process})
                                             <p class="text-xs text-amber-700 mt-1">💬 메모: ${p.memo}</p>
                                         </div>
@@ -346,42 +358,25 @@
         }
 
         function calculateQueueTotal(orderId) {
-            const order = globalOrdersCache[orderId]; if(!order) return; let totalSum = 0;
-            if(order.status === "cancelled") return;
-            order.items.forEach((item, idx) => {
-                const wEl = document.getElementById(`weight-${orderId}-${idx}`); const pEl = document.getElementById(`price-${orderId}-${idx}`);
-                if(wEl && pEl) { totalSum += Math.round((parseFloat(wEl.value) || 0) * (parseInt(pEl.value) || 0)); }
-            });
+            const order = globalOrdersCache[orderId]; if(!order) return; let totalSum = 0; if(order.status === "cancelled") return;
+            order.items.forEach((item, idx) => { const wEl = document.getElementById(`weight-${orderId}-${idx}`); const pEl = document.getElementById(`price-${orderId}-${idx}`); if(wEl && pEl) { totalSum += Math.round((parseFloat(wEl.value) || 0) * (parseInt(pEl.value) || 0)); } });
             const displayEl = document.getElementById(`total-price-${orderId}`); if (displayEl) displayEl.innerText = totalSum.toLocaleString() + " 원";
         }
 
         function triggerConfirmPopup(orderId) {
-            activeProcessingOrderId = orderId; const order = globalOrdersCache[orderId];
-            document.getElementById('pop-store').innerText = order.store;
-            const popListContainer = document.getElementById('pop-items-list'); let rowsHtml = '';
-            order.items.forEach((item, idx) => {
-                const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder;
-                const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value).toLocaleString();
-                rowsHtml += `<div class="flex justify-between items-center text-sm bg-white p-3 rounded-xl border font-bold"><span class="text-slate-900 text-base">${item.item}</span><span class="text-slate-500 font-mono">${w}${item.unit} × ${p}원</span></div>`;
-            });
-            popListContainer.innerHTML = rowsHtml;
-            document.getElementById('pop-total').innerText = document.getElementById(`total-price-${orderId}`).innerText;
-            document.getElementById('confirm-popup').classList.remove('hidden');
+            activeProcessingOrderId = orderId; const order = globalOrdersCache[orderId]; document.getElementById('pop-store').innerText = order.store; const popListContainer = document.getElementById('pop-items-list'); let rowsHtml = '';
+            order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value).toLocaleString(); rowsHtml += `<div class="flex justify-between items-center text-sm bg-white p-3 rounded-xl border font-bold"><span class="text-slate-900 text-base">${item.item}</span><span class="text-slate-500 font-mono">${w}${item.unit} × ${p}원</span></div>`; });
+            popListContainer.innerHTML = rowsHtml; document.getElementById('pop-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('confirm-popup').classList.remove('hidden');
         }
 
         function closeConfirmPopup() { document.getElementById('confirm-popup').classList.add('hidden'); }
 
         function executeFinalSubmit() {
             closeConfirmPopup(); const orderId = activeProcessingOrderId; const order = globalOrdersCache[orderId]; const syncCode = localStorage.getItem('sync_code');
-            document.getElementById('lbl-lbl-date').innerText = order.orderDate; document.getElementById('lbl-lbl-store').innerText = order.store;
-            document.getElementById('lbl-lbl-phone').innerText = order.phone; document.getElementById('lbl-lbl-address').innerText = order.address;
+            document.getElementById('lbl-lbl-date').innerText = order.orderDate; document.getElementById('lbl-lbl-store').innerText = order.store; document.getElementById('lbl-lbl-phone').innerText = order.phone; document.getElementById('lbl-lbl-address').innerText = order.address;
             const labelArea = document.getElementById('lbl-lbl-items-area'); let labelLinesHtml = '';
-            order.items.forEach((item, idx) => {
-                const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value);
-                labelLinesHtml += `<div class="grid grid-cols-4 items-center border-b pb-2 font-bold text-sm"><div class="col-span-2"><p class="font-black text-slate-900 text-base">${item.item}</p><p class="text-xs text-slate-500 font-medium">${item.origin} / ${item.process}</p></div><div class="text-center font-mono text-base">${w} ${item.unit}</div><div class="text-right font-black font-mono text-base text-blue-600">${Math.round(w*p).toLocaleString()}원</div></div>`;
-            });
-            labelArea.innerHTML = labelLinesHtml; document.getElementById('lbl-lbl-total').innerText = document.getElementById(`total-price-${orderId}`).innerText;
-            document.getElementById('label-output-section').classList.remove('hidden');
+            order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value); labelLinesHtml += `<div class="grid grid-cols-4 items-center border-b pb-2 font-bold text-sm"><div class="col-span-2"><p class="font-black text-slate-900 text-base">${item.item}</p><p class="text-xs text-slate-500 font-medium">${item.origin} / ${item.process}</p></div><div class="text-center font-mono text-base">${w} ${item.unit}</div><div class="text-right font-black font-mono text-base text-blue-600">${Math.round(w*p).toLocaleString()}원</div></div>`; });
+            labelArea.innerHTML = labelLinesHtml; document.getElementById('lbl-lbl-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('label-output-section').classList.remove('hidden');
             fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify({ orderId: orderId, status: "completed", serverTimestamp: Date.now() }) }).then(() => { currentExpandedOrderId = null; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert(`✅ [${order.store}] 마감 완료 및 라벨 출력`); });
         }
 
