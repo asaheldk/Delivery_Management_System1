@@ -32,7 +32,7 @@
             </div>
             <div class="space-y-2">
                 <label class="block text-sm font-black text-slate-600">🔗 연동 코드 (배송원과 동일해야 함)</label>
-                <input id="input-sync-code" type="text" value="fish_net_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                <input id="input-sync-code" type="text" value="1" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
             </div>
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
@@ -105,8 +105,9 @@
         let rowIdx = 0; let activeRows = [];
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
 
-        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', 'fish_net_777');
+        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '1');
         document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
+        document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${localStorage.getItem('sync_code')}호차`;
 
         const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
@@ -217,7 +218,7 @@
         function updateSettingsMaster() {
             const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
             if(!code) return; localStorage.setItem('sync_code', code);
-            document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${code}`;
+            document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${code}호차`;
             toggleView('owner');
         }
 
@@ -250,9 +251,23 @@
             });
         }
 
+        // 🛠️ [기능 강화 마스터 패치]: 주소창에서 매장명(store)과 차량번호(car)를 동시에 해킹해와 자동 고정 세팅
         function checkUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlStore = urlParams.get('store');
+            const urlCar = urlParams.get('car');
+            
+            // 1. 차량 번호(&car=) 자동 세팅 가동
+            if (urlCar) {
+                const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+                if (cleanedCar) {
+                    localStorage.setItem('sync_code', cleanedCar);
+                    document.getElementById('input-sync-code').value = cleanedCar;
+                    document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`;
+                }
+            }
+
+            // 2. 상호 이름(?store=) 자동 세팅 가동
             if (urlStore) {
                 const selStore = document.getElementById('sel-store');
                 let isExistOption = false;
@@ -271,7 +286,9 @@
             if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden');
             else document.getElementById('view-settings').classList.add('hidden');
         }
-        addFormRow(); checkUrlParameters();
+        
+        addFormRow();
+        checkUrlParameters();
     </script>
 </body>
 </html>
