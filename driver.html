@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 배송원 관제</title>
+    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -26,6 +27,7 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
+        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 관제 동기화 설정</h2>
@@ -37,6 +39,7 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
+        <!-- 무한 경보 알림 배너 -->
         <div id="alarm-banner" class="hidden bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl blink-fast">
             <div class="flex items-center space-x-3">
                 <span class="text-3xl">🚨</span>
@@ -45,20 +48,46 @@
                     <p class="text-xs text-rose-100 opacity-90 mt-0.5">미확인 발주가 있습니다. 확인 완료 버튼으로 알람을 끄세요.</p>
                 </div>
             </div>
-            <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition">알림 끄기</button>
+            <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition">확인 완료</button>
         </div>
 
-        <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md">
-            <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역</p>
-            <h3 class="text-3xl font-black mt-1 font-mono text-slate-100">3,450,000 원</h3>
+        <!-- 💰 외상/미수금 실시간 관리 카드 -->
+        <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md relative">
+            <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역 (총액)</p>
+            <div class="flex justify-between items-baseline mt-1">
+                <h3 id="total-receivables-display" class="text-3xl font-black font-mono text-slate-100">0 원</h3>
+                <button onclick="toggleReceivablesForm()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-1.5 rounded-xl border border-slate-700/60 transition">✏️ 장부 수정</button>
+            </div>
+            <div id="receivables-list-area" class="mt-3 pt-3 border-t border-slate-800 text-sm space-y-1.5 text-slate-300 font-medium"></div>
+
+            <div id="receivables-edit-form" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
+                <p class="text-xs font-bold text-blue-400">📊 거래처별 외상 미수금 직접 기입</p>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="text-slate-300 font-black shrink-0 w-20">자갈치상회:</span>
+                        <input id="rec-input-jagalchi" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
+                    </div>
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="text-slate-300 font-black shrink-0 w-20">영도수산:</span>
+                        <input id="rec-input-yeongdo" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
+                    </div>
+                    <div class="flex justify-between items-center gap-2">
+                        <span class="text-slate-300 font-black shrink-0 w-20">해운대대게:</span>
+                        <input id="rec-input-haeundae" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
+                    </div>
+                </div>
+                <button onclick="saveReceivables()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-xs font-black transition shadow-md">💾 외상 장부 금액 반영하기</button>
+            </div>
         </div>
 
+        <!-- 📋 실시간 접수 오더 대기열 리스트 -->
         <div class="space-y-3">
-            <p class="text-base font-black text-slate-500 tracking-wider uppercase pl-1">📋 접수된 실시간 발주 대기열 목록</p>
-            <div id="driver-queue-container" class="space-y-4"></div>
+            <p class="text-base font-black text-slate-500 tracking-wider uppercase pl-1">📋 실시간 접수된 거래처별 발주 목록</p>
+            <div id="driver-queue-container" class="space-y-3"></div>
         </div>
     </main>
 
+    <!-- ⚠️ [실수방지 통합 검증 모달 팝업] -->
     <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border border-slate-200">
             <div class="flex items-center space-x-2 text-amber-500">
@@ -80,6 +109,7 @@
         </div>
     </div>
 
+    <!-- 🖨️ [최종 완성형 배송 라벨 출력] -->
     <div id="label-output-section" class="max-w-md mx-auto px-4 hidden mb-20">
         <div class="bg-white border-3 border-slate-900 p-6 rounded-2xl shadow-xl space-y-4 relative bg-mono text-slate-900">
             <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
@@ -110,8 +140,9 @@
     </div>
 
     <script>
-        let globalOrdersCache = {}; let activeProcessingOrderId = null;
-        let audioCtx = null; let alarmInterval = null; let syncTimer = null; let latestTimestamp = 0;
+        let globalOrdersCache = {}; let activeProcessingOrderId = null; let currentExpandedOrderId = null;
+        let audioCtx = null; let alarmInterval = null; let syncTimer = null;
+
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
 
         if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', 'fish_net_777');
@@ -136,6 +167,50 @@
         function stopAlarmServer() {
             if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
             document.getElementById('alarm-banner').className = "hidden";
+            let maxStamp = 0;
+            Object.values(globalOrdersCache).forEach(o => { if(o.serverTimestamp > maxStamp) maxStamp = o.serverTimestamp; });
+            localStorage.setItem('last_muted_timestamp', maxStamp);
+        }
+
+        function initReceivablesSystem() {
+            if(!localStorage.getItem('rec_jagalchi')) localStorage.setItem('rec_jagalchi', '1200000');
+            if(!localStorage.getItem('rec_yeongdo')) localStorage.setItem('rec_yeongdo', '2250000');
+            if(!localStorage.getItem('rec_haeundae')) localStorage.setItem('rec_haeundae', '0');
+            renderReceivablesData();
+        }
+
+        function renderReceivablesData() {
+            const j = parseInt(localStorage.getItem('rec_jagalchi')) || 0; const y = parseInt(localStorage.getItem('rec_yeongdo')) || 0; const h = parseInt(localStorage.getItem('rec_haeundae')) || 0;
+            const total = j + y + h; document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원";
+            document.getElementById('rec-input-jagalchi').value = j; document.getElementById('rec-input-yeongdo').value = y; document.getElementById('rec-input-haeundae').value = h;
+            document.getElementById('receivables-list-area').innerHTML = `
+                <div class="flex justify-between"><span>🏪 자갈치상회:</span><span class="font-bold text-slate-200">${j.toLocaleString()}원</span></div>
+                <div class="flex justify-between"><span>🏪 영도수산:</span><span class="font-bold text-slate-200">${y.toLocaleString()}원</span></div>
+                ${h > 0 ? `<div class="flex justify-between"><span>🏪 해운대대게:</span><span class="font-bold text-slate-200">${h.toLocaleString()}원</span></div>` : ''}
+            `;
+        }
+
+        function toggleReceivablesForm() { document.getElementById('receivables-edit-form').classList.toggle('hidden'); }
+
+        fn = function saveReceivables() {
+            localStorage.setItem('rec_jagalchi', document.getElementById('rec-input-jagalchi').value || 0);
+            localStorage.setItem('rec_yeongdo', document.getElementById('rec-input-yeongdo').value || 0);
+            localStorage.setItem('rec_haeundae', document.getElementById('rec-input-haeundae').value || 0);
+            renderReceivablesData(); toggleReceivablesForm(); alert("📝 거래처별 외상 미수금 원장이 영구 업데이트되었습니다.");
+        }
+        window.saveReceivables = fn;
+
+        fn = function toggleStoreFolder(orderId) {
+            saveCurrentInputsToMemory();
+            if(currentExpandedOrderId === orderId) { currentExpandedOrderId = null; } 
+            else { currentExpandedOrderId = orderId; }
+            refreshQueueDOM();
+        }
+        window.toggleStoreFolder = fn;
+
+        function saveCurrentInputsToMemory() {
+            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
+            inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); });
         }
 
         function startCloudSync() {
@@ -155,45 +230,62 @@
                     });
                     globalOrdersCache = ordersMap;
                     const activeOrders = Object.values(ordersMap).filter(o => o.status === "ordered");
-                    const queueContainer = document.getElementById('driver-queue-container');
-
                     if(activeOrders.length === 0) {
-                        queueContainer.innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`;
+                        document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`;
                         stopAlarmServer(); return;
                     }
-                    activeOrders.forEach(o => { if(o.alarmActive) hasNewAlarm = true; });
-
+                    const lastMuted = parseInt(localStorage.getItem('last_muted_timestamp')) || 0;
+                    activeOrders.forEach(o => { if(o.alarmActive && o.serverTimestamp > lastMuted) hasNewAlarm = true; });
                     if(hasNewAlarm) {
                         document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl blink-fast";
                         if(!alarmInterval) alarmInterval = setInterval(playBeep, 500);
+                    } else {
+                        if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
+                        document.getElementById('alarm-banner').className = "hidden";
                     }
+                    saveCurrentInputsToMemory(); refreshQueueDOM();
+                }).catch(err => {});
+            }, 3000);
+        }
 
-                    queueContainer.innerHTML = activeOrders.map((order, orderIdx) => `
-                        <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
-                            <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
-                                <span class="text-xs font-black bg-blue-600 text-white px-3 py-1 rounded-md">오더 대기 #${orderIdx + 1}</span>
-                                <span class="text-lg font-black text-blue-600">${order.store}</span>
+        function refreshQueueDOM() {
+            const activeOrders = Object.values(globalOrdersCache).filter(o => o.status === "ordered");
+            const queueContainer = document.getElementById('driver-queue-container');
+            if(activeOrders.length === 0) return;
+
+            queueContainer.innerHTML = activeOrders.map((order, orderIdx) => {
+                const isExpanded = order.orderId === currentExpandedOrderId;
+                return `
+                    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden transition-all">
+                        <button onclick="toggleStoreFolder('${order.orderId}')" class="w-full text-left p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition">
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-[#0f172a] text-white font-black text-xs px-2.5 py-1 rounded-md">대기 #${orderIdx + 1}</span>
+                                    <span class="text-xl font-black text-slate-900">${order.store}</span>
+                                </div>
+                                <p class="text-sm text-slate-400 font-bold">📅 요청일: ${order.orderDate} | 품목 개수: <span class="text-blue-600">${order.items.length}개</span></p>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-2xl text-sm space-y-1.5 text-slate-700 border border-slate-100">
-                                <div>📅 <b>납품요청:</b> <span class="font-black text-slate-900">${order.orderDate}</span></div>
-                                <div>📞 <b>현장연락:</b> <span>${order.phone}</span></div>
-                                <div class="truncate">📍 <b>배송주소:</b> <span class="text-slate-500">${order.address}</span></div>
+                            <span class="text-2xl font-bold text-slate-400">${isExpanded ? '▲ 접기' : '▼ 발주서 보기'}</span>
+                        </button>
+                        <div class="${isExpanded ? 'block' : 'hidden'} p-5 border-t border-slate-100 space-y-4 bg-white">
+                            <div class="bg-slate-50 p-4 rounded-xl text-sm space-y-1 text-slate-600 border">
+                                <div>• <b>연락처:</b> ${order.phone}</div><div>• <b>주소지:</b> ${order.address}</div>
                             </div>
                             <div class="space-y-3">
                                 ${order.items.map((p, itemIdx) => `
-                                    <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200/70 space-y-2">
+                                    <div class="bg-slate-50/60 p-4 rounded-xl border border-slate-200 space-y-2">
                                         <div class="text-sm font-bold text-slate-800">
                                             [${p.category}] <span class="text-base font-black text-slate-900">${p.item}</span> (${p.origin} / ${p.process})
-                                            <p class="text-xs text-amber-700 mt-1">💬 요청: ${p.memo}</p>
+                                            <p class="text-xs text-amber-700 mt-1">💬 메모: ${p.memo}</p>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-2 pt-1">
+                                        <div class="grid grid-cols-2 gap-3 pt-1">
                                             <div>
-                                                <label class="block text-[11px] font-black text-slate-400 mb-0.5">실측 중량 (${p.unit})</label>
-                                                <input id="weight-${order.orderId}-${itemIdx}" type="number" value="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-2.5 border-2 border-slate-200 rounded-xl text-base font-black text-center bg-white">
+                                                <label class="block text-xs font-black text-slate-400 mb-1">⚖️ 실측 중량 (${p.unit})</label>
+                                                <input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-3 border-2 border-slate-200 rounded-xl text-base font-black text-center bg-white outline-none">
                                             </div>
                                             <div>
-                                                <label class="block text-[11px] font-black text-slate-400 mb-0.5">확정 단가 (원)</label>
-                                                <input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-2.5 border-2 border-slate-200 rounded-xl text-base font-black text-center bg-white">
+                                                <label class="block text-xs font-black text-slate-400 mb-1">💰 확정 단가 (원)</label>
+                                                <input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-3 border-2 border-slate-200 rounded-xl text-base font-black text-center bg-white outline-none">
                                             </div>
                                         </div>
                                     </div>
@@ -205,10 +297,13 @@
                             </div>
                             <button onclick="triggerConfirmPopup('${order.orderId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-black text-base transition">💾 이 점포 정산 마감 및 라벨 인쇄</button>
                         </div>
-                    `).join('');
-                    activeOrders.forEach(order => calculateQueueTotal(order.orderId));
-                }).catch(err => {});
-            }, 3000);
+                    </div>
+                `;
+            }).join('');
+
+            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
+            inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; });
+            activeOrders.forEach(order => calculateQueueTotal(order.orderId));
         }
 
         function calculateQueueTotal(orderId) {
@@ -225,7 +320,7 @@
             document.getElementById('pop-store').innerText = order.store;
             const popListContainer = document.getElementById('pop-items-list'); let rowsHtml = '';
             order.items.forEach((item, idx) => {
-                const w = document.getElementById(`weight-${orderId}-${idx}`).value;
+                const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder;
                 const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value).toLocaleString();
                 rowsHtml += `<div class="flex justify-between items-center text-sm bg-white p-3 rounded-xl border font-bold"><span class="text-slate-900 text-base">${item.item}</span><span class="text-slate-500 font-mono">${w}${item.unit} × ${p}원</span></div>`;
             });
@@ -242,16 +337,16 @@
             document.getElementById('lbl-lbl-phone').innerText = order.phone; document.getElementById('lbl-lbl-address').innerText = order.address;
             const labelArea = document.getElementById('lbl-lbl-items-area'); let labelLinesHtml = '';
             order.items.forEach((item, idx) => {
-                const w = document.getElementById(`weight-${orderId}-${idx}`).value; const p = parseInt(document.getElementById(`driver.html-${orderId}-${idx}`)?document.getElementById(`price-${orderId}-${idx}`).value:document.getElementById(`price-${orderId}-${idx}`).value);
+                const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value);
                 labelLinesHtml += `<div class="grid grid-cols-4 items-center border-b pb-2 font-bold text-sm"><div class="col-span-2"><p class="font-black text-slate-900 text-base">${item.item}</p><p class="text-xs text-slate-500 font-medium">${item.origin} / ${item.process}</p></div><div class="text-center font-mono text-base">${w} ${item.unit}</div><div class="text-right font-black font-mono text-base text-blue-600">${Math.round(w*p).toLocaleString()}원</div></div>`;
             });
             labelArea.innerHTML = labelLinesHtml; document.getElementById('lbl-lbl-total').innerText = document.getElementById(`total-price-${orderId}`).innerText;
             document.getElementById('label-output-section').classList.remove('hidden');
-            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify({ orderId: orderId, status: "completed", serverTimestamp: Date.now() }) }).then(() => { window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert(`✅ [${order.store}] 마감 완료 및 라벨 출력`); });
+            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify({ orderId: orderId, status: "completed", serverTimestamp: Date.now() }) }).then(() => { currentExpandedOrderId = null; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert(`✅ [${order.store}] 마감 완료 및 라벨 출력`); });
         }
 
         function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); }
-        startCloudSync();
+        initReceivablesSystem(); startCloudSync();
     </script>
 </body>
 </html>
