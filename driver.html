@@ -6,6 +6,7 @@
     <title>수산물 물류 시스템 - 배송원 관제</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
         body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.03em; }
@@ -13,7 +14,7 @@
         @keyframes pulse-blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(0.98); } }
         @media print {
             body { background: white; color: black; padding-bottom: 0; }
-            header, main, button, #alarm-banner, #confirm-popup, .print-hidden { display: none !important; }
+            header, main, button, #alarm-banner, #confirm-popup, .print-hidden-btns { display: none !important; }
             #company-document-print-zone { display: block !important; }
         }
     </style>
@@ -125,16 +126,22 @@
         </div>
     </div>
 
-    <div id="company-document-print-zone" class="max-w-md mx-auto px-3 hidden mb-24">
-        <div class="bg-slate-800 text-white p-4 rounded-t-3xl flex flex-col gap-2 print:hidden border-b-2 border-slate-900">
-            <span class="text-sm font-black text-yellow-400 text-center">📄 사내 정산/출고 명세서 발행 완료</span>
+    <div id="company-document-print-zone" class="max-w-md mx-auto px-3 hidden mb-24 bg-white rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-300">
+        <div class="bg-slate-800 text-white p-5 flex flex-col gap-3 print:hidden border-b-2 border-slate-900 print-hidden-btns">
+            <span class="text-base font-black text-yellow-400 text-center tracking-wide">📄 사내 정산/출고 명세서 원클릭 다운로드</span>
+            
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-black py-3 rounded-xl shadow transition">🖨️ 모바일 인쇄 / PDF</button>
-                <button onclick="downloadExcelFile()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-3 rounded-xl shadow transition flex items-center justify-center gap-1">🟢 엑셀 다운로드 (.xlsx)</button>
+                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-black py-4 rounded-xl shadow transition">🖨️ 종이 인쇄 / PDF</button>
+                <button onclick="downloadExcelFile()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black py-4 rounded-xl shadow transition">🟢 엑셀 다운 (.xlsx)</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="downloadDocumentAsImage('png')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-black py-4 rounded-xl shadow transition flex items-center justify-center gap-1">🖼️ PNG 사진 저장</button>
+                <button onclick="downloadDocumentAsImage('jpg')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black py-4 rounded-xl shadow transition flex items-center justify-center gap-1">📸 JPG 사진 저장</button>
             </div>
         </div>
         
-        <div class="bg-white border-x-4 border-b-4 border-slate-800 p-5 rounded-b-3xl space-y-8 text-black">
+        <div id="capture-target-sub-zone" class="bg-white p-5 space-y-8 text-black">
             <div class="border-2 border-slate-900 p-4 rounded-xl space-y-3 relative bg-white">
                 <div class="text-center border-b-2 border-slate-900 pb-2">
                     <h2 class="text-2xl font-black tracking-widest underline underline-offset-4">매 입 발 주 장</h2>
@@ -194,50 +201,19 @@
 
         function playBeep() {
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination); osc.type = "sine";
-            osc.frequency.value = 950; gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = "sine"; osc.frequency.value = 950; gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
         function updateSettingsMaster() {
-            const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
-            if(!code) return; 
-            localStorage.setItem('sync_code', code);
-            document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${code}호차`;
-            globalOrdersCache = {}; currentExpandedOrderId = null;
-            document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-500 font-bold text-lg"><span class="block text-2xl animate-bounce mb-2">⏳</span>[${code}호차] 장부를 동기화 중입니다...</div>`;
-            for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key && key.startsWith('temp_')) { localStorage.removeItem(key); } }
-            stopAlarmServer(); startCloudSync(); toggleView('settings');
+            const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if(!code) return; 
+            localStorage.setItem('sync_code', code); document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${code}호차`; globalOrdersCache = {}; currentExpandedOrderId = null; document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-500 font-bold text-lg"><span class="block text-2xl animate-bounce mb-2">⏳</span>[${code}호차] 장부를 동기화 중입니다...</div>`; for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key && key.startsWith('temp_')) { localStorage.removeItem(key); } } stopAlarmServer(); startCloudSync(); toggleView('settings');
         }
 
-        function stopAlarmServer() {
-            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-            document.getElementById('alarm-banner').className = "hidden";
-            let maxStamp = 0;
-            Object.values(globalOrdersCache).forEach(o => { if(o.serverTimestamp > maxStamp) maxStamp = o.serverTimestamp; });
-            localStorage.setItem('last_muted_timestamp', maxStamp);
-        }
-
-        function initReceivablesSystem() {
-            if(!localStorage.getItem('fish_receivables')) { localStorage.setItem('fish_receivables', JSON.stringify([])); }
-            renderReceivablesData();
-        }
+        function stopAlarmServer() { if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } document.getElementById('alarm-banner').className = "hidden"; let maxStamp = 0; Object.values(globalOrdersCache).forEach(o => { if(o.serverTimestamp > maxStamp) maxStamp = o.serverTimestamp; }); localStorage.setItem('last_muted_timestamp', maxStamp); }
+        function initReceivablesSystem() { if(!localStorage.getItem('fish_receivables')) { localStorage.setItem('fish_receivables', JSON.stringify([])); } renderReceivablesData(); }
 
         function renderReceivablesData() {
-            const receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]');
-            let total = 0; const listArea = document.getElementById('receivables-list-area');
-            if (receivables.length === 0) { listArea.innerHTML = `<p class="text-sm text-slate-400 italic py-1">장부에 등록된 거래처가 없습니다.</p>`; } 
-            else { listArea.innerHTML = receivables.map(r => { total += parseInt(r.balance) || 0; return `<div class="flex justify-between border-b border-slate-800 pb-1"><span>🏪 ${r.name}:</span><span class="font-black text-slate-100">${(parseInt(r.balance) || 0).toLocaleString()}원</span></div>`; }).join(''); }
-            document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원";
-            const inputsContainer = document.getElementById('receivables-edit-inputs-container');
-            inputsContainer.innerHTML = receivables.map((r, idx) => `
-                <div class="flex items-center gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-700">
-                    <input id="rec-edit-name-${idx}" type="text" value="${r.name}" class="w-5/12 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-black text-sm outline-none">
-                    <input id="rec-edit-bal-${idx}" type="number" value="${r.balance}" class="w-5/12 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
-                    <button onclick="deleteReceivableRow(${idx})" class="w-2/12 bg-rose-900 text-white font-black py-3 rounded-xl text-sm transition">❌</button>
-                </div>
-            `).join('');
+            const receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]'); let total = 0; const listArea = document.getElementById('receivables-list-area'); if (receivables.length === 0) { listArea.innerHTML = `<p class="text-sm text-slate-400 italic py-1">장부에 등록된 거래처가 없습니다.</p>`; } else { listArea.innerHTML = receivables.map(r => { total += parseInt(r.balance) || 0; return `<div class="flex justify-between border-b border-slate-800 pb-1"><span>🏪 ${r.name}:</span><span class="font-black text-slate-100">${(parseInt(r.balance) || 0).toLocaleString()}원</span></div>`; }).join(''); } document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원"; const inputsContainer = document.getElementById('receivables-edit-inputs-container'); inputsContainer.innerHTML = receivables.map((r, idx) => `<div class="flex items-center gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-700"><input id="rec-edit-name-${idx}" type="text" value="${r.name}" class="w-5/12 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-black text-sm outline-none"><input id="rec-edit-bal-${idx}" type="number" value="${r.balance}" class="w-5/12 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-mono text-right font-black text-sm outline-none"><button onclick="deleteReceivableRow(${idx})" class="w-2/12 bg-rose-900 text-white font-black py-3 rounded-xl text-sm transition">❌</button></div>`).join('');
         }
 
         function toggleReceivablesForm() { document.getElementById('receivables-edit-form').classList.toggle('hidden'); }
@@ -251,29 +227,18 @@
         window.toggleStoreFolder = toggleStoreFolder;
         function saveCurrentInputsToMemory() { const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); }); }
 
-        function acknowledgeCancellation(orderId) {
-            let acked = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
-            acked.push(orderId); localStorage.setItem('driver_acked_cancels', JSON.stringify(acked));
-            if(currentExpandedOrderId === orderId) currentExpandedOrderId = null;
-            refreshQueueDOM();
-        }
+        function acknowledgeCancellation(orderId) { let acked = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]'); acked.push(orderId); localStorage.setItem('driver_acked_cancels', JSON.stringify(acked)); if(currentExpandedOrderId === orderId) currentExpandedOrderId = null; refreshQueueDOM(); }
         window.acknowledgeCancellation = acknowledgeCancellation;
 
-        function deleteOrderFromDriver(orderId, store) {
-            if(!confirm(`⚠️ [${store}] 발주를 대시보드 목록에서 강제 삭제하시겠습니까?`)) return;
-            const syncCode = localStorage.getItem('sync_code');
-            const deletePacket = { orderId: orderId, status: "deleted", store: store, serverTimestamp: Date.now() };
-            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(deletePacket) }).then(() => { if(currentExpandedOrderId === orderId) currentExpandedOrderId = null; alert(`✅ [${store}] 발주 삭제 완료`); });
-        }
+        function deleteOrderFromDriver(orderId, store) { if(!confirm(`⚠️ [${store}] 발주를 대시보드 목록에서 강제 삭제하시겠습니까?`)) return; const syncCode = localStorage.getItem('sync_code'); const deletePacket = { orderId: orderId, status: "deleted", store: store, serverTimestamp: Date.now() }; fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(deletePacket) }).then(() => { if(currentExpandedOrderId === orderId) currentExpandedOrderId = null; alert(`✅ [${store}] 발주 삭제 완료`); }); }
         window.deleteOrderFromDriver = deleteOrderFromDriver;
 
-        // 사내 전용 영수증 / 명세서 동적 출력기
+        // 사내 전용 명세서 동적 조립 렌더러
         function generateCompanyDocuments(orderId) {
-            activeProcessingOrderId = orderId; // 🟢 엑셀 연동용 타겟 오더 아이디 바인딩
-            const order = globalOrdersCache[orderId];
-            if(!order) return;
-
+            activeProcessingOrderId = orderId; 
+            const order = globalOrdersCache[orderId]; if(!order) return;
             const carNum = localStorage.getItem('sync_code') || '1';
+            
             document.getElementById('doc-purchase-store').innerText = order.store;
             document.getElementById('doc-purchase-date').innerText = order.orderDate;
             document.getElementById('doc-purchase-car').innerText = `${carNum}호 배송 차량`;
@@ -290,21 +255,8 @@
                 const rowTotal = Math.round(weight * price);
                 totalSum += rowTotal;
 
-                tableRowsHtml += `
-                    <tr class="border-b border-slate-300">
-                        <td class="p-1.5 border-r border-slate-300">${item.item} (${item.process})</td>
-                        <td class="p-1.5 border-r border-slate-300 text-center">${item.origin}</td>
-                        <td class="p-1.5 border-r border-slate-300 text-center font-mono">${weight}${item.unit}</td>
-                        <td class="p-1.5 text-right font-mono">${rowTotal.toLocaleString()}원</td>
-                    </tr>
-                `;
-
-                dispatchItemsHtml += `
-                    <div class="border-b border-slate-200 pb-1.5">
-                        • <span class="text-base text-blue-700 font-extrabold">[${item.item}]</span> ➡️ 요청량: <span class="underline">${weight}${item.unit}</span> / 작업보관: <span class="text-red-600 underline">${item.process}</span>
-                        <p class="text-xs text-slate-500 font-bold ml-3 mt-0.5">↳ 현장메모: ${item.memo}</p>
-                    </div>
-                `;
+                tableRowsHtml += `<tr class="border-b border-slate-300"><td class="p-1.5 border-r border-slate-300">${item.item} (${item.process})</td><td class="p-1.5 border-r border-slate-300 text-center">${item.origin}</td><td class="p-1.5 border-r border-slate-300 text-center font-mono">${weight}${item.unit}</td><td class="p-1.5 text-right font-mono">${rowTotal.toLocaleString()}원</td></tr>`;
+                dispatchItemsHtml += `<div class="border-b border-slate-200 pb-1.5">• <span class="text-base text-blue-700 font-extrabold">[${item.item}]</span> ➡️ 요청량: <span class="underline">${weight}${item.unit}</span> / 작업보관: <span class="text-red-600 underline">${item.process}</span><p class="text-xs text-slate-500 font-bold ml-3 mt-0.5">↳ 현장메모: ${item.memo}</p></div>`;
 
                 if(item.process.includes('찍어바리')) processTypesFound.add('찍어바리');
                 if(item.process.includes('합포장')) processTypesFound.add('합포장');
@@ -329,64 +281,54 @@
         }
         window.generateCompanyDocuments = generateCompanyDocuments;
 
-        // 🟢 [신규 연동 로직]: 추출된 매입 및 공정 데이터를 깨짐 없는 .xlsx 정식 규격으로 출력하는 다운로더
+        // 🟢 정식 규격 .xlsx 엑셀 생성 다운로더
         function downloadExcelFile() {
-            const orderId = activeProcessingOrderId;
-            const order = globalOrdersCache[orderId];
-            if(!order) { alert("⚠️ 선택된 주문 정보가 없습니다. 버튼을 다시 한 번 눌러주세요."); return; }
-
+            const orderId = activeProcessingOrderId; const order = globalOrdersCache[orderId]; if(!order) { alert("⚠️ 선택된 주문 정보가 없습니다."); return; }
             const carNum = localStorage.getItem('sync_code') || '1';
-            
-            // 엑셀의 격자판 데이터 배열 조립
-            let excelRows = [
-                ["[사내 정산용 매입 발주장]"],
-                [],
-                ["발주처(상호)", order.store, "납품요청일", order.orderDate],
-                ["담당 배송차량", `${carNum}호차 차량`],
-                ["배송지 주소", order.address],
-                [],
-                ["품목 및 어종명", "카테고리", "원산지", "작업 및 보관방식", "실측중량/수량", "단위", "확정단가(원)", "합계금액(원)", "점포 요구사항 메모"]
-            ];
-
+            let excelRows = [["[사내 정산용 매입 발주장]"], [], ["발주처(상호)", order.store, "납품요청일", order.orderDate], ["담당 배송차량", `${carNum}호차 차량`], ["배송지 주소", order.address], [], ["품목 및 어종명", "카테고리", "원산지", "작업 및 보관방식", "실측중량/수량", "단위", "확정단가(원)", "합계금액(원)", "점포 요구사항 메모"]];
             let totalSum = 0;
             order.items.forEach((item, idx) => {
-                const wInput = document.getElementById(`weight-${orderId}-${idx}`);
-                const pInput = document.getElementById(`price-${orderId}-${idx}`);
-                
-                const weight = wInput ? parseFloat(wInput.value) || 0 : parseFloat(item.qty);
-                const price = pInput ? parseInt(pInput.value) || 0 : 25000;
-                const rowTotal = Math.round(weight * price);
-                totalSum += rowTotal;
-
-                excelRows.push([
-                    item.item,
-                    item.category,
-                    item.origin,
-                    item.process,
-                    weight,
-                    item.unit,
-                    price,
-                    rowTotal,
-                    item.memo
-                ]);
+                const wInput = document.getElementById(`weight-${orderId}-${idx}`); const pInput = document.getElementById(`price-${orderId}-${idx}`);
+                const weight = wInput ? parseFloat(wInput.value) || 0 : parseFloat(item.qty); const price = pInput ? parseInt(pInput.value) || 0 : 25000; const rowTotal = Math.round(weight * price); totalSum += rowTotal;
+                excelRows.push([item.item, item.category, item.origin, item.process, weight, item.unit, price, rowTotal, item.memo]);
             });
-
-            excelRows.push([]);
-            excelRows.push(["", "", "", "", "", "", "총 매입 합계액", totalSum]);
-
-            // SheetJS 가동식
-            const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "매입장");
-
-            // 가독성을 위한 셀 너비 강제 확장 조절
+            excelRows.push([]); excelRows.push(["", "", "", "", "", "", "총 매입 합계액", totalSum]);
+            const worksheet = XLSX.utils.aoa_to_sheet(excelRows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "매입장");
             worksheet['!cols'] = [{wch:18}, {wch:12}, {wch:10}, {wch:18}, {wch:14}, {wch:8}, {wch:14}, {wch:16}, {wch:25}];
-
-            // 파일명 포맷: 상호명_날짜_매입발주장.xlsx
-            const finalFileName = `${order.store}_${order.orderDate}_매입발주장.xlsx`;
-            XLSX.writeFile(workbook, finalFileName);
+            XLSX.writeFile(workbook, `${order.store}_${order.orderDate}_매입발주장.xlsx`);
         }
         window.downloadExcelFile = downloadExcelFile;
+
+        // 🟢 [신규 특화 기술]: 화면 캔버스를 강제 변환하여 완벽한 PNG/JPG 이미지 파일로 폰에 떨어뜨리는 다이렉트 엔진
+        function downloadDocumentAsImage(fileExtension) {
+            const orderId = activeProcessingOrderId;
+            const order = globalOrdersCache[orderId];
+            if(!order) { alert("⚠️ 가동할 서류 본체가 없습니다."); return; }
+
+            // 캡처 영역 스캔 타겟팅 지정 (사내 양식 본체 박스만 스캔)
+            const captureArea = document.getElementById('capture-target-sub-zone');
+            
+            // 5060 사장님용 고화질 스케일 가속 캡처 개시
+            html2canvas(captureArea, {
+                scale: 3, // 돋보기 없이도 글씨가 쪼개지지 않도록 해상도를 3배 뻥튀기하여 캡처
+                useCORS: true,
+                backgroundColor: '#ffffff' // 투명 배경 방지용 순백색 고정
+            }).then(canvas => {
+                const mimeType = fileExtension === 'jpg' ? 'image/jpeg' : 'image/png';
+                const base64Data = canvas.toDataURL(mimeType, 0.95); // 95% 고품질 사진 데이터 추출
+                
+                // 모바일 무전식 가상 다운로드 다운링크 자동 설계
+                const downloadLink = document.createElement('a');
+                downloadLink.download = `${order.store}_${order.orderDate}_명세서.${fileExtension}`;
+                downloadLink.href = base64Data;
+                downloadLink.click(); // 기기 내부 다운로드 실행 유도
+                
+                alert(`✅ [${order.store}] 사진 파일(${fileExtension.toUpperCase()}) 저장이 완료되었습니다.\n카톡방에 사진으로 즉시 공유하세요!`);
+            }).catch(err => {
+                alert("이미지 변환 중 장치 오류가 발생했습니다.");
+            });
+        }
+        window.downloadDocumentAsImage = downloadDocumentAsImage;
 
         function startCloudSync() {
             if(syncTimer) clearInterval(syncTimer);
@@ -399,8 +341,7 @@
                     const lines = text.trim().split('\n'); let ordersMap = {}; let hasNewAlarm = false;
                     lines.forEach(line => {
                         try {
-                            const rawData = JSON.parse(line);
-                            if(rawData.message) { const packet = JSON.parse(rawData.message); if(packet.orderId) { if(packet.status === "cancelled" || packet.status === "deleted") { if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet; else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; } } else { if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) { ordersMap[packet.orderId] = packet; } } } }
+                            const rawData = JSON.parse(line); if(rawData.message) { const packet = JSON.parse(rawData.message); if(packet.orderId) { if(packet.status === "cancelled" || packet.status === "deleted") { if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet; else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; } } else { if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) { ordersMap[packet.orderId] = packet; } } } }
                         } catch(e){}
                     });
                     globalOrdersCache = ordersMap;
@@ -425,32 +366,16 @@
         function refreshQueueDOM() {
             const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
             const activeOrders = Object.values(globalOrdersCache).filter(o => { if(o.status === "completed" || o.status === "deleted") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; });
-            const queueContainer = document.getElementById('driver-queue-container');
-            if(activeOrders.length === 0) return;
+            const queueContainer = document.getElementById('driver-queue-container'); if(activeOrders.length === 0) return;
 
             queueContainer.innerHTML = activeOrders.map((order, orderIdx) => {
-                if(order.status === "cancelled") {
-                    return `
-                        <div class="bg-rose-100 rounded-3xl shadow-xl border-4 border-rose-500 p-6 space-y-4">
-                            <div class="flex justify-between items-center text-rose-800">
-                                <span class="bg-rose-600 text-white font-black text-sm px-3 py-1.5 rounded-xl">🛑 발주 전면취소</span>
-                                <span class="text-2xl font-black text-rose-950">${order.store}</span>
-                            </div>
-                            <p class="text-lg font-black text-rose-800 leading-snug bg-white p-4 rounded-xl border border-rose-300 shadow-inner">⚠️ 점주가 발주를 취소했습니다!<br><span class="text-rose-600 underline">절대 물건을 싣거나 배송하지 마세요.</span></p>
-                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 text-white py-4 rounded-2xl text-base font-black transition">취소 확인완료 (화면에서 삭제)</button>
-                        </div>
-                    `;
-                }
-
+                if(order.status === "cancelled") { return `<div class="bg-rose-100 rounded-3xl shadow-xl border-4 border-rose-500 p-6 space-y-4"><div class="flex justify-between items-center text-rose-800"><span class="bg-rose-600 text-white font-black text-sm px-3 py-1.5 rounded-xl">🛑 발주 전면취소</span><span class="text-2xl font-black text-rose-950">${order.store}</span></div><p class="text-lg font-black text-rose-800 leading-snug bg-white p-4 rounded-xl border border-rose-300 shadow-inner">⚠️ 점주가 발주를 취소했습니다!<br><span class="text-rose-600 underline">절대 물건을 싣거나 배송하지 마세요.</span></p><button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 text-white py-4 rounded-2xl text-base font-black transition">취소 확인완료 (화면에서 삭제)</button></div>`; }
                 const isExpanded = order.orderId === currentExpandedOrderId;
                 return `
                     <div class="bg-white rounded-3xl shadow-xl border-3 border-slate-300 overflow-hidden transition-all">
                         <button onclick="toggleStoreFolder('${order.orderId}')" class="w-full text-left p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition border-b border-slate-200">
                             <div class="space-y-2">
-                                <div class="flex items-center space-x-2">
-                                    <span class="bg-[#0f172a] text-white font-black text-sm px-3 py-1 rounded-lg">대기 #${orderIdx + 1}</span>
-                                    <span class="text-2xl font-black text-slate-900 tracking-tight">${order.store}</span>
-                                </div>
+                                <div class="flex items-center space-x-2"><span class="bg-[#0f172a] text-white font-black text-sm px-3 py-1 rounded-lg">대기 #${orderIdx + 1}</span><span class="text-2xl font-black text-slate-900 tracking-tight">${order.store}</span></div>
                                 <p class="text-base text-slate-500 font-bold">📅 배송요청일: <span class="text-slate-800 underline">${order.orderDate}</span></p>
                             </div>
                             <div class="flex items-center space-x-3" onclick="event.stopPropagation();">
@@ -458,56 +383,37 @@
                                 <span class="text-base font-black px-3 py-2 bg-blue-100 text-blue-700 rounded-xl shadow-sm border border-blue-200">${isExpanded ? '▲ 접기' : '▼ 보기'}</span>
                             </div>
                         </button>
-                        
                         <div class="${isExpanded ? 'block' : 'hidden'} p-5 space-y-5 bg-white">
                             <div class="bg-slate-100 p-4 rounded-xl text-base space-y-1.5 text-slate-700 border-2 border-slate-200 font-bold">
                                 <div>• 📞 현장전화: <span class="text-slate-900">${order.phone}</span></div>
                                 <div class="leading-relaxed">• 📍 주소지: <span class="text-slate-900 underline">${order.address}</span></div>
                             </div>
-                            
                             <div class="space-y-4">
                                 ${order.items.map((p, itemIdx) => `
                                     <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-300 space-y-3 shadow-inner">
-                                        <div class="text-base font-bold text-slate-600">
-                                            <span class="bg-slate-800 text-white text-xs px-2 py-0.5 rounded-md font-sans mr-1">${p.category}</span>
-                                            <span class="text-xl font-black text-slate-900">[ ${p.item} ]</span> (${p.origin} / ${p.process})
-                                            <div class="text-base text-amber-900 mt-2 bg-amber-100 border-2 border-amber-300 p-3 rounded-xl font-black">💬 요청사항: ${p.memo}</div>
-                                        </div>
+                                        <div class="text-base font-bold text-slate-600"><span class="bg-slate-800 text-white text-xs px-2 py-0.5 rounded-md font-sans mr-1">${p.category}</span><span class="text-xl font-black text-slate-900">[ ${p.item} ]</span> (${p.origin} / ${p.process})<div class="text-base text-amber-900 mt-2 bg-amber-100 border-2 border-amber-300 p-3 rounded-xl font-black">💬 요청사항: ${p.memo}</div></div>
                                         <div class="grid grid-cols-2 gap-3 pt-1">
-                                            <div>
-                                                <label class="block text-sm font-black text-slate-500 mb-1">⚖️ 실측 중량 (${p.unit})</label>
-                                                <input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none">
-                                            </div>
-                                            <div>
-                                                <label class="block text-sm font-black text-slate-500 mb-1">💰 확정 단가 (원)</label>
-                                                <input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none">
-                                            </div>
+                                            <div><label class="block text-sm font-black text-slate-500 mb-1">⚖️ 실측 중량 (${p.unit})</label><input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none"></div>
+                                            <div><label class="block text-sm font-black text-slate-500 mb-1">💰 확정 단가 (원)</label><input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none"></div>
                                         </div>
                                     </div>
                                 `).join('')}
                             </div>
-
-                            <button onclick="generateCompanyDocuments('${order.orderId}')" class="w-full bg-slate-800 hover:bg-slate-900 text-yellow-400 py-4 rounded-2xl font-black text-base transition shadow border-b-4 border-slate-950 flex items-center justify-center gap-2">
-                                📋 사내 매입발주서 & 출고명세서 인쇄/다운
-                            </button>
-
-                            <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center text-white border-2 border-slate-800 shadow-md">
-                                <span class="text-sm font-black text-slate-400">이 점포 마감 합계금액:</span>
-                                <span id="total-price-${order.orderId}" class="text-2xl font-black font-mono text-yellow-400">0 원</span>
-                            </div>
-
-                            <button onclick="triggerConfirmPopup('${order.orderId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-lg transition shadow-xl border-b-4 border-emerald-800 tracking-wide active:scale-95">
-                                💾 이 점포 정산 마감 및 라벨 인쇄
-                            </button>
+                            <button onclick="generateCompanyDocuments('${order.orderId}')" class="w-full bg-slate-800 hover:bg-slate-900 text-yellow-400 py-4 rounded-2xl font-black text-base transition shadow border-b-4 border-slate-950 flex items-center justify-center gap-2">📋 사내 매입발주서 & 출고명세서 인쇄/다운</button>
+                            <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center text-white border-2 border-slate-800 shadow-md"><span class="text-sm font-black text-slate-400">이 점포 마감 합계금액:</span><span id="total-price-${order.orderId}" class="text-2xl font-black font-mono text-yellow-400">0 원</span></div>
+                            <button onclick="triggerConfirmPopup('${order.orderId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-lg transition shadow-xl border-b-4 border-emerald-800 tracking-wide active:scale-95">💾 이 점포 정산 마감 및 라벨 인쇄</button>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
-            inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; });
-            activeOrders.forEach(order => { if(order.status !== "cancelled") calculateQueueTotal(order.orderId); });
+            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; }); activeOrders.forEach(order => { if(order.status !== "cancelled") calculateQueueTotal(order.orderId); });
         }
+
+        function calculateQueueTotal(orderId) { const order = globalOrdersCache[orderId]; if(!order) return; let totalSum = 0; if(order.status === "cancelled") return; order.items.forEach((item, idx) => { const wEl = document.getElementById(`weight-${orderId}-${idx}`); const pEl = document.getElementById(`price-${orderId}-${idx}`); if(wEl && pEl) { totalSum += Math.round((parseFloat(wEl.value) || 0) * (parseInt(pEl.value) || 0)); } }); const displayEl = document.getElementById(`total-price-${orderId}`); if (displayEl) displayEl.innerText = totalSum.toLocaleString() + " 원"; }
+        function triggerConfirmPopup(orderId) { activeProcessingOrderId = orderId; const order = globalOrdersCache[orderId]; document.getElementById('pop-store').innerText = order.store; const popListContainer = document.getElementById('pop-items-list'); let rowsHtml = ''; order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value).toLocaleString(); rowsHtml += `<div class="flex justify-between items-center text-base bg-white p-3 rounded-xl border font-black text-slate-900"><span>${item.item}</span><span class="font-mono text-blue-600">${w}${item.unit} × ${p}원</span></div>`; }); popListContainer.innerHTML = rowsHtml; document.getElementById('pop-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('confirm-popup').classList.remove('hidden'); }
+        function closeConfirmPopup() { document.getElementById('confirm-popup').classList.add('hidden'); }
+        function executeFinalSubmit() { closeConfirmPopup(); const orderId = activeProcessingOrderId; const order = globalOrdersCache[orderId]; const syncCode = localStorage.getItem('sync_code'); document.getElementById('lbl-lbl-date').innerText = order.orderDate; document.getElementById('lbl-lbl-store').innerText = order.store; document.getElementById('lbl-lbl-phone').innerText = order.phone; document.getElementById('lbl-lbl-address').innerText = order.address; const labelArea = document.getElementById('lbl-lbl-items-area'); let labelLinesHtml = ''; order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value); labelLinesHtml += `<div class="grid grid-cols-4 items-center border-b pb-2 font-black text-base text-slate-900"><div class="col-span-2"><p class="text-lg">${item.item}</p><p class="text-xs text-slate-500 font-bold">${item.origin} / ${item.process}</p></div><div class="text-center font-mono">${w} ${item.unit}</div><div class="text-right font-mono text-blue-600 text-lg">${Math.round(w*p).toLocaleString()}원</div></div>`; }); labelArea.innerHTML = labelLinesHtml; document.getElementById('lbl-lbl-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('label-output-section').classList.remove('hidden'); fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify({ orderId: orderId, status: "completed", serverTimestamp: Date.now() }) }).then(() => { currentExpandedOrderId = null; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert(`✅ [${order.store}] 마감 완료 및 라벨 출력`); }); }
 
         function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); }
         initReceivablesSystem(); startCloudSync();
