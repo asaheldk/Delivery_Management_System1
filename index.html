@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 발주처</title>
+    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -24,6 +25,7 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
+        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 시스템 설정</h2>
@@ -35,6 +37,7 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
+        <!-- 🏪 발주 등록 폼 -->
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
@@ -139,7 +142,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
-                        <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                        <select id="sel-category-${id}" onchange="handleRowSelectChange(this, id, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option>
                             <option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option>
                             <option value="custom">✍️ 직접 입력</option>
@@ -148,7 +151,7 @@
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
-                        <select id="sel-item-${id}" onchange="handleRowSelectChange(this, ${id}, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                        <select id="sel-item-${id}" onchange="handleRowSelectChange(this, id, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                             <option value="광어">광어</option><option value="도미">도미</option><option value="농어">농어</option>
                             <option value="점성어">점성어</option><option value="연어">연어</option><option value="우니(성게알)">우니(성게알)</option>
                             <option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option>
@@ -161,7 +164,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">원산지 선택</label>
-                            <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, ${id}, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                            <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, id, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option>
                                 <option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option>
                                 <option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option>
@@ -171,7 +174,7 @@
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">작업 및 보관 방식</label>
-                            <select id="sel-process-${id}" onchange="handleRowSelectChange(this, ${id}, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                            <select id="sel-process-${id}" onchange="handleRowSelectChange(this, id, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="찍어바리">찍어바리</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option>
                                 <option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option>
                                 <option value="custom">✍️ 직접 입력</option>
@@ -182,7 +185,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">주문 수량</label>
-                            <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, ${id}, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
+                            <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, id, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
                                 <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
                                 <option value="custom">✍️ 직접 입력</option>
                             </select>
@@ -247,11 +250,28 @@
             });
         }
 
+        function checkUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlStore = urlParams.get('store');
+            if (urlStore) {
+                const selStore = document.getElementById('sel-store');
+                let isExistOption = false;
+                for(let i=0; i<selStore.options.length; i++) {
+                    if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; }
+                }
+                if(!isExistOption) {
+                    selStore.value = 'custom';
+                    const inputStore = document.getElementById('input-store');
+                    inputStore.classList.remove('hidden'); inputStore.value = urlStore;
+                }
+            }
+        }
+
         function toggleView(viewName) {
             if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden');
             else document.getElementById('view-settings').classList.add('hidden');
         }
-        addFormRow();
+        addFormRow(); checkUrlParameters();
     </script>
 </body>
 </html>
