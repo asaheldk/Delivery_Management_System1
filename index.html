@@ -103,6 +103,28 @@
         </section>
     </main>
 
+    <div id="success-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-emerald-500 animate-in zoom-in duration-200">
+            <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <span class="text-5xl animate-bounce">✅</span>
+            </div>
+            
+            <div class="space-y-3">
+                <h3 id="success-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">자갈치상회</h3>
+                <p class="text-xl font-extrabold text-emerald-600 tracking-wide">발주서 전송 성공!</p>
+                <hr class="border-slate-200">
+                <p class="text-base font-bold text-slate-500 leading-relaxed">
+                    배송 기사 단말기로<br>
+                    <span class="text-slate-900 underline decoration-blue-500 decoration-3">실시간 정상 전송</span> 되었습니다.
+                </p>
+            </div>
+
+            <button onclick="closeSuccessLargeModal()" class="w-full bg-[#0f172a] hover:bg-slate-800 text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg active:scale-95 focus:outline-none">
+                👍 확인했습니다
+            </button>
+        </div>
+    </div>
+
     <script>
         let rowIdx = 0; let activeRows = [];
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
@@ -224,6 +246,7 @@
             toggleView('owner');
         }
 
+        // ✍️ [개조 로직]: 구식 alert 안내창을 완전히 차단하고 대형 시각 모달 팝업 가동 연동
         function submitOrderToLiveNetwork() {
             if(activeRows.length === 0) return;
             const orderDate = document.getElementById('order-date').value;
@@ -248,9 +271,10 @@
 
             fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(orderPacket) })
             .then(res => {
-                alert(`🚀 [${store}] 발주가 배송망으로 정상 전송되었습니다!`);
-                
-                // 취소 기록 관리를 위해 로컬에 로그 저장
+                // 팝업 데이터 주입 및 가동
+                document.getElementById('success-modal-title').innerText = store;
+                document.getElementById('success-large-modal').classList.remove('hidden');
+
                 let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
                 mySentLog.unshift({ orderId: uniqueOrderId, store, orderDate, status: 'ordered' });
                 localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog));
@@ -260,10 +284,12 @@
             });
         }
 
-        // ❌ [신규 로직]: 점주가 취소 버튼을 누르면 무선망에 취소용 패킷(cancelled)을 유포시킴
+        function closeSuccessLargeModal() {
+            document.getElementById('success-large-modal').classList.add('hidden');
+        }
+
         function cancelOrderFromOwner(orderId, store) {
             if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?\n기사님 관제 창에 즉시 취소 신호가 전송됩니다.`)) return;
-
             const syncCode = localStorage.getItem('sync_code');
             const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() };
 
@@ -280,24 +306,11 @@
         function renderSentOrdersLog() {
             const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
             const container = document.getElementById('owner-sent-log-container');
-            
-            if(mySentLog.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`;
-                return;
-            }
-
+            if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; }
             container.innerHTML = mySentLog.slice(0, 5).map(o => `
                 <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold">
-                    <div>
-                        <span class="text-slate-900">${o.store}</span>
-                        <span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span>
-                    </div>
-                    <div>
-                        ${o.status === 'cancelled' 
-                            ? `<span class="text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">❌ 취소완료</span>`
-                            : `<button onclick="cancelOrderFromOwner('${o.orderId}', '${o.store}')" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg transition shadow-sm">❌ 발주취소</button>`
-                        }
-                    </div>
+                    <div><span class="text-slate-900">${o.store}</span><span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span></div>
+                    <div>${o.status === 'cancelled' ? `<span class="text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">❌ 취소완료</span>` : `<button onclick="cancelOrderFromOwner('${o.orderId}', '${o.store}')" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg transition shadow-sm">❌ 발주취소</button>`}</div>
                 </div>
             `).join('');
         }
@@ -305,15 +318,8 @@
         function checkUrlParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             const urlStore = urlParams.get('store'); const urlCar = urlParams.get('car');
-            if (urlCar) {
-                const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, '');
-                if (cleanedCar) { localStorage.setItem('sync_code', cleanedCar); document.getElementById('input-sync-code').value = cleanedCar; document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`; }
-            }
-            if (urlStore) {
-                const selStore = document.getElementById('sel-store'); let isExistOption = false;
-                for(let i=0; i<selStore.options.length; i++) { if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; } }
-                if(!isExistOption) { selStore.value = 'custom'; const inputStore = document.getElementById('input-store'); inputStore.classList.remove('hidden'); inputStore.value = urlStore; }
-            }
+            if (urlCar) { const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if (cleanedCar) { localStorage.setItem('sync_code', cleanedCar); document.getElementById('input-sync-code').value = cleanedCar; document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`; } }
+            if (urlStore) { const selStore = document.getElementById('sel-store'); let isExistOption = false; for(let i=0; i<selStore.options.length; i++) { if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; } } if(!isExistOption) { selStore.value = 'custom'; const inputStore = document.getElementById('input-store'); inputStore.classList.remove('hidden'); inputStore.value = urlStore; } }
         }
 
         function toggleView(viewName) {
