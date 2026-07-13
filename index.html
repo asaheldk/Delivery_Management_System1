@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="tab-title">수산물 물류 자동화 시스템</title>
+    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -14,17 +15,22 @@
 </head>
 <body class="bg-[#f3f4f6] text-[#1e293b] antialiased pb-28">
 
+    <!-- [상단 헤더] 실시간 연결 상태 표시기 추가 -->
     <header class="bg-[#0f172a] text-white px-6 py-5 shadow-md sticky top-0 z-50 flex justify-between items-center border-b border-slate-800">
-        <div class="flex items-center space-x-3">
-            <span class="w-3 h-3 rounded-full bg-blue-500 animate-ping"></span>
-            <h1 id="brand-logo" class="text-lg font-black tracking-wider text-slate-100">FISH-NET LOGISTICS</h1>
+        <div class="flex flex-col">
+            <div class="flex items-center space-x-2">
+                <span id="sync-indicator" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h1 id="brand-logo" class="text-lg font-black tracking-wider text-slate-100">FISH-NET LOGISTICS</h1>
+            </div>
+            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 실시간 채널: 수산연동_777</span>
         </div>
-        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition shadow-inner border border-slate-700/60">
+        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition border border-slate-700/60">
             ⚙️ 시스템 설정
         </button>
     </header>
 
-    <div class="sticky top-[68px] z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm">
+    <!-- [플로팅 세그먼트 탭 바] 5060 최적화 대형 사이즈 -->
+    <div class="sticky top-[72px] z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm">
         <div class="max-w-md mx-auto bg-slate-100 p-1.5 rounded-2xl flex justify-around text-base font-black shadow-inner">
             <button id="tab-owner" onclick="toggleView('owner')" class="w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md">
                 🏪 점주 발주하기
@@ -36,26 +42,35 @@
         </div>
     </div>
 
+    <!-- 메인 레이아웃 -->
     <main class="max-w-md mx-auto p-4 space-y-5">
 
-        <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
+        <!-- ⚙️ [시스템 세팅 뷰] -> 원격 기기 연동 핵심 기지 -->
+        <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
-                <h2 class="text-base font-black text-slate-400 uppercase tracking-wider">⚙️ System Configuration</h2>
+                <h2 class="text-base font-black text-slate-900">⚙️ 원격 단말기 실시간 연동 세팅</h2>
+                <p class="text-xs text-slate-400 mt-1">점주 핸드폰과 기사 핸드폰의 연결 코드가 같아야 연동됩니다.</p>
             </div>
             <div class="space-y-2">
-                <label class="block text-sm font-bold text-slate-500">회사명 / 브랜드명 변경</label>
+                <label class="block text-sm font-black text-slate-600">🔗 우리 회사 고유 연결 코드 (기기 공유용)</label>
+                <input id="input-sync-code" type="text" value="수산연동_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
+            </div>
+            <div class="space-y-2">
+                <label class="block text-sm font-black text-slate-600">회사명 / 브랜드명 변경</label>
                 <input id="input-brand" type="text" value="FISH-NET LOGISTICS" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
             </div>
-            <button onclick="updateBrandName()" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl text-base font-black transition shadow-lg">설정 마스터 동기화</button>
+            <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition shadow-lg">설정 정보 원격 동기화</button>
         </section>
 
+        <!-- 🏪 [1. 점주 발주 등록 폼] -->
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
-                <p class="text-sm text-slate-400 font-medium mt-0.5">아래의 항목을 선택하거나 직접 입력할 수 있습니다.</p>
+                <p class="text-sm text-slate-400 font-medium mt-0.5">작성 후 전송하면 담당 배송원 대시보드로 즉시 무선 송출됩니다.</p>
             </div>
             
             <div class="space-y-5">
+                <!-- 파트 A: 고정 배송 정보 및 납품 날짜 설정 -->
                 <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 space-y-4 shadow-inner">
                     <p class="text-xs font-black text-blue-600 tracking-wider uppercase">📍 1. 기본 배송지 및 납품 정보</p>
                     
@@ -96,10 +111,12 @@
                     </div>
                 </div>
 
+                <!-- 파트 B: 동적 폼 배열 생성 영역 -->
                 <div class="space-y-3">
                     <p class="text-xs font-black text-emerald-600 tracking-wider uppercase pl-1">🐟 2. 상세 발주 품목 목록</p>
                     <div id="dynamic-form-container" class="space-y-5">
-                        </div>
+                        <!-- 스크립트에 의해 카드 단위 입력창이 꽂힘 -->
+                    </div>
                 </div>
 
                 <button type="button" onclick="addFormRow()" class="w-full bg-white hover:bg-slate-50 text-blue-600 border-3 border-dashed border-blue-300 py-4 rounded-2xl text-base font-black tracking-wide transition flex items-center justify-center gap-2 shadow-sm active:scale-[0.99]">
@@ -107,29 +124,33 @@
                 </button>
             </div>
             
-            <button onclick="submitOrder()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-lg shadow-blue-600/20 active:scale-[0.98]">
-                🚀 작성된 모든 품목 일괄 발주 전송
+            <button onclick="submitOrderToServer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-lg shadow-blue-600/20 active:scale-[0.98]">
+                🚀 작성된 모든 품목 실시간 발주 전송
             </button>
         </section>
 
+        <!-- 🚚 [2. 배송원 멀티 오더 처리 대시보드] -->
         <section id="view-driver" class="hidden space-y-5">
+            <!-- 무한 경보 알림 배너 -->
             <div id="alarm-banner" class="hidden bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast">
                 <div class="flex items-center space-x-3">
                     <span class="text-3xl">🚨</span>
                     <div>
-                        <h4 class="text-base font-black tracking-tight">신규 원격 발주서가 도착했습니다</h4>
-                        <p class="text-xs text-rose-100 opacity-90 mt-0.5">버튼을 터치하여 강력 경보 사운드를 해제하세요.</p>
+                        <h4 class="text-base font-black tracking-tight">원격 신규 발주서가 도착했습니다!</h4>
+                        <p class="text-xs text-rose-100 opacity-90 mt-0.5">내용 확인 후 확인 완료 버튼을 터치해 꺼주세요.</p>
                     </div>
                 </div>
-                <button onclick="stopAlarm()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition active:scale-95">확인 완료</button>
+                <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition active:scale-95">확인 완료</button>
             </div>
 
+            <!-- 미수금 현황 요약 -->
             <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md">
-                <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 여신 장부 미수금액</p>
+                <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역</p>
                 <h3 class="text-3xl font-black mt-1 font-mono text-slate-100">3,450,000 원</h3>
             </div>
 
-            <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
+            <!-- 대시보드 렌더링 컨테이너 (실시간 주문 데이터 수신 대기 존) -->
+            <div id="driver-main-ledger" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
                 <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
                     <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider">Order Ledger Summary</h3>
                     <span class="text-xs font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-md" id="drv-store-badge">상회명</span>
@@ -143,8 +164,10 @@
                     <div>• <b>최종 주소지:</b> <span id="lbl-drv-address" class="block text-slate-500 mt-0.5 leading-relaxed"></span></div>
                 </div>
 
+                <!-- 배송원 실측 단가 산정 영역 -->
                 <div id="drv-items-container" class="space-y-4"></div>
 
+                <!-- 전체 마감 합계 -->
                 <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center shadow-inner text-white mt-5">
                     <span class="text-sm font-black text-slate-400">최종 마감 정산 총액:</span>
                     <span id="text-total-price" class="text-2xl font-black font-mono text-white">0 원</span>
@@ -154,9 +177,15 @@
                     💾 전체 품목 정산 마감 및 라벨 인쇄
                 </button>
             </div>
+
+            <!-- 대기 화면 (주문이 없을 때 노출) -->
+            <div id="driver-empty-ledger" class="bg-white p-12 rounded-3xl shadow-xl border border-slate-200/60 text-center text-slate-400 font-bold text-lg">
+                📭 접수된 실시간 발주 오더 원장이 없습니다.
+            </div>
         </section>
     </main>
 
+    <!-- ⚠️ [3. 실수방지 통합 검증 모달 팝업] -->
     <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border border-slate-200">
             <div class="flex items-center space-x-2 text-amber-500">
@@ -179,53 +208,58 @@
         </div>
     </div>
 
+    <!-- 🖨️ [4. 최종 완성형 배송 라벨] -->
     <div id="label-output-section" class="max-w-md mx-auto px-4 hidden mb-20">
         <div class="bg-white border-3 border-slate-900 p-6 rounded-2xl shadow-xl space-y-4 relative bg-mono text-slate-900">
             <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
-            
             <div class="text-center border-b-2 border-slate-900 pb-3">
                 <h4 id="label-brand" class="font-black text-xl tracking-widest">FISH-NET LOGISTICS</h4>
                 <p class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">DIGITAL MANAGEMENT SYSTEM LABELLING</p>
             </div>
-            
             <div class="grid grid-cols-1 gap-2 text-sm font-bold">
                 <div class="flex justify-between text-base"><span class="text-blue-600">• 납품 지정일 (DATE):</span><span id="lbl-lbl-date" class="font-black text-blue-600 underline decoration-2"></span></div>
                 <div class="flex justify-between"><span>• 상호 (STORE):</span><span id="lbl-lbl-store" class="font-black"></span></div>
                 <div class="flex justify-between"><span>• 연락 (TEL):</span><span id="lbl-lbl-phone"></span></div>
                 <div class="flex justify-between"><span>• 주소 (DEST):</span><span id="lbl-lbl-address" class="truncate max-w-[220px]"></span></div>
                 <hr class="border-dashed border-slate-400 my-1">
-                
                 <div class="grid grid-cols-4 text-xs text-slate-400 border-b pb-1 mb-1">
                     <span class="col-span-2">품목명 명세</span>
                     <span class="text-center">실측량</span>
                     <span class="text-right">금액</span>
                 </div>
                 <div id="lbl-lbl-items-area" class="space-y-2 text-sm"></div>
-
                 <hr class="border-dashed border-slate-400 my-1">
                 <div class="border-t-2 border-slate-900 pt-3 mt-1 flex justify-between text-lg font-black">
                     <span>★ TOTAL 정산합계액:</span>
-                    <span id="lbl-lbl-total" class="text-blue-600 font-mono"></span>
+                    <span id="lbl-lbl-total" class="text-blue-600 font-mono text-lg"></span>
                 </div>
             </div>
             <div class="bg-slate-100 h-12 w-full mt-4 flex items-center justify-center tracking-[0.5em] font-mono text-sm text-slate-400 border border-slate-200 rounded-lg">|||| | ||||| ||| | ||| ||</div>
         </div>
     </div>
 
+    <!-- 🌐 실시간 무선 연동 스크립트 엔진 -->
     <script>
         let rowIdx = 0;
         let activeRows = [];
         let currentOrderItems = []; 
         let audioCtx = null;
         let alarmInterval = null;
+        let syncTimer = null;
 
-        // 납품 날짜 초기값을 내일 날짜로 세팅 (사용자 편의성)
+        // 클라우드 저장 허브 주소 (공용 프리 보관 버킷)
+        const cloudHubUrl = "https://kvdb.io/A6t78XW4p9Zq2mK5vN3bRt/";
+
+        // 초기 연동 키셋 세팅 및 날짜 초기화
+        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '수산연동_777');
+        document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
+        document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${localStorage.getItem('sync_code')}`;
+
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
 
-        // 대형 화면 가변 필드 제어 핸들러
         function handleRowSelectChange(selectEl, id, fieldName) {
             const inputEl = document.getElementById(`input-${fieldName}-${id}`);
             if (selectEl.value === 'custom') {
@@ -260,18 +294,15 @@
             return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
         }
 
-        // [행 추가 엔진]: ITEM FORM 텍스트 완전 삭제 및 글씨체 대형화 반영 (요구사항 2)
         function addFormRow() {
             const id = rowIdx++;
             activeRows.push(id);
-
             const rowHtml = `
-                <div id="form-row-${id}" class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 relative space-y-4 shadow-sm animate-in fade-in duration-200">
+                <div id="form-row-${id}" class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 relative space-y-4 shadow-sm">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-2">
                         <span class="text-base font-black text-slate-700">📋 발주 품목 정보</span>
-                        <button type="button" onclick="removeFormRow(${id})" class="text-sm text-rose-600 font-bold hover:text-rose-800 bg-white border-2 border-rose-100 px-3 py-1.5 rounded-xl shadow-sm transition">❌ 품목 취소</button>
+                        <button type="button" onclick="removeFormRow(${id})" class="text-sm text-rose-600 font-bold hover:text-rose-800 bg-white border-2 border-rose-100 px-3 py-1.5 rounded-xl shadow-sm">❌ 품목 취소</button>
                     </div>
-
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
                         <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
@@ -281,7 +312,6 @@
                         </select>
                         <input id="input-category-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
-
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
                         <select id="sel-item-${id}" onchange="handleRowSelectChange(this, ${id}, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none focus:border-blue-600 shadow-sm">
@@ -294,7 +324,6 @@
                         </select>
                         <input id="input-item-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">원산지 선택</label>
@@ -316,7 +345,6 @@
                             <input id="input-process-${id}" type="text" placeholder="작업 방식 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">주문 수량</label>
@@ -336,10 +364,9 @@
                             <input id="input-unit-${id}" type="text" placeholder="단위명" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                     </div>
-
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">📝 품목별 요구 메모란</label>
-                        <input id="input-memo-${id}" type="text" placeholder="특이사항이 있을 경우 작성해 주세요" class="w-full p-4 border-2 border-slate-200 rounded-xl text-base font-bold outline-none bg-white shadow-sm">
+                        <input id="input-memo-${id}" type="text" placeholder="특이사항이 있을 경우 작성해 주세요" class="w-full p-4 border-2 border-slate-200 rounded-xl text-base font-bold outline-none bg-white">
                     </div>
                 </div>
             `;
@@ -366,59 +393,31 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        function toggleView(viewName) {
-            document.getElementById('view-owner').classList.add('hidden');
-            document.getElementById('view-driver').classList.add('hidden');
-            document.getElementById('view-settings').classList.add('hidden');
+        function updateSettingsMaster() {
+            const code = document.getElementById('input-sync-code').value.trim();
+            const brand = document.getElementById('input-brand').value.trim();
+            if(!code) { alert("연동 코드는 필수입니다."); return; }
             
-            document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500";
-            document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500 relative flex items-center justify-center gap-2";
-
-            if (viewName === 'owner') {
-                document.getElementById('view-owner').classList.remove('hidden');
-                document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md";
-            } else if (viewName === 'driver') {
-                document.getElementById('view-driver').classList.remove('hidden');
-                document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md relative flex items-center justify-center gap-2";
-            } else if (viewName === 'settings') {
-                document.getElementById('view-settings').classList.remove('hidden');
-            }
-        }
-
-        function updateBrandName() {
-            const newBrand = document.getElementById('input-brand').value;
-            document.getElementById('brand-logo').innerText = newBrand.toUpperCase();
-            document.getElementById('label-brand').innerText = newBrand.toUpperCase();
-            document.getElementById('tab-title').innerText = newBrand;
-            alert("⚙️ 브랜드 인프라 자산명이 실시간 변경 동기화되었습니다.");
+            localStorage.setItem('sync_code', code);
+            document.getElementById('brand-logo').innerText = brand.toUpperCase();
+            document.getElementById('label-brand').innerText = brand.toUpperCase();
+            document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${code}`;
+            
+            alert("⚙️ 기기 동기화 설정이 저장되었습니다. 실시간 관제를 다시 시작합니다.");
+            startCloudSync();
             toggleView('owner');
         }
 
-        // [최종 데이터 컴파일 및 라우팅 전송]
-        function submitOrder() {
-            if(activeRows.length === 0) {
-                alert("⚠️ 발주할 품목 칸을 하나 이상 작성하셔야 합니다.");
-                return;
-            }
-
+        // [구조적 혁신 A]: 점주가 입력한 데이터를 원격 클라우드로 무선 쏘아 올리는 핵심 함수
+        function submitOrderToServer() {
+            if(activeRows.length === 0) { alert("⚠️ 품목을 기재해 주세요."); return; }
             const orderDate = document.getElementById('order-date').value;
             const store = getResolvedValue('sel-store', 'input-store');
             const phone = getResolvedValue('sel-phone', 'input-phone');
             const address = getResolvedValue('sel-address', 'input-address');
+            if(!store) { alert("⚠️ 상호를 지정해 주세요."); return; }
 
-            if(!orderDate || !store) {
-                alert("⚠️ 납품 요청일 또는 상호 이름이 비어있습니다.");
-                return;
-            }
-
-            // 기사 화면 바인딩 연동
-            document.getElementById('lbl-drv-date').innerText = orderDate;
-            document.getElementById('lbl-drv-store').innerText = store;
-            document.getElementById('drv-store-badge').innerText = store;
-            document.getElementById('lbl-drv-phone').innerText = phone;
-            document.getElementById('lbl-drv-address').innerText = address;
-
-            currentOrderItems = [];
+            let items = [];
             for (let id of activeRows) {
                 const category = getRowResolvedValue(id, 'category');
                 const item = getRowResolvedValue(id, 'item');
@@ -427,58 +426,143 @@
                 const qty = getRowResolvedValue(id, 'qty');
                 const unit = getRowResolvedValue(id, 'unit');
                 const memo = document.getElementById(`input-memo-${id}`).value || "없음";
-
-                if(!item || !qty) {
-                    alert("⚠️ 품목명 또는 수량이 제대로 지정되지 않은 카드가 존재합니다.");
-                    return;
-                }
-                currentOrderItems.push({ category, item, origin, process, qty, unit, memo, orderDate });
+                if(!item || !qty) { alert("⚠️ 누락된 품목 정보를 채워주세요."); return; }
+                items.push({ category, item, origin, process, qty, unit, memo });
             }
 
-            // 기사용 현장 단가 입력 컴포넌트 동적 드로잉 (글씨 크게 변경)
-            const drvContainer = document.getElementById('drv-items-container');
-            drvContainer.innerHTML = currentOrderItems.map((p, idx) => `
-                <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-md space-y-3">
-                    <div>
-                        <span class="bg-slate-900 text-white font-black text-xs px-2.5 py-1 rounded-md">${p.category}</span>
-                        <h4 class="font-black text-slate-900 text-lg mt-2">${p.item} <span class="text-slate-400 text-sm font-bold">(${p.origin})</span></h4>
-                        <p class="text-sm text-slate-500 font-bold mt-1">방식: ${p.process} | 발주요청량: <span class="font-black text-slate-900 text-base">${p.qty} ${p.unit}</span></p>
-                        <p class="text-sm text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-xl font-bold inline-block mt-2">💬 요청메모: ${p.memo}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-                        <div class="space-y-1">
-                            <label class="block text-xs font-black text-slate-400">⚖️ 계근 실측 중량 (${p.unit})</label>
-                            <input id="drv-weight-${idx}" type="number" value="${p.qty}" step="0.1" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-xs font-black text-slate-400">💰 현장 확정 단가 (원)</label>
-                            <input id="drv-price-${idx}" type="number" value="25000" step="100" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            // 원격 장부에 쏘아 보낼 데이터 패키지 객체화
+            const orderPacket = {
+                status: "ordered",
+                orderDate, store, phone, address, items,
+                alarmActive: true,
+                serverTimestamp: Date.now()
+            };
 
-            // 무한 진동 경보 활성화
-            document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast";
-            document.getElementById('badge-count').innerText = "1";
-            document.getElementById('badge-count').classList.remove('hidden');
-            
-            if(alarmInterval) clearInterval(alarmInterval);
-            alarmInterval = setInterval(playBeep, 500);
+            const syncCode = localStorage.getItem('sync_code');
+            document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-orange-500 animate-bounce";
 
-            calculateTotal();
-            alert("🚀 대량 통합 발주 오더셋이 배송원 시스템에 정상 바인딩되었습니다.");
-            toggleView('driver');
+            // 클라우드 데이터 허브 전송 API 호출 (서버 없이 실시간 연동)
+            fetch(`${cloudHubUrl}${syncCode}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderPacket)
+            })
+            .then(res => {
+                document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+                alert("🚀 점포 발주 원장이 실시간 위성망을 거쳐 기사 단말기로 안전하게 송출되었습니다!");
+                // 내 화면 초기화 및 대시보드로 이동해보기
+                document.getElementById('dynamic-form-container').innerHTML = "";
+                activeRows = [];
+                addFormRow();
+                toggleView('driver');
+            })
+            .catch(err => {
+                document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-rose-500";
+                alert("❌ 전송 실패: 인터넷 상태를 확인해 주세요.");
+            });
         }
 
-        function stopAlarm() {
-            if(alarmInterval) {
-                clearInterval(alarmInterval);
-                alarmInterval = null;
-            }
+        // [구조적 혁신 B]: 배송기사가 알림 확인을 누르면 클라우드 원장의 알람 플래그를 원격으로 끄는 함수
+        function stopAlarmServer() {
+            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
             document.getElementById('alarm-banner').className = "hidden";
-            document.getElementById('badge-count').classList.add('hidden');
-            document.getElementById('badge-count').innerText = "0";
+            
+            const syncCode = localStorage.getItem('sync_code');
+            // 기존 데이터를 가져와서 알람 플래그만 변경 후 다시 저장
+            fetch(`${cloudHubUrl}${syncCode}`)
+            .then(res => res.json())
+            .then(data => {
+                data.alarmActive = false;
+                return fetch(`${cloudHubUrl}${syncCode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            });
+        }
+
+        // [구조적 혁신 C]: 배송기사 화면이 3초마다 원격 클라우드를 스캔하여 신규 발주를 잡아내는 백그라운드 엔진
+        function startCloudSync() {
+            if(syncTimer) clearInterval(syncTimer);
+            
+            syncTimer = setInterval(() => {
+                const syncCode = localStorage.getItem('sync_code');
+                
+                fetch(`${cloudHubUrl}${syncCode}`)
+                .then(res => {
+                    if(!res.ok) return null;
+                    return res.json();
+                })
+                .then(data => {
+                    if(!data || Object.keys(data).length === 0) {
+                        document.getElementById('driver-main-ledger').classList.add('hidden');
+                        document.getElementById('driver-empty-ledger').classList.remove('hidden');
+                        return;
+                    }
+
+                    // 전역 메모리에 바인딩
+                    currentOrderItems = data.items;
+                    
+                    // 기사 대시보드 마스터 헤더 글자 연동
+                    document.getElementById('lbl-drv-date').innerText = data.orderDate;
+                    document.getElementById('lbl-drv-store').innerText = data.store;
+                    document.getElementById('drv-store-badge').innerText = data.store;
+                    document.getElementById('lbl-drv-phone').innerText = data.phone;
+                    document.getElementById('lbl-drv-address').innerText = data.address;
+
+                    // 상태에 따른 화면 구성 트래킹
+                    if(data.status === "ordered") {
+                        document.getElementById('driver-main-ledger').classList.remove('hidden');
+                        document.getElementById('driver-empty-ledger').classList.add('hidden');
+
+                        // 원격 발주 콜이 도착했고, 아직 확인 전이라면 알람 울리기
+                        if(data.alarmActive) {
+                            document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast";
+                            document.getElementById('badge-count').innerText = "1";
+                            document.getElementById('badge-count').classList.remove('hidden');
+                            if(!alarmInterval) alarmInterval = setInterval(playBeep, 500);
+                        } else {
+                            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
+                            document.getElementById('alarm-banner').className = "hidden";
+                            document.getElementById('badge-count').classList.add('hidden');
+                        }
+
+                        // 동적 인풋 마크업 렌더링 (이미 그려져있다면 값 보존을 위해 무시)
+                        const drvContainer = document.getElementById('drv-items-container');
+                        if(drvContainer.children.length !== data.items.length) {
+                            drvContainer.innerHTML = data.items.map((p, idx) => `
+                                <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-md space-y-3">
+                                    <div>
+                                        <span class="bg-slate-900 text-white font-black text-xs px-2.5 py-1 rounded-md">${p.category}</span>
+                                        <h4 class="font-black text-slate-900 text-lg mt-2">${p.item} <span class="text-slate-400 text-sm font-bold">(${p.origin})</span></h4>
+                                        <p class="text-sm text-slate-500 font-bold mt-1">방식: ${p.process} | 발주요청량: <span class="font-black text-slate-900 text-base">${p.qty} ${p.unit}</span></p>
+                                        <p class="text-sm text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-xl font-bold inline-block mt-2">💬 요청메모: ${p.memo}</p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-black text-slate-400">⚖️ 계근 실측 중량 (${p.unit})</label>
+                                            <input id="drv-weight-${idx}" type="number" value="${p.qty}" step="0.1" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="block text-xs font-black text-slate-400">💰 현장 확정 단가 (원)</label>
+                                            <input id="drv-price-${idx}" type="number" value="25000" step="100" oninput="calculateTotal()" class="w-full p-3.5 border-2 border-slate-200 rounded-xl text-base font-black text-center focus:border-blue-600 outline-none bg-slate-50/50">
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+                            calculateTotal();
+                        }
+                    } else if(data.status === "completed") {
+                        // 정산이 완전히 끝난 주문인 경우 대시보드 리셋 대기
+                        document.getElementById('driver-main-ledger').classList.add('hidden');
+                        document.getElementById('driver-empty-ledger').classList.remove('hidden');
+                        if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
+                        document.getElementById('alarm-banner').className = "hidden";
+                        document.getElementById('badge-count').classList.add('hidden');
+                    }
+                })
+                .catch(err => console.log("서버 연결 대기중..."));
+            }, 3000); // 3초 주기 자동 스캔 무한 루프
         }
 
         function calculateTotal() {
@@ -498,7 +582,6 @@
         function openConfirmPopup() {
             const store = document.getElementById('lbl-drv-store').innerText;
             document.getElementById('pop-store').innerText = store;
-
             const popListContainer = document.getElementById('pop-items-list');
             let rowsHtml = '';
             
@@ -514,7 +597,6 @@
             });
             popListContainer.innerHTML = rowsHtml;
             document.getElementById('pop-total').innerText = document.getElementById('text-total-price').innerText;
-
             document.getElementById('confirm-popup').classList.remove('hidden');
         }
 
@@ -522,10 +604,11 @@
             document.getElementById('confirm-popup').classList.add('hidden');
         }
 
-        // 최종 영수증 라벨 발행
+        // 기사가 정산을 완료하면 서버 장부를 마감(completed) 상태로 변경하여 서로 리셋
         function executeFinalSubmit() {
             closeConfirmPopup();
-            
+            const syncCode = localStorage.getItem('sync_code');
+
             document.getElementById('lbl-lbl-date').innerText = document.getElementById('lbl-drv-date').innerText;
             document.getElementById('lbl-lbl-store').innerText = document.getElementById('lbl-drv-store').innerText;
             document.getElementById('lbl-lbl-phone').innerText = document.getElementById('lbl-drv-phone').innerText;
@@ -553,15 +636,40 @@
             
             labelArea.innerHTML = labelLinesHtml;
             document.getElementById('lbl-lbl-total').innerText = document.getElementById('text-total-price').innerText;
-
             document.getElementById('label-output-section').classList.remove('hidden');
-            
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            alert("✅ 검수 데이터 승인 마감 완료. 고대비 공급용 디바이스 바코드 라벨이 하단에 즉시 인쇄되었습니다.");
+
+            // 서버 정산 완료 패킷 업데이트 및 저장소 비우기
+            fetch(`${cloudHubUrl}${syncCode}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: "completed" })
+            }).then(() => {
+                document.getElementById('drv-items-container').innerHTML = "";
+                alert("✅ 정산 마감 완료! 원격 클라우드 장부에 실시간 기록되었으며 공급 라벨이 하단에 즉시 인쇄되었습니다.");
+            });
         }
 
-        // 기본 카드 구동
+        function toggleView(viewName) {
+            document.getElementById('view-owner').classList.add('hidden');
+            document.getElementById('view-driver').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
+            document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500";
+            document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 text-slate-500 relative flex items-center justify-center gap-2";
+
+            if (viewName === 'owner') {
+                document.getElementById('view-owner').classList.remove('hidden');
+                document.getElementById('tab-owner').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md";
+            } else if (viewName === 'driver') {
+                document.getElementById('view-driver').classList.remove('hidden');
+                document.getElementById('tab-driver').className = "w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md relative flex items-center justify-center gap-2";
+            } else if (viewName === 'settings') {
+                document.getElementById('view-settings').classList.remove('hidden');
+            }
+        }
+
+        // 구동 시작과 동시에 클라우드 통신 시스템 가동
         addFormRow();
+        startCloudSync();
     </script>
 </body>
 </html>
