@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 발주처</title>
+    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -24,6 +25,7 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
+        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 시스템 설정</h2>
@@ -35,6 +37,7 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
+        <!-- 🏪 발주 등록 폼 -->
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
@@ -96,6 +99,7 @@
                 🚀 실시간 발주 전송하기
             </button>
 
+            <!-- 최근 보낸 발주 관리 -->
             <div class="pt-4 border-t border-slate-100 space-y-2">
                 <p class="text-xs font-black text-slate-400 tracking-wider uppercase pl-1">📦 최근 보낸 발주 관리 (취소 가능)</p>
                 <div id="owner-sent-log-container" class="space-y-2"></div>
@@ -103,14 +107,14 @@
         </section>
     </main>
 
-    <div id="success-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all">
+    <!-- 📢 [대형 성공 팝업]: 5060 사장님 맞춤형 초대형 발주 완료 모달 -->
+    <div id="success-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-emerald-500 animate-in zoom-in duration-200">
             <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-inner">
                 <span class="text-5xl animate-bounce">✅</span>
             </div>
-            
             <div class="space-y-3">
-                <h3 id="success-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">자갈치상회</h3>
+                <h3 id="success-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">점포명</h3>
                 <p class="text-xl font-extrabold text-emerald-600 tracking-wide">발주서 전송 성공!</p>
                 <hr class="border-slate-200">
                 <p class="text-base font-bold text-slate-500 leading-relaxed">
@@ -118,10 +122,26 @@
                     <span class="text-slate-900 underline decoration-blue-500 decoration-3">실시간 정상 전송</span> 되었습니다.
                 </p>
             </div>
+            <button onclick="closeSuccessLargeModal()" class="w-full bg-[#0f172a] text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg active:scale-95">👍 확인했습니다</button>
+        </div>
+    </div>
 
-            <button onclick="closeSuccessLargeModal()" class="w-full bg-[#0f172a] hover:bg-slate-800 text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg active:scale-95 focus:outline-none">
-                👍 확인했습니다
-            </button>
+    <!-- 📢 [대형 취소 팝업]: 5060 사장님 맞춤형 초대형 발주 취소 경고 모달 (신규 추가) -->
+    <div id="cancel-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-rose-500 animate-in zoom-in duration-200">
+            <div class="w-24 h-24 bg-rose-100 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <span class="text-5xl animate-pulse">🚨</span>
+            </div>
+            <div class="space-y-3">
+                <h3 id="cancel-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">점포명</h3>
+                <p class="text-xl font-extrabold text-rose-600 tracking-wide">발주 취소 완료!</p>
+                <hr class="border-slate-200">
+                <p class="text-base font-bold text-slate-500 leading-relaxed">
+                    해당 발주서가 배송망에서<br>
+                    <span class="text-slate-900 underline decoration-rose-500 decoration-3">정상적으로 [취소]</span> 되었습니다.
+                </p>
+            </div>
+            <button onclick="closeCancelLargeModal()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg active:scale-95">확인완료</button>
         </div>
     </div>
 
@@ -136,26 +156,10 @@
         const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
 
-        function handleRowSelectChange(selectEl, id, fieldName) {
-            const inputEl = document.getElementById(`input-${fieldName}-${id}`);
-            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
-            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
-        }
-        function handleSelectChange(selectEl, inputId) {
-            const inputEl = document.getElementById(inputId);
-            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
-            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
-        }
-        function getRowResolvedValue(id, fieldName) {
-            const selectEl = document.getElementById(`sel-${fieldName}-${id}`);
-            const inputEl = document.getElementById(`input-${fieldName}-${id}`);
-            return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
-        }
-        function getResolvedValue(selectId, inputId) {
-            const selectEl = document.getElementById(selectId);
-            const inputEl = document.getElementById(inputId);
-            return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
-        }
+        function handleRowSelectChange(selectEl, id, fieldName) { const inputEl = document.getElementById(`input-${fieldName}-${id}`); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
+        function handleSelectChange(selectEl, inputId) { const inputEl = document.getElementById(inputId); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
+        function getRowResolvedValue(id, fieldName) { const selectEl = document.getElementById(`sel-${fieldName}-${id}`); const inputEl = document.getElementById(`input-${fieldName}-${id}`); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
+        function getResolvedValue(selectId, inputId) { const selectEl = document.getElementById(selectId); const inputEl = document.getElementById(inputId); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
 
         function addFormRow() {
             const id = rowIdx++; activeRows.push(id);
@@ -168,21 +172,14 @@
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
                         <select id="sel-category-${id}" onchange="handleRowSelectChange(this, id, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option>
-                            <option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option>
-                            <option value="custom">✍️ 직접 입력</option>
+                            <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option><option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
                         </select>
                         <input id="input-category-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
                         <select id="sel-item-${id}" onchange="handleRowSelectChange(this, id, 'item')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="광어">광어</option><option value="도미">도미</option><option value="농어">농어</option>
-                            <option value="점성어">점성어</option><option value="연어">연어</option><option value="우니(성게알)">우니(성게알)</option>
-                            <option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option>
-                            <option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option>
-                            <option value="가리비">가리비</option><option value="기타">기타</option>
-                            <option value="custom">✍️ 직접 입력</option>
+                            <option value="광어">광어</option><option value="도미">도미</option><option value="농어">농어</option><option value="점성어">점성어</option><option value="연어">연어</option><option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option><option value="가리비">가리비</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
                         </select>
                         <input id="input-item-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
@@ -190,19 +187,14 @@
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">원산지 선택</label>
                             <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, id, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option>
-                                <option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option>
-                                <option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option><option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option><option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-origin-${id}" type="text" placeholder="원산지 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">작업 및 보관 방식</label>
                             <select id="sel-process-${id}" onchange="handleRowSelectChange(this, id, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="찍어바리">찍어바리</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option>
-                                <option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="찍어바리">찍어바리</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option><option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-process-${id}" type="text" placeholder="작업 방식 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
@@ -211,16 +203,14 @@
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">주문 수량</label>
                             <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, id, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-qty-${id}" type="number" placeholder="수량" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-700">단위</label>
                             <select id="sel-unit-${id}" onchange="handleSelectChange(this, 'input-unit-${id}')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option>
-                                <option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
+                                <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option><option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-unit-${id}" type="text" placeholder="단위명" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
@@ -234,19 +224,9 @@
             document.getElementById('dynamic-form-container').insertAdjacentHTML('beforeend', rowHtml);
         }
 
-        function removeFormRow(id) {
-            const el = document.getElementById(`form-row-${id}`); if (el) el.remove();
-            activeRows = activeRows.filter(item => item !== id); if(activeRows.length === 0) addFormRow();
-        }
+        function removeFormRow(id) { const el = document.getElementById(`form-row-${id}`); if (el) el.remove(); activeRows = activeRows.filter(item => item !== id); if(activeRows.length === 0) addFormRow(); }
+        function updateSettingsMaster() { const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if(!code) return; localStorage.setItem('sync_code', code); document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${code}호차`; toggleView('owner'); }
 
-        function updateSettingsMaster() {
-            const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
-            if(!code) return; localStorage.setItem('sync_code', code);
-            document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${code}호차`;
-            toggleView('owner');
-        }
-
-        // ✍️ [개조 로직]: 구식 alert 안내창을 완전히 차단하고 대형 시각 모달 팝업 가동 연동
         function submitOrderToLiveNetwork() {
             if(activeRows.length === 0) return;
             const orderDate = document.getElementById('order-date').value;
@@ -257,10 +237,7 @@
 
             let items = [];
             for (let id of activeRows) {
-                const category = getRowResolvedValue(id, 'category'); const item = getRowResolvedValue(id, 'item');
-                const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process');
-                const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit');
-                const memo = document.getElementById(`input-memo-${id}`).value || "없음";
+                const category = getRowResolvedValue(id, 'category'); const item = getRowResolvedValue(id, 'item'); const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process'); const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit'); const memo = document.getElementById(`input-memo-${id}`).value || "없음";
                 if(!item || !qty) return; items.push({ category, item, origin, process, qty, unit, memo });
             }
 
@@ -271,7 +248,6 @@
 
             fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(orderPacket) })
             .then(res => {
-                // 팝업 데이터 주입 및 가동
                 document.getElementById('success-modal-title').innerText = store;
                 document.getElementById('success-large-modal').classList.remove('hidden');
 
@@ -284,12 +260,11 @@
             });
         }
 
-        function closeSuccessLargeModal() {
-            document.getElementById('success-large-modal').classList.add('hidden');
-        }
+        function closeSuccessLargeModal() { document.getElementById('success-large-modal').classList.add('hidden'); }
 
+        // ✍️ [취소 개조]: 브라우저 alert 대신 5060 사장님용 대형 취소 팝업 호출 가동
         function cancelOrderFromOwner(orderId, store) {
-            if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?\n기사님 관제 창에 즉시 취소 신호가 전송됩니다.`)) return;
+            if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?\n기사님 단말기에 즉시 취소 경고가 전달됩니다.`)) return;
             const syncCode = localStorage.getItem('sync_code');
             const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() };
 
@@ -299,9 +274,14 @@
                 mySentLog = mySentLog.map(o => { if(o.orderId === orderId) o.status = 'cancelled'; return o; });
                 localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog));
                 renderSentOrdersLog();
-                alert("🛑 발주 취소 신호가 실시간 송출되었습니다.");
+                
+                // 대형 취소 팝업 가동
+                document.getElementById('cancel-modal-title').innerText = store;
+                document.getElementById('cancel-large-modal').classList.remove('hidden');
             });
         }
+
+        function closeCancelLargeModal() { document.getElementById('cancel-large-modal').classList.add('hidden'); }
 
         function renderSentOrdersLog() {
             const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
@@ -316,16 +296,12 @@
         }
 
         function checkUrlParameters() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlStore = urlParams.get('store'); const urlCar = urlParams.get('car');
+            const urlParams = new URLSearchParams(window.location.search); const urlStore = urlParams.get('store'); const urlCar = urlParams.get('car');
             if (urlCar) { const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if (cleanedCar) { localStorage.setItem('sync_code', cleanedCar); document.getElementById('input-sync-code').value = cleanedCar; document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`; } }
             if (urlStore) { const selStore = document.getElementById('sel-store'); let isExistOption = false; for(let i=0; i<selStore.options.length; i++) { if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; } } if(!isExistOption) { selStore.value = 'custom'; const inputStore = document.getElementById('input-store'); inputStore.classList.remove('hidden'); inputStore.value = urlStore; } }
         }
 
-        function toggleView(viewName) {
-            if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden');
-            else document.getElementById('view-settings').classList.add('hidden');
-        }
+        function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); else document.getElementById('view-settings').classList.add('hidden'); }
         addFormRow(); checkUrlParameters(); renderSentOrdersLog();
     </script>
 </body>
