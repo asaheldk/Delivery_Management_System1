@@ -4,18 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 배송원 관제</title>
-    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
         body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.03em; }
         .blink-fast { animation: pulse-blink 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse-blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(0.98); } }
+        @media print {
+            body { background: white; color: black; padding-bottom: 0; }
+            header, main, button, #alarm-banner, #confirm-popup, .print-hidden { display: none !important; }
+            #company-document-print-zone { display: block !important; }
+        }
     </style>
 </head>
 <body class="bg-[#e5e7eb] text-[#0f172a] antialiased pb-32">
 
-    <!-- 상단 헤더 글씨 확대 -->
     <header class="bg-[#0f172a] text-white px-6 py-6 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-700">
         <div class="flex flex-col">
             <div class="flex items-center space-x-2">
@@ -28,7 +32,6 @@
     </header>
 
     <main class="max-w-md mx-auto p-3 space-y-6">
-        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border-4 border-slate-400 space-y-5">
             <div class="border-b-2 border-slate-200 pb-3">
                 <h2 class="text-xl font-black text-slate-900">⚙️ 관제 차량 번호 세팅</h2>
@@ -40,7 +43,6 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black transition shadow-md">차량 설정 저장 완료</button>
         </section>
 
-        <!-- 무한 경보 알림 배너 초대형화 -->
         <div id="alarm-banner" class="hidden bg-rose-600 text-white p-6 rounded-3xl items-center justify-between shadow-2xl blink-fast border-3 border-rose-400">
             <div class="flex items-center space-x-4">
                 <span class="text-4xl">🚨</span>
@@ -52,17 +54,15 @@
             <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-base font-black px-5 py-4 rounded-2xl shadow-md shrink-0">소리 끄기</button>
         </div>
 
-        <!-- 💰 [외상/미수금 대형 고대비 카드] -->
         <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-xl border-2 border-slate-800 relative">
             <p class="text-sm font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 장부 (총액)</p>
             <div class="flex justify-between items-center mt-2">
                 <h3 id="total-receivables-display" class="text-4xl font-black font-mono text-yellow-400">0 원</h3>
                 <button onclick="toggleReceivablesForm()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 font-black px-4 py-2.5 rounded-xl border border-slate-600 transition shadow-md">✏️ 장부 수정</button>
             </div>
-            
             <div id="receivables-list-area" class="mt-4 pt-4 border-t-2 border-slate-800 text-base space-y-2 text-slate-200 font-bold"></div>
 
-            <div id="receivables-edit-form" class="hidden mt-4 pt-4 border-t-2 border-slate-800 space-y-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-700">
+            <div id="receivables-edit-form" class="hidden mt-4 pt-4 border-t-2 border-slate-800 space-y-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-700">
                 <p class="text-sm font-black text-blue-400">📊 거래처 이름 및 금액 직접 편집</p>
                 <div id="receivables-edit-inputs-container" class="space-y-3"></div>
                 <div class="flex gap-2 pt-1">
@@ -72,7 +72,6 @@
             </div>
         </div>
 
-        <!-- 📋 대기열 제목 고대비화 -->
         <div class="space-y-4">
             <div class="bg-slate-700 text-white px-4 py-2.5 rounded-xl inline-block shadow-sm">
                 <p class="text-base font-black tracking-wide uppercase">📋 실시간 접수 거래처 대기열 목록</p>
@@ -81,8 +80,7 @@
         </div>
     </main>
 
-    <!-- ⚠️ [실수방지 통합 검증 모달 팝업] -> 글씨 확대 -->
-    <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-slate-400 animate-in zoom-in-95 duration-150">
             <div class="flex items-center space-x-2 text-amber-500">
                 <span class="text-3xl">⚠️</span>
@@ -103,8 +101,7 @@
         </div>
     </div>
 
-    <!-- 🖨️ [배송 라벨 출력부] -->
-    <div id="label-output-section" class="max-w-md mx-auto px-3 hidden mb-24">
+    <div id="label-output-section" class="max-w-md mx-auto px-3 hidden mb-6">
         <div class="bg-white border-4 border-slate-900 p-6 rounded-3xl shadow-xl space-y-4 relative text-slate-900">
             <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
             <div class="text-center border-b-2 border-slate-900 pb-3">
@@ -118,13 +115,68 @@
                 <div class="flex justify-between"><span>• 주소 (DEST):</span><span id="lbl-lbl-address" class="truncate max-w-[200px]"></span></div>
                 <hr class="border-dashed border-slate-900 my-1">
                 <div id="lbl-lbl-items-area" class="space-y-2 text-base font-black"></div>
-                <hr class="border-dashed border-slate-900 my-1">
+                <hr class="border-dashed border-slate-400 my-1">
                 <div class="border-t-2 border-slate-900 pt-3 mt-1 flex justify-between text-xl font-black">
                     <span>★ 정산합계액:</span>
                     <span id="lbl-lbl-total" class="text-blue-600 font-mono text-2xl"></span>
                 </div>
             </div>
             <div class="bg-slate-100 h-12 w-full mt-4 flex items-center justify-center font-mono text-slate-400 border border-slate-300 rounded-lg">|||| | ||||| ||| | ||| ||</div>
+        </div>
+    </div>
+
+    <div id="company-document-print-zone" class="max-w-md mx-auto px-3 hidden mb-24">
+        <div class="bg-slate-800 text-white p-4 rounded-t-3xl flex flex-col gap-2 print:hidden border-b-2 border-slate-900">
+            <span class="text-sm font-black text-yellow-400 text-center">📄 사내 정산/출고 명세서 발행 완료</span>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-black py-3 rounded-xl shadow transition">🖨️ 모바일 인쇄 / PDF</button>
+                <button onclick="downloadExcelFile()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-3 rounded-xl shadow transition flex items-center justify-center gap-1">🟢 엑셀 다운로드 (.xlsx)</button>
+            </div>
+        </div>
+        
+        <div class="bg-white border-x-4 border-b-4 border-slate-800 p-5 rounded-b-3xl space-y-8 text-black">
+            <div class="border-2 border-slate-900 p-4 rounded-xl space-y-3 relative bg-white">
+                <div class="text-center border-b-2 border-slate-900 pb-2">
+                    <h2 class="text-2xl font-black tracking-widest underline underline-offset-4">매 입 발 주 장</h2>
+                    <p class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">( 사내 제품 매입 담당자 제출용 명세서 )</p>
+                </div>
+                <div class="grid grid-cols-2 text-xs font-bold gap-y-1 text-slate-700">
+                    <div>• 발 주 처: <span id="doc-purchase-store" class="text-slate-900 text-sm font-black"></span></div>
+                    <div class="text-right">발행일: <span id="doc-purchase-date"></span></div>
+                    <div class="col-span-2">• 배송차량: <span id="doc-purchase-car" class="text-slate-900"></span></div>
+                </div>
+                <table class="w-full text-left text-xs border-collapse border border-slate-400 mt-2 font-bold">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-slate-400 text-[11px]">
+                            <th class="p-1.5 border-r border-slate-400">품목/어종명</th>
+                            <th class="p-1.5 border-r border-slate-400 text-center">원산지</th>
+                            <th class="p-1.5 border-r border-slate-400 text-center">수량</th>
+                            <th class="p-1.5 text-right">매입단가</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doc-purchase-table-body"></tbody>
+                </table>
+                <div class="text-right border-t-2 border-slate-900 pt-2 font-black text-sm text-blue-700">
+                    위 합계액: <span id="doc-purchase-total" class="text-base font-mono">0원</span>
+                </div>
+            </div>
+
+            <div class="border-2 border-dashed border-red-600 p-4 rounded-xl space-y-3 bg-slate-50/50 relative">
+                <div class="text-center border-b-2 border-red-600 pb-2">
+                    <h2 class="text-2xl font-black tracking-tight text-red-600">작업 및 출고 명세서</h2>
+                    <p class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">⚠️ ( 출고 전 작업팀 및 마감 확인 필수 )</p>
+                </div>
+                <div id="doc-dispatch-alert-zone" class="space-y-1.5"></div>
+                <div class="text-xs font-bold text-slate-700">
+                    <div>• 거래처명: <span id="doc-dispatch-store" class="text-slate-900 text-sm font-black"></span></div>
+                    <div class="mt-1">• 배송 요망지: <span id="doc-dispatch-address" class="text-slate-900"></span></div>
+                </div>
+                <div class="bg-white border border-slate-300 rounded-xl p-3 space-y-2.5 shadow-inner">
+                    <p class="text-xs font-black text-slate-400 uppercase tracking-wider">🐟 출고 품목별 세부 작업 지시</p>
+                    <div id="doc-dispatch-items-list" class="space-y-2 text-sm font-black text-slate-900"></div>
+                </div>
+                <p class="text-[11px] text-center font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-200">※ 출고팀은 위 작업방식을 반드시 엄수하여 차량에 상차해 주세요.</p>
+            </div>
         </div>
     </div>
 
@@ -215,6 +267,127 @@
         }
         window.deleteOrderFromDriver = deleteOrderFromDriver;
 
+        // 사내 전용 영수증 / 명세서 동적 출력기
+        function generateCompanyDocuments(orderId) {
+            activeProcessingOrderId = orderId; // 🟢 엑셀 연동용 타겟 오더 아이디 바인딩
+            const order = globalOrdersCache[orderId];
+            if(!order) return;
+
+            const carNum = localStorage.getItem('sync_code') || '1';
+            document.getElementById('doc-purchase-store').innerText = order.store;
+            document.getElementById('doc-purchase-date').innerText = order.orderDate;
+            document.getElementById('doc-purchase-car').innerText = `${carNum}호 배송 차량`;
+            document.getElementById('doc-dispatch-store').innerText = order.store;
+            document.getElementById('doc-dispatch-address').innerText = order.address;
+
+            let tableRowsHtml = ''; let dispatchItemsHtml = ''; let totalSum = 0; let processTypesFound = new Set();
+
+            order.items.forEach((item, idx) => {
+                const wInput = document.getElementById(`weight-${orderId}-${idx}`);
+                const pInput = document.getElementById(`price-${orderId}-${idx}`);
+                const weight = wInput ? parseFloat(wInput.value) || 0 : parseFloat(item.qty);
+                const price = pInput ? parseInt(pInput.value) || 0 : 25000;
+                const rowTotal = Math.round(weight * price);
+                totalSum += rowTotal;
+
+                tableRowsHtml += `
+                    <tr class="border-b border-slate-300">
+                        <td class="p-1.5 border-r border-slate-300">${item.item} (${item.process})</td>
+                        <td class="p-1.5 border-r border-slate-300 text-center">${item.origin}</td>
+                        <td class="p-1.5 border-r border-slate-300 text-center font-mono">${weight}${item.unit}</td>
+                        <td class="p-1.5 text-right font-mono">${rowTotal.toLocaleString()}원</td>
+                    </tr>
+                `;
+
+                dispatchItemsHtml += `
+                    <div class="border-b border-slate-200 pb-1.5">
+                        • <span class="text-base text-blue-700 font-extrabold">[${item.item}]</span> ➡️ 요청량: <span class="underline">${weight}${item.unit}</span> / 작업보관: <span class="text-red-600 underline">${item.process}</span>
+                        <p class="text-xs text-slate-500 font-bold ml-3 mt-0.5">↳ 현장메모: ${item.memo}</p>
+                    </div>
+                `;
+
+                if(item.process.includes('찍어바리')) processTypesFound.add('찍어바리');
+                if(item.process.includes('합포장')) processTypesFound.add('합포장');
+                if(item.process.includes('개별포장')) processTypesFound.add('개별포장');
+                if(item.process.includes('필렛')) processTypesFound.add('필렛');
+            });
+
+            document.getElementById('doc-purchase-table-body').innerHTML = tableRowsHtml;
+            document.getElementById('doc-purchase-total').innerText = totalSum.toLocaleString() + "원";
+            document.getElementById('doc-dispatch-items-list').innerHTML = dispatchItemsHtml;
+
+            const alertZone = document.getElementById('doc-dispatch-alert-zone'); let alertBanners = '';
+            if(processTypesFound.has('찍어바리')) { alertBanners += `<div class="bg-red-600 text-white p-3 rounded-xl text-center font-black text-sm animate-pulse border-2 border-white shadow">🔥 [특보] 찍어바리 작업팀 필독 오더!</div>`; }
+            if(processTypesFound.has('합포장')) { alertBanners += `<div class="bg-blue-600 text-white p-3 rounded-xl text-center font-black text-sm">📦 [경고] 합포장 부서 작업 대기 오더!</div>`; }
+            if(processTypesFound.has('개별포장')) { alertBanners += `<div class="bg-purple-600 text-white p-3 rounded-xl text-center font-black text-sm">🏷️ [알림] 개별 결속 포장팀 전용 오더!</div>`; }
+            if(processTypesFound.has('필렛')) { alertBanners += `<div class="bg-emerald-600 text-white p-3 rounded-xl text-center font-black text-sm">🐟 [안내] 필렛 가공팀 라인 배정 오더!</div>`; }
+            if(alertBanners === '') { alertBanners = `<div class="bg-slate-800 text-white p-2.5 rounded-xl text-center font-black text-xs">🟢 일반 규격 출고 물량 (특이공정 없음)</div>`; }
+            alertZone.innerHTML = alertBanners;
+
+            document.getElementById('company-document-print-zone').classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+        window.generateCompanyDocuments = generateCompanyDocuments;
+
+        // 🟢 [신규 연동 로직]: 추출된 매입 및 공정 데이터를 깨짐 없는 .xlsx 정식 규격으로 출력하는 다운로더
+        function downloadExcelFile() {
+            const orderId = activeProcessingOrderId;
+            const order = globalOrdersCache[orderId];
+            if(!order) { alert("⚠️ 선택된 주문 정보가 없습니다. 버튼을 다시 한 번 눌러주세요."); return; }
+
+            const carNum = localStorage.getItem('sync_code') || '1';
+            
+            // 엑셀의 격자판 데이터 배열 조립
+            let excelRows = [
+                ["[사내 정산용 매입 발주장]"],
+                [],
+                ["발주처(상호)", order.store, "납품요청일", order.orderDate],
+                ["담당 배송차량", `${carNum}호차 차량`],
+                ["배송지 주소", order.address],
+                [],
+                ["품목 및 어종명", "카테고리", "원산지", "작업 및 보관방식", "실측중량/수량", "단위", "확정단가(원)", "합계금액(원)", "점포 요구사항 메모"]
+            ];
+
+            let totalSum = 0;
+            order.items.forEach((item, idx) => {
+                const wInput = document.getElementById(`weight-${orderId}-${idx}`);
+                const pInput = document.getElementById(`price-${orderId}-${idx}`);
+                
+                const weight = wInput ? parseFloat(wInput.value) || 0 : parseFloat(item.qty);
+                const price = pInput ? parseInt(pInput.value) || 0 : 25000;
+                const rowTotal = Math.round(weight * price);
+                totalSum += rowTotal;
+
+                excelRows.push([
+                    item.item,
+                    item.category,
+                    item.origin,
+                    item.process,
+                    weight,
+                    item.unit,
+                    price,
+                    rowTotal,
+                    item.memo
+                ]);
+            });
+
+            excelRows.push([]);
+            excelRows.push(["", "", "", "", "", "", "총 매입 합계액", totalSum]);
+
+            // SheetJS 가동식
+            const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "매입장");
+
+            // 가독성을 위한 셀 너비 강제 확장 조절
+            worksheet['!cols'] = [{wch:18}, {wch:12}, {wch:10}, {wch:18}, {wch:14}, {wch:8}, {wch:14}, {wch:16}, {wch:25}];
+
+            // 파일명 포맷: 상호명_날짜_매입발주장.xlsx
+            const finalFileName = `${order.store}_${order.orderDate}_매입발주장.xlsx`;
+            XLSX.writeFile(workbook, finalFileName);
+        }
+        window.downloadExcelFile = downloadExcelFile;
+
         function startCloudSync() {
             if(syncTimer) clearInterval(syncTimer);
             const fetchExecute = () => {
@@ -227,17 +400,7 @@
                     lines.forEach(line => {
                         try {
                             const rawData = JSON.parse(line);
-                            if(rawData.message) { 
-                                const packet = JSON.parse(rawData.message); 
-                                if(packet.orderId) {
-                                    if(packet.status === "cancelled" || packet.status === "deleted") {
-                                        if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet;
-                                        else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; }
-                                    } else {
-                                        if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) { ordersMap[packet.orderId] = packet; }
-                                    }
-                                }
-                            }
+                            if(rawData.message) { const packet = JSON.parse(rawData.message); if(packet.orderId) { if(packet.status === "cancelled" || packet.status === "deleted") { if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet; else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; } } else { if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) { ordersMap[packet.orderId] = packet; } } } }
                         } catch(e){}
                     });
                     globalOrdersCache = ordersMap;
@@ -259,7 +422,6 @@
             fetchExecute(); syncTimer = setInterval(fetchExecute, 3000);
         }
 
-        // 📋 [5060 사장님 시력 특화 드로잉 엔진 파트]
         function refreshQueueDOM() {
             const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
             const activeOrders = Object.values(globalOrdersCache).filter(o => { if(o.status === "completed" || o.status === "deleted") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; });
@@ -267,7 +429,6 @@
             if(activeOrders.length === 0) return;
 
             queueContainer.innerHTML = activeOrders.map((order, orderIdx) => {
-                // 🛑 [점주 발주 취소 배너]: 눈에 번쩍 뜨이도록 초대형화
                 if(order.status === "cancelled") {
                     return `
                         <div class="bg-rose-100 rounded-3xl shadow-xl border-4 border-rose-500 p-6 space-y-4">
@@ -275,13 +436,8 @@
                                 <span class="bg-rose-600 text-white font-black text-sm px-3 py-1.5 rounded-xl">🛑 발주 전면취소</span>
                                 <span class="text-2xl font-black text-rose-950">${order.store}</span>
                             </div>
-                            <p class="text-lg font-black text-rose-800 leading-snug bg-white p-4 rounded-xl border border-rose-300 shadow-inner">
-                                ⚠️ 점주가 발주를 취소했습니다!<br>
-                                <span class="text-rose-600 underline">절대 물건을 싣거나 배송하지 마세요.</span>
-                            </p>
-                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-2xl text-base font-black transition shadow-md">
-                                취소 확인완료 (화면에서 삭제)
-                            </button>
+                            <p class="text-lg font-black text-rose-800 leading-snug bg-white p-4 rounded-xl border border-rose-300 shadow-inner">⚠️ 점주가 발주를 취소했습니다!<br><span class="text-rose-600 underline">절대 물건을 싣거나 배송하지 마세요.</span></p>
+                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 text-white py-4 rounded-2xl text-base font-black transition">취소 확인완료 (화면에서 삭제)</button>
                         </div>
                     `;
                 }
@@ -289,7 +445,6 @@
                 const isExpanded = order.orderId === currentExpandedOrderId;
                 return `
                     <div class="bg-white rounded-3xl shadow-xl border-3 border-slate-300 overflow-hidden transition-all">
-                        <!-- 거래처 폴더 헤더 - 상호 글씨 24px 초대형화 및 보기 버튼 확장 -->
                         <button onclick="toggleStoreFolder('${order.orderId}')" class="w-full text-left p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition border-b border-slate-200">
                             <div class="space-y-2">
                                 <div class="flex items-center space-x-2">
@@ -304,7 +459,6 @@
                             </div>
                         </button>
                         
-                        <!-- 상세 보기 바디 영역 (글자 확대형) -->
                         <div class="${isExpanded ? 'block' : 'hidden'} p-5 space-y-5 bg-white">
                             <div class="bg-slate-100 p-4 rounded-xl text-base space-y-1.5 text-slate-700 border-2 border-slate-200 font-bold">
                                 <div>• 📞 현장전화: <span class="text-slate-900">${order.phone}</span></div>
@@ -314,39 +468,34 @@
                             <div class="space-y-4">
                                 ${order.items.map((p, itemIdx) => `
                                     <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-300 space-y-3 shadow-inner">
-                                        <!-- 품목 어종 명세 명확화 -->
                                         <div class="text-base font-bold text-slate-600">
                                             <span class="bg-slate-800 text-white text-xs px-2 py-0.5 rounded-md font-sans mr-1">${p.category}</span>
                                             <span class="text-xl font-black text-slate-900">[ ${p.item} ]</span> (${p.origin} / ${p.process})
-                                            
-                                            <!-- 💬 요청 메모 형광펜 상자화 (시각성 폭발) -->
-                                            <div class="text-base text-amber-900 mt-2 bg-amber-100 border-2 border-amber-300 p-3 rounded-xl font-black">
-                                                💬 요청사항: ${p.memo}
-                                            </div>
+                                            <div class="text-base text-amber-900 mt-2 bg-amber-100 border-2 border-amber-300 p-3 rounded-xl font-black">💬 요청사항: ${p.memo}</div>
                                         </div>
-                                        
-                                        <!-- 대형 계근 입력란 박스 -->
                                         <div class="grid grid-cols-2 gap-3 pt-1">
                                             <div>
                                                 <label class="block text-sm font-black text-slate-500 mb-1">⚖️ 실측 중량 (${p.unit})</label>
-                                                <input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none focus:border-blue-600">
+                                                <input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none">
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-black text-slate-500 mb-1">💰 확정 단가 (원)</label>
-                                                <input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none focus:border-blue-600">
+                                                <input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none">
                                             </div>
                                         </div>
                                     </div>
                                 `).join('')}
                             </div>
 
-                            <!-- 해당 점포 정산 총액 확대 -->
+                            <button onclick="generateCompanyDocuments('${order.orderId}')" class="w-full bg-slate-800 hover:bg-slate-900 text-yellow-400 py-4 rounded-2xl font-black text-base transition shadow border-b-4 border-slate-950 flex items-center justify-center gap-2">
+                                📋 사내 매입발주서 & 출고명세서 인쇄/다운
+                            </button>
+
                             <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center text-white border-2 border-slate-800 shadow-md">
                                 <span class="text-sm font-black text-slate-400">이 점포 마감 합계금액:</span>
                                 <span id="total-price-${order.orderId}" class="text-2xl font-black font-mono text-yellow-400">0 원</span>
                             </div>
 
-                            <!-- 초대형 마감 버튼 (주먹 터치 가능) -->
                             <button onclick="triggerConfirmPopup('${order.orderId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-lg transition shadow-xl border-b-4 border-emerald-800 tracking-wide active:scale-95">
                                 💾 이 점포 정산 마감 및 라벨 인쇄
                             </button>
@@ -358,29 +507,6 @@
             const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
             inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; });
             activeOrders.forEach(order => { if(order.status !== "cancelled") calculateQueueTotal(order.orderId); });
-        }
-
-        function calculateQueueTotal(orderId) {
-            const order = globalOrdersCache[orderId]; if(!order) return; let totalSum = 0; if(order.status === "cancelled") return;
-            order.items.forEach((item, idx) => { const wEl = document.getElementById(`weight-${orderId}-${idx}`); const pEl = document.getElementById(`price-${orderId}-${idx}`); if(wEl && pEl) { totalSum += Math.round((parseFloat(wEl.value) || 0) * (parseInt(pEl.value) || 0)); } });
-            const displayEl = document.getElementById(`total-price-${orderId}`); if (displayEl) displayEl.innerText = totalSum.toLocaleString() + " 원";
-        }
-
-        function triggerConfirmPopup(orderId) {
-            activeProcessingOrderId = orderId; const order = globalOrdersCache[orderId]; document.getElementById('pop-store').innerText = order.store; const popListContainer = document.getElementById('pop-items-list'); let rowsHtml = '';
-            order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value).toLocaleString(); rowsHtml += `<div class="flex justify-between items-center text-base bg-white p-3 rounded-xl border font-black text-slate-900"><span>${item.item}</span><span class="font-mono text-blue-600">${w}${item.unit} × ${p}원</span></div>`; });
-            popListContainer.innerHTML = rowsHtml; document.getElementById('pop-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('confirm-popup').classList.remove('hidden');
-        }
-
-        function closeConfirmPopup() { document.getElementById('confirm-popup').classList.add('hidden'); }
-
-        function executeFinalSubmit() {
-            closeConfirmPopup(); const orderId = activeProcessingOrderId; const order = globalOrdersCache[orderId]; const syncCode = localStorage.getItem('sync_code');
-            document.getElementById('lbl-lbl-date').innerText = order.orderDate; document.getElementById('lbl-lbl-store').innerText = order.store; document.getElementById('lbl-lbl-phone').innerText = order.phone; document.getElementById('lbl-lbl-address').innerText = order.address;
-            const labelArea = document.getElementById('lbl-lbl-items-area'); let labelLinesHtml = '';
-            order.items.forEach((item, idx) => { const w = document.getElementById(`weight-${orderId}-${idx}`).value || document.getElementById(`weight-${orderId}-${idx}`).placeholder; const p = parseInt(document.getElementById(`price-${orderId}-${idx}`).value); labelLinesHtml += `<div class="grid grid-cols-4 items-center border-b pb-2 font-black text-base text-slate-900"><div class="col-span-2"><p class="text-lg">${item.item}</p><p class="text-xs text-slate-500 font-bold">${item.origin} / ${item.process}</p></div><div class="text-center font-mono">${w} ${item.unit}</div><div class="text-right font-mono text-blue-600 text-lg">${Math.round(w*p).toLocaleString()}원</div></div>`; });
-            labelArea.innerHTML = labelLinesHtml; document.getElementById('lbl-lbl-total').innerText = document.getElementById(`total-price-${orderId}`).innerText; document.getElementById('label-output-section').classList.remove('hidden');
-            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify({ orderId: orderId, status: "completed", serverTimestamp: Date.now() }) }).then(() => { currentExpandedOrderId = null; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); alert(`✅ [${order.store}] 마감 완료 및 라벨 출력`); });
         }
 
         function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); }
