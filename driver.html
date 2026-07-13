@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 배송원 관제</title>
-    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -27,7 +26,6 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
-        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 관제 동기화 설정</h2>
@@ -39,7 +37,6 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
-        <!-- 무한 경보 알림 배너 -->
         <div id="alarm-banner" class="hidden bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl blink-fast">
             <div class="flex items-center space-x-3">
                 <span class="text-3xl">🚨</span>
@@ -51,7 +48,6 @@
             <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition">확인 완료</button>
         </div>
 
-        <!-- 외상/미수금 관리 카드 -->
         <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md relative">
             <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역 (총액)</p>
             <div class="flex justify-between items-baseline mt-1">
@@ -61,33 +57,21 @@
             <div id="receivables-list-area" class="mt-3 pt-3 border-t border-slate-800 text-sm space-y-1.5 text-slate-300 font-medium"></div>
 
             <div id="receivables-edit-form" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
-                <p class="text-xs font-bold text-blue-400">📊 거래처별 외상 미수금 직접 기입</p>
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between items-center gap-2">
-                        <span class="text-slate-300 font-black shrink-0 w-20">자갈치상회:</span>
-                        <input id="rec-input-jagalchi" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                        <span class="text-slate-300 font-black shrink-0 w-20">영도수산:</span>
-                        <input id="rec-input-yeongdo" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
-                    </div>
-                    <div class="flex justify-between items-center gap-2">
-                        <span class="text-slate-300 font-black shrink-0 w-20">해운대대게:</span>
-                        <input id="rec-input-haeundae" type="number" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono text-right font-black text-sm outline-none">
-                    </div>
+                <p class="text-xs font-bold text-blue-400">📊 거래처 이름 및 외상 미수금 편집</p>
+                <div id="receivables-edit-inputs-container" class="space-y-2"></div>
+                <div class="flex gap-2 pt-1">
+                    <button onclick="addEmptyReceivableRow()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition border border-slate-700">➕ 거래처 추가</button>
+                    <button onclick="saveReceivables()" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-black transition shadow-md">💾 변경사항 장부 반영</button>
                 </div>
-                <button onclick="saveReceivables()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-xs font-black transition shadow-md">💾 외상 장부 금액 반영하기</button>
             </div>
         </div>
 
-        <!-- 📋 실시간 접수된 거래처별 발주 목록 -->
         <div class="space-y-3">
             <p class="text-base font-black text-slate-500 tracking-wider uppercase pl-1">📋 실시간 접수된 거래처별 발주 목록</p>
             <div id="driver-queue-container" class="space-y-3"></div>
         </div>
     </main>
 
-    <!-- ⚠️ [실수방지 통합 검증 모달 팝업] -->
     <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border border-slate-200">
             <div class="flex items-center space-x-2 text-amber-500">
@@ -109,7 +93,6 @@
         </div>
     </div>
 
-    <!-- 🖨️ [최종 완성형 배송 라벨 출력] -->
     <div id="label-output-section" class="max-w-md mx-auto px-4 hidden mb-20">
         <div class="bg-white border-3 border-slate-900 p-6 rounded-2xl shadow-xl space-y-4 relative bg-mono text-slate-900">
             <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
@@ -149,6 +132,8 @@
         document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
         document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${localStorage.getItem('sync_code')}호차`;
 
+        if(!localStorage.getItem('driver_acked_cancels')) localStorage.setItem('driver_acked_cancels', JSON.stringify([]));
+
         function playBeep() {
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
@@ -157,35 +142,15 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        // 💡 [대차 교대 패치 1]: 채널 교체 즉시 예전 데이터 흔적 완벽 소거 및 인스턴트 로딩 가동
         function updateSettingsMaster() {
             const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
             if(!code) return; 
-            
             localStorage.setItem('sync_code', code);
             document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${code}호차`;
-            
-            // 1. 구형 채널의 메모리 및 대기 폴더 상태 리셋
-            globalOrdersCache = {};
-            currentExpandedOrderId = null;
-            
-            // 2. 화면 즉시 초기화 (로딩 인디케이터 표출로 잔상 원천 차단)
-            document.getElementById('driver-queue-container').innerHTML = `
-                <div class="bg-white p-12 rounded-3xl text-center text-slate-500 font-bold text-lg">
-                    <span class="block text-2xl animate-bounce mb-2">⏳</span>
-                    [${code}호차] 새로운 무선 장부를 즉시 동기화 중입니다...
-                </div>
-            `;
-            
-            // 3. 기기에 저장되어 있던 이전 차량의 임시 타이핑값(temp_...) 싹 지우기
-            for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('temp_')) { localStorage.removeItem(key); }
-            }
-            
-            stopAlarmServer();
-            startCloudSync(); // 3초 기다리지 않고 내부에서 '즉시' 신규 데이터 가져옴
-            toggleView('settings');
+            globalOrdersCache = {}; currentExpandedOrderId = null;
+            document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-500 font-bold text-lg"><span class="block text-2xl animate-bounce mb-2">⏳</span>[${code}호차] 장부를 동기화 중입니다...</div>`;
+            for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key && key.startsWith('temp_')) { localStorage.removeItem(key); } }
+            stopAlarmServer(); startCloudSync(); toggleView('settings');
         }
 
         function stopAlarmServer() {
@@ -197,100 +162,137 @@
         }
 
         function initReceivablesSystem() {
-            if(!localStorage.getItem('rec_jagalchi')) localStorage.setItem('rec_jagalchi', '1200000');
-            if(!localStorage.getItem('rec_yeongdo')) localStorage.setItem('rec_yeongdo', '2250000');
-            if(!localStorage.getItem('rec_haeundae')) localStorage.setItem('rec_haeundae', '0');
+            if(!localStorage.getItem('fish_receivables')) { localStorage.setItem('fish_receivables', JSON.stringify([])); }
             renderReceivablesData();
         }
 
         function renderReceivablesData() {
-            const j = parseInt(localStorage.getItem('rec_jagalchi')) || 0; const y = parseInt(localStorage.getItem('rec_yeongdo')) || 0; const h = parseInt(localStorage.getItem('rec_haeundae')) || 0;
-            const total = j + y + h; document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원";
-            document.getElementById('rec-input-jagalchi').value = j; document.getElementById('rec-input-yeongdo').value = y; document.getElementById('rec-input-haeundae').value = h;
-            document.getElementById('receivables-list-area').innerHTML = `
-                <div class="flex justify-between"><span>🏪 자갈치상회:</span><span class="font-bold text-slate-200">${j.toLocaleString()}원</span></div>
-                <div class="flex justify-between"><span>🏪 영도수산:</span><span class="font-bold text-slate-200">${y.toLocaleString()}원</span></div>
-                ${h > 0 ? `<div class="flex justify-between"><span>🏪 해운대대게:</span><span class="font-bold text-slate-200">${h.toLocaleString()}원</span></div>` : ''}
-            `;
+            const receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]');
+            let total = 0; const listArea = document.getElementById('receivables-list-area');
+            if (receivables.length === 0) { listArea.innerHTML = `<p class="text-xs text-slate-400 italic py-1">장부에 등록된 거래처가 없습니다.</p>`; } 
+            else { listArea.innerHTML = receivables.map(r => { total += parseInt(r.balance) || 0; return `<div class="flex justify-between"><span>🏪 ${r.name}:</span><span class="font-bold text-slate-200">${(parseInt(r.balance) || 0).toLocaleString()}원</span></div>`; }).join(''); }
+            document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원";
+            const inputsContainer = document.getElementById('receivables-edit-inputs-container');
+            inputsContainer.innerHTML = receivables.map((r, idx) => `
+                <div class="flex items-center gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                    <input id="rec-edit-name-${idx}" type="text" value="${r.name}" class="w-5/12 p-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-bold text-xs outline-none">
+                    <input id="rec-edit-bal-${idx}" type="number" value="${r.balance}" class="w-5/12 p-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono text-right font-black text-xs outline-none">
+                    <button onclick="deleteReceivableRow(${idx})" class="w-2/12 bg-rose-950/40 text-rose-400 py-2 rounded-lg text-xs font-bold border border-rose-900/50">❌</button>
+                </div>
+            `).join('');
         }
 
         function toggleReceivablesForm() { document.getElementById('receivables-edit-form').classList.toggle('hidden'); }
+        function getReceivablesFromCurrentInputs() { const container = document.getElementById('receivables-edit-inputs-container'); const rows = container.children; let list = []; for(let i=0; i<rows.length; i++) { const nameInp = document.getElementById(`rec-edit-name-${i}`); const balInp = document.getElementById(`rec-edit-bal-${i}`); if(nameInp && balInp) { list.push({ name: nameInp.value.trim(), balance: parseInt(balInp.value) || 0 }); } } return list; }
+        function addEmptyReceivableRow() { const currentData = getReceivablesFromCurrentInputs(); currentData.push({ name: '', balance: 0 }); localStorage.setItem('fish_receivables', JSON.stringify(currentData)); renderReceivablesData(); }
+        function deleteReceivableRow(idx) { let currentData = getReceivablesFromCurrentInputs(); currentData.splice(idx, 1); localStorage.setItem('fish_receivables', JSON.stringify(currentData)); renderReceivablesData(); }
+        function saveReceivables() { let finalData = getReceivablesFromCurrentInputs(); finalData = finalData.filter(d => d.name.length > 0); localStorage.setItem('fish_receivables', JSON.stringify(finalData)); renderReceivablesData(); toggleReceivablesForm(); alert("📝 외상 미수금 원장이 업데이트되었습니다."); }
+        window.saveReceivables = saveReceivables;
 
-        fn = function saveReceivables() {
-            localStorage.setItem('rec_jagalchi', document.getElementById('rec-input-jagalchi').value || 0);
-            localStorage.setItem('rec_yeongdo', document.getElementById('rec-input-yeongdo').value || 0);
-            localStorage.setItem('rec_haeundae', document.getElementById('rec-input-haeundae').value || 0);
-            renderReceivablesData(); toggleReceivablesForm(); alert("📝 거래처별 외상 미수금 원장이 영구 업데이트되었습니다.");
-        }
-        window.saveReceivables = fn;
+        function toggleStoreFolder(orderId) { saveCurrentInputsToMemory(); if(currentExpandedOrderId === orderId) { currentExpandedOrderId = null; } else { currentExpandedOrderId = orderId; } refreshQueueDOM(); }
+        window.toggleStoreFolder = toggleStoreFolder;
+        function saveCurrentInputsToMemory() { const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); }); }
 
-        fn = function toggleStoreFolder(orderId) {
-            saveCurrentInputsToMemory();
-            if(currentExpandedOrderId === orderId) { currentExpandedOrderId = null; } 
-            else { currentExpandedOrderId = orderId; }
+        // 🚨 [신규 기능]: 기사가 취소 알림 카드에서 확인완료를 누르면 화면에서 소거시키는 로직
+        function acknowledgeCancellation(orderId) {
+            let acked = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
+            acked.push(orderId);
+            localStorage.setItem('driver_acked_cancels', JSON.stringify(acked));
+            
+            if(currentExpandedOrderId === orderId) currentExpandedOrderId = null;
             refreshQueueDOM();
         }
-        window.toggleStoreFolder = fn;
+        window.acknowledgeCancellation = acknowledgeCancellation;
 
-        function saveCurrentInputsToMemory() {
-            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
-            inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); });
-        }
-
-        // [대차 교대 패치 2]: setInterval 호출 방식을 분리하여 변경 순간 '딜레이 0초'로 유연하게 대응
         function startCloudSync() {
             if(syncTimer) clearInterval(syncTimer);
-            
             const fetchExecute = () => {
                 const syncCode = localStorage.getItem('sync_code');
                 fetch(`${cloudRelayUrl}${syncCode}/json?poll=1`)
                 .then(res => res.text())
                 .then(text => {
-                    // 서버에 데이터가 아예 완전히 없는 신규 채널인 경우 깨끗하게 리셋
-                    if(!text.trim()) {
-                        globalOrdersCache = {};
-                        document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`;
-                        stopAlarmServer();
-                        return;
-                    }
+                    if(!text.trim()) { globalOrdersCache = {}; document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`; stopAlarmServer(); return; }
                     const lines = text.trim().split('\n');
                     let ordersMap = {}; let hasNewAlarm = false;
+                    
                     lines.forEach(line => {
                         try {
                             const rawData = JSON.parse(line);
-                            if(rawData.message) { const packet = JSON.parse(rawData.message); if(packet.orderId) ordersMap[packet.orderId] = packet; }
+                            if(rawData.message) { 
+                                const packet = JSON.parse(rawData.message); 
+                                if(packet.orderId) {
+                                    // ❌ 중요: 취소 패킷 발견 시 기존 발주 카드의 상태값을 cancelled로 전면 치환 개조
+                                    if(packet.status === "cancelled") {
+                                        if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet;
+                                        else { ordersMap[packet.orderId].status = "cancelled"; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; }
+                                    } else {
+                                        ordersMap[packet.orderId] = packet; 
+                                    }
+                                }
+                            }
                         } catch(e){}
                     });
-                    globalOrdersCache = ordersMap;
-                    const activeOrders = Object.values(ordersMap).filter(o => o.status === "ordered");
                     
+                    globalOrdersCache = ordersMap;
+                    
+                    // 마감완료 안 되었고, 기사가 지우지 않은 오더들 필터링
+                    const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
+                    const activeOrders = Object.values(ordersMap).filter(o => {
+                        if(o.status === "completed") return false;
+                        if(o.status === "cancelled") return !ackedCancels.includes(o.orderId);
+                        return true;
+                    });
+
                     if(activeOrders.length === 0) {
                         document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`;
                         stopAlarmServer(); return;
                     }
+
+                    // 외상장부 상호 자동 추가
+                    let receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]');
+                    let isUpdated = false;
+                    activeOrders.forEach(order => { if (order.store && order.store.trim() !== "" && order.status === "ordered" && !receivables.some(r => r.name === order.store.trim())) { receivables.push({ name: order.store.trim(), balance: 0 }); isUpdated = true; } });
+                    if (isUpdated) { localStorage.setItem('fish_receivables', JSON.stringify(receivables)); renderReceivablesData(); }
+
                     const lastMuted = parseInt(localStorage.getItem('last_muted_timestamp')) || 0;
                     activeOrders.forEach(o => { if(o.alarmActive && o.serverTimestamp > lastMuted) hasNewAlarm = true; });
                     if(hasNewAlarm) {
                         document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl blink-fast";
                         if(!alarmInterval) alarmInterval = setInterval(playBeep, 500);
-                    } else {
-                        if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-                        document.getElementById('alarm-banner').className = "hidden";
-                    }
+                    } else { if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } document.getElementById('alarm-banner').className = "hidden"; }
                     saveCurrentInputsToMemory(); refreshQueueDOM();
                 }).catch(err => {});
             };
-
-            fetchExecute(); // 변경 즉시 강제 1회 선행 호출
-            syncTimer = setInterval(fetchExecute, 3000); // 이후 3초 갱신 자동 모드 돌입
+            fetchExecute(); syncTimer = setInterval(fetchExecute, 3000);
         }
 
         function refreshQueueDOM() {
-            const activeOrders = Object.values(globalOrdersCache).filter(o => o.status === "ordered");
+            const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
+            const activeOrders = Object.values(globalOrdersCache).filter(o => {
+                if(o.status === "completed") return false;
+                if(o.status === "cancelled") return !ackedCancels.includes(o.orderId);
+                return true;
+            });
             const queueContainer = document.getElementById('driver-queue-container');
             if(activeOrders.length === 0) return;
 
             queueContainer.innerHTML = activeOrders.map((order, orderIdx) => {
+                // ❌ [대형 연동 카드 조립]: 점주가 취소한 오더인 경우 붉은색 알림 경고 카드로 원천 분기 전환
+                if(order.status === "cancelled") {
+                    return `
+                        <div class="bg-rose-50 rounded-2xl shadow-md border-2 border-rose-300 p-5 space-y-3">
+                            <div class="flex justify-between items-center text-rose-700">
+                                <span class="bg-rose-600 text-white font-black text-xs px-2.5 py-1 rounded-md">🛑 발주 취소됨</span>
+                                <span class="text-xl font-black">${order.store}</span>
+                            </div>
+                            <p class="text-sm text-rose-700 font-bold leading-relaxed">점주님이 발주를 취소하셨습니다. 해당 물량은 탑치 및 배송하지 마세요.</p>
+                            <button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-3.5 rounded-xl font-black text-sm transition shadow-sm">
+                                확인 완료 (목록에서 삭제)
+                            </button>
+                        </div>
+                    `;
+                }
+
                 const isExpanded = order.orderId === currentExpandedOrderId;
                 return `
                     <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden transition-all">
@@ -300,7 +302,7 @@
                                     <span class="bg-[#0f172a] text-white font-black text-xs px-2.5 py-1 rounded-md">대기 #${orderIdx + 1}</span>
                                     <span class="text-xl font-black text-slate-900">${order.store}</span>
                                 </div>
-                                <p class="text-sm text-slate-400 font-bold">📅 요청일: ${order.orderDate} | 품목 개수: <span class="text-blue-600">${order.items.length}개</span></p>
+                                <p class="text-sm text-slate-400 font-bold">📅 요청일: ${order.orderDate} | 품목: <span class="text-blue-600">${order.items.length}개</span></p>
                             </div>
                             <span class="text-2xl font-bold text-slate-400">${isExpanded ? '▲ 접기' : '▼ 발주서 보기'}</span>
                         </button>
@@ -311,7 +313,7 @@
                             <div class="space-y-3">
                                 ${order.items.map((p, itemIdx) => `
                                     <div class="bg-slate-50/60 p-4 rounded-xl border border-slate-200 space-y-2">
-                                        <div class="text-sm font-bold text-slate-800">
+                                        <div class="text-sm font-bold text-slate-800 font-sans">
                                             [${p.category}] <span class="text-base font-black text-slate-900">${p.item}</span> (${p.origin} / ${p.process})
                                             <p class="text-xs text-amber-700 mt-1">💬 메모: ${p.memo}</p>
                                         </div>
@@ -340,11 +342,12 @@
 
             const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]');
             inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; });
-            activeOrders.forEach(order => calculateQueueTotal(order.orderId));
+            activeOrders.forEach(order => { if(order.status !== "cancelled") calculateQueueTotal(order.orderId); });
         }
 
         function calculateQueueTotal(orderId) {
             const order = globalOrdersCache[orderId]; if(!order) return; let totalSum = 0;
+            if(order.status === "cancelled") return;
             order.items.forEach((item, idx) => {
                 const wEl = document.getElementById(`weight-${orderId}-${idx}`); const pEl = document.getElementById(`price-${orderId}-${idx}`);
                 if(wEl && pEl) { totalSum += Math.round((parseFloat(wEl.value) || 0) * (parseInt(pEl.value) || 0)); }
