@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="tab-title">수산물 물류 자동화 시스템</title>
-    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;900&display=swap');
@@ -15,21 +14,19 @@
 </head>
 <body class="bg-[#f3f4f6] text-[#1e293b] antialiased pb-28">
 
-    <!-- [상단 헤더] 고밀도 실시간 클라우드 위성망 상태 표시기 -->
     <header class="bg-[#0f172a] text-white px-6 py-5 shadow-md sticky top-0 z-50 flex justify-between items-center border-b border-slate-800">
         <div class="flex flex-col">
             <div class="flex items-center space-x-2">
                 <span id="sync-indicator" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                 <h1 id="brand-logo" class="text-lg font-black tracking-wider text-slate-100">FISH-NET LOGISTICS</h1>
             </div>
-            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 실시간 채널: 수산연동_777</span>
+            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 실시간 채널: fish_net_777</span>
         </div>
         <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition border border-slate-700/60">
             ⚙️ 시스템 설정
         </button>
     </header>
 
-    <!-- [플로팅 세그먼트 탭 바] 5060 최적화 대형 터치 영역 -->
     <div class="sticky top-[72px] z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm">
         <div class="max-w-md mx-auto bg-slate-100 p-1.5 rounded-2xl flex justify-around text-base font-black shadow-inner">
             <button id="tab-owner" onclick="toggleView('owner')" class="w-full py-3.5 rounded-xl text-center transition-all duration-200 bg-white text-blue-600 shadow-md">
@@ -42,18 +39,16 @@
         </div>
     </div>
 
-    <!-- 메인 레이아웃 엔클로저 -->
     <main class="max-w-md mx-auto p-4 space-y-5">
 
-        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 원격 단말기 실시간 연동 세팅</h2>
-                <p class="text-xs text-slate-400 mt-1">서로 다른 핸드폰의 공유 코드가 일치해야 무선 신호가 통신됩니다.</p>
+                <p class="text-xs text-slate-400 mt-1">⚠️ 주의: 공유 코드는 무조건 영문과 숫자로만 적으셔야 실시간 연동됩니다.</p>
             </div>
             <div class="space-y-2">
-                <label class="block text-sm font-black text-slate-600">🔗 우리 회사 고유 연결 코드 (기기 공유용)</label>
-                <input id="input-sync-code" type="text" value="수산연동_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
+                <label class="block text-sm font-black text-slate-600">🔗 우리 회사 고유 연결 코드 (영문/숫자 필선택)</label>
+                <input id="input-sync-code" type="text" value="fish_net_777" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold focus:border-blue-600 outline-none transition-all">
             </div>
             <div class="space-y-2">
                 <label class="block text-sm font-black text-slate-600">회사명 / 브랜드명 변경</label>
@@ -62,7 +57,6 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition shadow-lg">설정 정보 원격 동기화</button>
         </section>
 
-        <!-- 🏪 [1. 점주 발주 등록 폼] -->
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
@@ -70,7 +64,6 @@
             </div>
             
             <div class="space-y-5">
-                <!-- 파트 A: 고정 배송 정보 및 납품 날짜 설정 -->
                 <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 space-y-4 shadow-inner">
                     <p class="text-xs font-black text-blue-600 tracking-wider uppercase">📍 1. 기본 배송지 및 납품 정보</p>
                     
@@ -111,12 +104,9 @@
                     </div>
                 </div>
 
-                <!-- 파트 B: 동적 폼 배열 생성 영역 -->
                 <div class="space-y-3">
                     <p class="text-xs font-black text-emerald-600 tracking-wider uppercase pl-1">🐟 2. 상세 발주 품목 목록</p>
-                    <div id="dynamic-form-container" class="space-y-5">
-                        <!-- 스크립트에 의해 카드 단위 입력창이 꽂힘 -->
-                    </div>
+                    <div id="dynamic-form-container" class="space-y-5"></div>
                 </div>
 
                 <button type="button" onclick="addFormRow()" class="w-full bg-white hover:bg-slate-50 text-blue-600 border-3 border-dashed border-blue-300 py-4 rounded-2xl text-base font-black tracking-wide transition flex items-center justify-center gap-2 shadow-sm active:scale-[0.99]">
@@ -129,9 +119,7 @@
             </button>
         </section>
 
-        <!-- 🚚 [2. 배송원 멀티 오더 처리 대시보드] -->
         <section id="view-driver" class="hidden space-y-5">
-            <!-- 무한 경보 알림 배너 -->
             <div id="alarm-banner" class="hidden bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast">
                 <div class="flex items-center space-x-3">
                     <span class="text-3xl">🚨</span>
@@ -143,13 +131,11 @@
                 <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-sm font-black px-4 py-3 rounded-xl shadow transition active:scale-95">확인 완료</button>
             </div>
 
-            <!-- 미수금 현황 요약 -->
             <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-md">
                 <p class="text-xs font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 내역</p>
                 <h3 class="text-3xl font-black mt-1 font-mono text-slate-100">3,450,000 원</h3>
             </div>
 
-            <!-- 대시보드 렌더링 컨테이너 -->
             <div id="driver-main-ledger" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-4">
                 <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
                     <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider">Order Ledger Summary</h3>
@@ -164,10 +150,8 @@
                     <div>• <b>최종 주소지:</b> <span id="lbl-drv-address" class="block text-slate-500 mt-0.5 leading-relaxed"></span></div>
                 </div>
 
-                <!-- 배송원 실측 단가 산정 영역 -->
                 <div id="drv-items-container" class="space-y-4"></div>
 
-                <!-- 전체 마감 합계 -->
                 <div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center shadow-inner text-white mt-5">
                     <span class="text-sm font-black text-slate-400">최종 마감 정산 총액:</span>
                     <span id="text-total-price" class="text-2xl font-black font-mono text-white">0 원</span>
@@ -178,14 +162,12 @@
                 </button>
             </div>
 
-            <!-- 대기 화면 (주문이 없을 때 노출) -->
             <div id="driver-empty-ledger" class="bg-white p-12 rounded-3xl shadow-xl border border-slate-200/60 text-center text-slate-400 font-bold text-lg">
                 📭 접수된 실시간 발주 오더 원장이 없습니다.
             </div>
         </section>
     </main>
 
-    <!-- ⚠️ [3. 실수방지 통합 검증 모달 팝업] -->
     <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border border-slate-200">
             <div class="flex items-center space-x-2 text-amber-500">
@@ -200,7 +182,6 @@
                     <span id="pop-total" class="font-mono text-lg"></span>
                 </div>
             </div>
-            <p class="text-xs text-slate-400 text-center leading-relaxed">정보가 정확한지 확인 후 아래 버튼을 눌러주세요.</p>
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="closeConfirmPopup()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-xl text-sm font-bold transition">돌아가서 수정</button>
                 <button onclick="executeFinalSubmit()" class="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-sm font-bold transition shadow-md">정확히 맞습니다</button>
@@ -208,7 +189,6 @@
         </div>
     </div>
 
-    <!-- 🖨️ [4. 최종 완성형 배송 라벨] -->
     <div id="label-output-section" class="max-w-md mx-auto px-4 hidden mb-20">
         <div class="bg-white border-3 border-slate-900 p-6 rounded-2xl shadow-xl space-y-4 relative bg-mono text-slate-900">
             <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
@@ -238,7 +218,6 @@
         </div>
     </div>
 
-    <!-- 🌐 초고속 무선 패킷 연동 커스텀 스크립트 -->
     <script>
         let rowIdx = 0;
         let activeRows = [];
@@ -246,12 +225,11 @@
         let audioCtx = null;
         let alarmInterval = null;
         let syncTimer = null;
-        let latestTimestamp = 0; // 중복 경보 방지용 타임스탬프
+        let latestTimestamp = 0; 
 
-        // 전 세계에서 통용되는 100% 오픈 무선 데이터 중계 허브 주소 채택
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
 
-        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '수산연동_777');
+        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', 'fish_net_777');
         document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
         document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${localStorage.getItem('sync_code')}`;
 
@@ -394,11 +372,12 @@
         }
 
         function updateSettingsMaster() {
-            const code = document.getElementById('input-sync-code').value.trim();
+            const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, '');
             const brand = document.getElementById('input-brand').value.trim();
-            if(!code) { alert("연동 코드는 필수입니다."); return; }
+            if(!code) { alert("영문/숫자 형태의 올바른 연결 코드를 입력하세요."); return; }
             
             localStorage.setItem('sync_code', code);
+            document.getElementById('input-sync-code').value = code;
             document.getElementById('brand-logo').innerText = brand.toUpperCase();
             document.getElementById('label-brand').innerText = brand.toUpperCase();
             document.getElementById('sync-code-text').innerText = `🟢 실시간 채널: ${code}`;
@@ -408,7 +387,6 @@
             toggleView('owner');
         }
 
-        // [핵심 변경 A]: fetch 에러 검증을 완벽 강화하고 절대 가로막히지 않는 글로벌 ntfy 릴레이 활용
         function submitOrderToLiveNetwork() {
             if(activeRows.length === 0) { alert("⚠️ 품목을 기재해 주세요."); return; }
             const orderDate = document.getElementById('order-date').value;
@@ -441,7 +419,6 @@
             const syncCode = localStorage.getItem('sync_code');
             document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-orange-500 animate-bounce";
 
-            // 고유 해시 채널로 무선 브로드캐스팅 쏘기
             fetch(`${cloudRelayUrl}${syncCode}`, {
                 method: 'POST',
                 body: JSON.stringify(orderPacket)
@@ -451,7 +428,6 @@
                 document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
                 alert("🚀 점포 발주 원장이 고속 무선망을 통과하여 기사 단말기 대시보드로 실시간 전달되었습니다!");
                 
-                // 화면 리셋 및 기사탭으로 연동 이동
                 document.getElementById('dynamic-form-container').innerHTML = "";
                 activeRows = [];
                 addFormRow();
@@ -459,18 +435,16 @@
             })
             .catch(err => {
                 document.getElementById('sync-indicator').className = "w-3 h-3 rounded-full bg-rose-500";
-                alert("❌ 무선 송출 오류: 인터넷 혹은 연결용 코드를 다시 확인해 주세요.");
+                alert("❌ 무선 송출 오류: 설정 코드에 한글이 섞여있거나 인터넷 상태가 불안정합니다. 설정에서 영문 코드로 확인해 주세요.");
             });
         }
 
-        // [핵심 변경 B]: 알람 확인 버튼 시 클라우드에 신규 마감 신호 갱신 전송
         function stopAlarmServer() {
             if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
             document.getElementById('alarm-banner').className = "hidden";
             document.getElementById('badge-count').classList.add('hidden');
             
             const syncCode = localStorage.getItem('sync_code');
-            // 마지막 수신 데이터를 토대로 알람 플래그만 수정한 새 패킷을 재전송하여 다른 기기 알람 동시 종료
             if(currentOrderItems && currentOrderItems.length > 0) {
                 const oDate = document.getElementById('lbl-drv-date').innerText;
                 const store = document.getElementById('lbl-drv-store').innerText;
@@ -492,14 +466,12 @@
             }
         }
 
-        // [핵심 변경 C]: 무정지 3초 간격 크로스 도메인 프리 패스 무선 동기화 루틴
         function startCloudSync() {
             if(syncTimer) clearInterval(syncTimer);
             
             syncTimer = setInterval(() => {
                 const syncCode = localStorage.getItem('sync_code');
                 
-                // ntfy 전용 초고속 데이터 큐의 마지막 1개 데이터만 가볍게 스캔해오는 방식 (CORS 완벽 우회)
                 fetch(`${cloudRelayUrl}${syncCode}/json?poll=1&limit=1`)
                 .then(res => res.text())
                 .then(text => {
@@ -507,7 +479,6 @@
                     const lines = text.trim().split('\n');
                     const rawData = JSON.parse(lines[lines.length - 1]);
                     
-                    // 수신 큐가 빈 메시지거나 매칭 오류일 시 탈출
                     if(!rawData.message) return;
                     const data = JSON.parse(rawData.message);
 
@@ -521,7 +492,6 @@
                         document.getElementById('driver-main-ledger').classList.remove('hidden');
                         document.getElementById('driver-empty-ledger').classList.add('hidden');
 
-                        // 전역 상태 캐싱
                         currentOrderItems = data.items;
                         
                         document.getElementById('lbl-drv-date').innerText = data.orderDate;
@@ -530,7 +500,6 @@
                         document.getElementById('lbl-drv-phone').innerText = data.phone;
                         document.getElementById('lbl-drv-address').innerText = data.address;
 
-                        // 새 타임스탬프 발생 시에만 알람 트리거 가동
                         if(data.alarmActive) {
                             document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl shadow-rose-600/20 blink-fast";
                             document.getElementById('badge-count').innerText = "1";
@@ -546,7 +515,6 @@
                             document.getElementById('badge-count').classList.add('hidden');
                         }
 
-                        // 기사 단말 인풋 폼 생성기
                         const drvContainer = document.getElementById('drv-items-container');
                         if(drvContainer.children.length !== data.items.length) {
                             drvContainer.innerHTML = data.items.map((p, idx) => `
@@ -572,7 +540,6 @@
                             calculateTotal();
                         }
                     } else if(data.status === "completed") {
-                        // 오더 원장 청산 시 화면 클리어 클렌징
                         document.getElementById('driver-main-ledger').classList.add('hidden');
                         document.getElementById('driver-empty-ledger').classList.remove('hidden');
                         document.getElementById('drv-items-container').innerHTML = "";
@@ -624,7 +591,6 @@
             document.getElementById('confirm-popup').classList.add('hidden');
         }
 
-        // 정산 완료 패킷을 쏘아보내 기사와 점주 화면을 동시 대기상태로 리셋 마감
         function executeFinalSubmit() {
             closeConfirmPopup();
             const syncCode = localStorage.getItem('sync_code');
