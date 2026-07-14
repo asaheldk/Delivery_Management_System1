@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수산물 물류 시스템 - 발주처</title>
+    <!-- 2026년 최신 테일윈드 CSS 가속 엔진 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
@@ -24,6 +25,7 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
+        <!-- ⚙️ [시스템 세팅 뷰] -->
         <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
             <div class="border-b border-slate-100 pb-3">
                 <h2 class="text-base font-black text-slate-900">⚙️ 시스템 설정</h2>
@@ -35,7 +37,13 @@
             <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
         </section>
 
+        <!-- 🏪 발주 등록 폼 -->
         <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
+            <!-- 🟢 [1번 피처 도입]: 5060 사장님용 원터치 직전 주문 자동 원격 로딩 버튼 장착 -->
+            <button type="button" onclick="loadLastOrderFromMemory()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-4 rounded-2xl text-base font-black tracking-wide transition shadow-md flex items-center justify-center gap-2 active:scale-95">
+                ⭐ 직전 주문 품목 그대로 불러오기 (3초 발주)
+            </button>
+
             <div>
                 <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
                 <p class="text-sm text-slate-400 font-medium mt-0.5">항목을 입력하시면 담당 배송원에게 실시간 전송됩니다.</p>
@@ -96,6 +104,7 @@
                 🚀 실시간 발주 전송하기
             </button>
 
+            <!-- 최근 보낸 발주 관리 -->
             <div class="pt-4 border-t border-slate-100 space-y-2">
                 <p class="text-xs font-black text-slate-400 tracking-wider uppercase pl-1">📦 최근 보낸 발주 관리 (취소 가능)</p>
                 <div id="owner-sent-log-container" class="space-y-2"></div>
@@ -103,6 +112,28 @@
         </section>
     </main>
 
+    <!-- 📢 [3번 피처 구현]: 5060 점주님용 실수 방지 초대형 주문서 최종 명세 요약 검증 팝업창 -->
+    <div id="order-preview-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-blue-600 animate-in zoom-in duration-150">
+            <div class="flex items-center space-x-2 text-blue-600 border-b pb-2">
+                <span class="text-3xl">⚠️</span>
+                <h3 class="text-xl font-black text-slate-900">발주 내역 최종 검증</h3>
+            </div>
+            <p class="text-sm font-black text-slate-500 leading-snug">기사님 차에 실리기 전 오더입니다. 아래 내역이 틀림없는지 마지막으로 눈으로 한 번만 확인해 주세요.</p>
+            
+            <div class="bg-slate-100 p-4 rounded-2xl space-y-3 text-slate-800 border-2 border-slate-200 font-bold max-h-60 overflow-y-auto">
+                <div class="text-sm text-slate-500 border-b pb-1.5 flex justify-between"><span>🏪 발주점포:</span><span id="prev-modal-store" class="text-slate-900 font-black text-base"></span></div>
+                <div id="prev-modal-items-list" class="space-y-2 pt-1 text-base text-slate-900 font-black"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closePreviewLargeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-5 rounded-2xl text-base font-black transition border-2 border-slate-300">틀림 (수정)</button>
+                <button onclick="executeActualOrderSubmission()" class="bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-base font-black transition shadow-xl border-b-4 border-blue-800 active:scale-95">정확함 (전송)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📢 [대형 성공 팝업] -->
     <div id="success-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-emerald-500 animate-in zoom-in duration-200">
             <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-inner"><span class="text-5xl animate-bounce">✅</span></div>
@@ -116,6 +147,7 @@
         </div>
     </div>
 
+    <!-- 📢 [대형 취소 팝업] -->
     <div id="cancel-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-rose-500 animate-in zoom-in duration-200">
             <div class="w-24 h-24 bg-rose-100 rounded-full flex items-center justify-center mx-auto shadow-inner"><span class="text-5xl animate-pulse">🚨</span></div>
@@ -130,37 +162,11 @@
     </div>
 
     <script>
-        let rowIdx = 0; let activeRows = [];
+        let rowIdx = 0; let activeRows = []; let currentPendingPacket = null; // 임시 메모리 패킷 버퍼
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
 
-        // 🟢 [마스터 규격 데이터]: 각 제품별 상세 사이즈 데이터 베이스 완비 및 신규 어종 편입
         const itemSizesDatabase = {
-            "광어": ["500 ~ 700", "800 ~ 900", "K ~ K300", "K400 ~ K600", "K700 ~ K900", "2K ~ 2.1K", "2.3K", "2.5K", "3K"],
-            "우럭": ["400", "450", "500", "550", "600", "700", "800"],
-            "연어": ["6~7K", "연어필렛 2~ 2.5K"],
-            "연어알": ["500g"],
-            "농어": ["小 1.5K 전후", "中 2K 전후", "大 2.5K 전후"],
-            "도미": ["小 1.5K 전후", "中 2K 전후", "大 3K 전후"],
-            "잿방어": ["4K 전후"],
-            "시아아지": ["2K 전후"],
-            "점성어": ["4K 전후"],
-            "개숭어": ["기본 / 규격없음"],
-            "참숭어": ["기본 / 규격없음"],
-            "이백이": ["기본 / 규격없음"],
-            "중방어": ["기본 / 규격없음"],
-            "소방어": ["기본 / 규격없음"],
-            "히라스": ["기본 / 규격없음"],
-            "활새우": ["기본 / 규격없음"],
-            "산오징어": ["기본 / 규격없음"],
-            "고등어": ["기본 / 규격없음"],
-            "우니(성게알)": ["기본 / 규격없음"],
-            "전복": ["기본 / 규격없음"],
-            "멍게": ["기본 / 규격없음"],
-            "백상합": ["기본 / 규격없음"],
-            "개불": ["기본 / 규격없음"],
-            "소라": ["기본 / 규격없음"],
-            "해삼": ["기본 / 규격없음"],
-            "가리비": ["기본 / 규격없음"]
+            "광어": ["500 ~ 700", "800 ~ 900", "K ~ K300", "K400 ~ K600", "K700 ~ K900", "2K ~ 2.1K", "2.3K", "2.5K", "3K"], "우럭": ["400", "450", "500", "550", "600", "700", "800"], "연어": ["노르웨이 6~7K", "연어필렛 2~ 2.5K"], "연어알": ["500g"], "농어": ["小 1.5K 전후", "Ch중 2K 전후", "大 2.5K 전후"], "도미": ["小 1.5K 전후", "中 2K 전후", "大 3K 전후"], "잿방어": ["4K 전후"], "시아아지": ["2K 전후"], "점성어": ["4K 전후"], "개숭어": ["기본 / 규격없음"], "참숭어": ["기본 / 규격없음"], "이백이": ["기본 / 규격없음"], "중방어": ["기본 / 규격없음"], "소방어": ["기본 / 규격없음"], "히라스": ["기본 / 규격없음"], "활새우": ["기본 / 규격없음"], "산오징어": ["기본 / 규격없음"], "고등어": ["기본 / 규격없음"], "우니(성게알)": ["기본 / 규격없음"], "전복": ["기본 / 규격없음"], "멍게": ["기본 / 규격없음"], "백상합": ["기본 / 규격없음"], "개불": ["기본 / 규격없음"], "소라": ["기본 / 규격없음"], "해삼": ["기본 / 규격없음"], "가리비": ["기본 / 규격없음"]
         };
 
         if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '1');
@@ -170,60 +176,15 @@
         const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
 
-        function handleRowSelectChange(selectEl, id, fieldName) {
-            const inputEl = document.getElementById(`input-${fieldName}-${id}`);
-            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
-            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
-        }
-        function handleSelectChange(selectEl, inputId) {
-            const inputEl = document.getElementById(inputId);
-            if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } 
-            else { inputEl.classList.add('hidden'); inputEl.value = ''; }
-        }
-        function getRowResolvedValue(id, fieldName) {
-            const selectEl = document.getElementById(`sel-${fieldName}-${id}`);
-            const inputEl = document.getElementById(`input-${fieldName}-${id}`);
-            return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
-        }
-        function getResolvedValue(selectId, inputId) {
-            const selectEl = document.getElementById(selectId);
-            const inputEl = document.getElementById(inputId);
-            return selectEl.value === 'custom' ? inputEl.value : selectEl.value;
-        }
+        function handleRowSelectChange(selectEl, id, fieldName) { const inputEl = document.getElementById(`input-${fieldName}-${id}`); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
+        function handleSelectChange(selectEl, inputId) { const inputEl = document.getElementById(inputId); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
+        function getRowResolvedValue(id, fieldName) { const selectEl = document.getElementById(`sel-${fieldName}-${id}`); const inputEl = document.getElementById(`input-${fieldName}-${id}`); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
+        function getResolvedValue(selectId, inputId) { const selectEl = document.getElementById(selectId); const inputEl = document.getElementById(inputId); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
 
-        // 🟢 [동적 사이즈 스위칭 엔진]: 어종을 바꿀 때마다 사이즈 목록을 즉시 재배치
         function updateItemSizeOptions(id) {
-            const itemSel = document.getElementById(`sel-item-${id}`);
-            const itemInput = document.getElementById(`input-item-${id}`);
-            const sizeSel = document.getElementById(`sel-size-${id}`);
-            const sizeInput = document.getElementById(`input-size-${id}`);
-
-            // 취급하지 않는 '기타 직접 입력'을 선택한 경우
-            if (itemSel.value === 'custom') {
-                itemInput.classList.remove('hidden');
-                itemInput.focus();
-                
-                // 품목명을 직접 치므로 사이즈도 주관식 텍스트 창으로 즉시 개방
-                sizeSel.innerHTML = `<option value="custom">✍️ 직접 입력</option>`;
-                sizeSel.value = 'custom';
-                sizeInput.classList.remove('hidden');
-                sizeInput.value = '';
-            } else {
-                itemInput.classList.add('hidden');
-                itemInput.value = '';
-
-                // 데이터베이스에서 사이즈 목록 파싱
-                const selectedItem = itemSel.value;
-                const sizes = itemSizesDatabase[selectedItem] || ["기본 / 규격없음"];
-                
-                let optionsHtml = sizes.map(s => `<option value="${s}">${s}</option>`).join('');
-                optionsHtml += `<option value="custom">✍️ 직접 입력</option>`;
-                sizeSel.innerHTML = optionsHtml;
-                
-                sizeSel.value = sizes[0];
-                sizeInput.classList.add('hidden');
-                sizeInput.value = '';
-            }
+            const itemSel = document.getElementById(`sel-item-${id}`); const itemInput = document.getElementById(`input-item-${id}`); const sizeSel = document.getElementById(`sel-size-${id}`); const sizeInput = document.getElementById(`input-size-${id}`);
+            if (itemSel.value === 'custom') { itemInput.classList.remove('hidden'); itemInput.focus(); sizeSel.innerHTML = `<option value="custom">✍️ 직접 입력</option>`; sizeSel.value = 'custom'; sizeInput.classList.remove('hidden'); sizeInput.value = ''; } 
+            else { itemInput.classList.add('hidden'); itemInput.value = ''; const selectedItem = itemSel.value; const sizes = itemSizesDatabase[selectedItem] || ["기본 / 규격없음"]; let optionsHtml = sizes.map(s => `<option value="${s}">${s}</option>`).join(''); optionsHtml += `<option value="custom">✍️ 직접 입력</option>`; sizeSel.innerHTML = optionsHtml; sizeSel.value = sizes[0]; sizeInput.classList.add('hidden'); sizeInput.value = ''; }
         }
 
         function addFormRow() {
@@ -237,55 +198,34 @@
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
                         <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option>
-                            <option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option>
-                            <option value="custom">✍️ 직접 입력</option>
+                            <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option><option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
                         </select>
                         <input id="input-category-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
-                    
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
                         <select id="sel-item-${id}" onchange="updateItemSizeOptions(${id})" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="광어">광어</option><option value="우럭">우럭</option><option value="연어">연어</option>
-                            <option value="연어알">연어알</option><option value="농어">농어</option><option value="도미">도미</option>
-                            <option value="잿방어">잿방어</option><option value="시아아지">시아아지</option><option value="점성어">점성어</option>
-                            <option value="개숭어">개숭어</option><option value="참숭어">참숭어</option><option value="이백이">이백이</option>
-                            <option value="중방어">중방어</option><option value="소방어">소방어</option><option value="히라스">히라스</option>
-                            <option value="활새우">활새우</option><option value="산오징어">산오징어</option><option value="고등어">고등어</option>
-                            <option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option>
-                            <option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option>
-                            <option value="해삼">해삼</option><option value="가리비">가비리</option>
-                            <option value="custom">기타 (✍️ 미취급 품목 직접 입력)</option>
+                            <option value="광어">광어</option><option value="우럭">우럭</option><option value="연어">연어</option><option value="연어알">연어알</option><option value="농어">농어</option><option value="도미">도미</option><option value="잿방어">잿방어</option><option value="시아아지">시아아지</option><option value="점성어">점성어</option><option value="개숭어">개숭어</option><option value="참숭어">참숭어</option><option value="이백이">이백이</option><option value="중방어">중방어</option><option value="소방어">소방어</option><option value="히라스">히라스</option><option value="활새우">활새우</option><option value="산오징어">산오징어</option><option value="고등어">고등어</option><option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option><option value="가리비">가리비</option><option value="custom">기타 (✍️ 미취급 품목 직접 입력)</option>
                         </select>
                         <input id="input-item-${id}" type="text" placeholder="어종명을 직접 기입하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
-
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">제품 규격 / 사이즈 / 무게 선택</label>
-                        <select id="sel-size-${id}" onchange="handleRowSelectChange(this, ${id}, 'size')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            </select>
+                        <select id="sel-size-${id}" onchange="handleRowSelectChange(this, ${id}, 'size')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none"></select>
                         <input id="input-size-${id}" type="text" placeholder="사이즈 또는 중량을 직접 기입하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">원산지 선택</label>
                             <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, ${id}, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option>
-                                <option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option>
-                                <option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option><option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option><option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-origin-${id}" type="text" placeholder="원산지 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">작업 및 보관 방식</label>
                             <select id="sel-process-${id}" onchange="handleRowSelectChange(this, ${id}, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="찍어바리">찍어바리</option><option value="합포장">합포장</option><option value="개별포장">개별포장</option>
-                                <option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option>
-                                <option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="찍어바리">찍어바리</option><option value="합포장">합포장</option><option value="개별포장">개별포장</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option><option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-process-${id}" type="text" placeholder="작업 방식 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
@@ -294,16 +234,14 @@
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-600">주문 수량</label>
                             <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, ${id}, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                <option value="custom">✍️ 직접 입력</option>
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-qty-${id}" type="number" placeholder="수량" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
                         <div class="space-y-1.5">
                             <label class="block text-base font-black text-slate-700">단위</label>
                             <select id="sel-unit-${id}" onchange="handleSelectChange(this, 'input-unit-${id}')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option>
-                                <option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
+                                <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option><option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
                             </select>
                             <input id="input-unit-${id}" type="text" placeholder="단위명" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                         </div>
@@ -314,15 +252,13 @@
                     </div>
                 </div>
             `;
-            document.getElementById('dynamic-form-container').insertAdjacentHTML('beforeend', rowHtml);
-            
-            // 첫 줄 추가되자마자 광어 사이즈 목록 강제 동기화 실행
-            updateItemSizeOptions(id);
+            document.getElementById('dynamic-form-container').insertAdjacentHTML('beforeend', rowHtml); updateItemSizeOptions(id);
         }
 
         function removeFormRow(id) { const el = document.getElementById(`form-row-${id}`); if (el) el.remove(); activeRows = activeRows.filter(item => item !== id); if(activeRows.length === 0) addFormRow(); }
         function updateSettingsMaster() { const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if(!code) return; localStorage.setItem('sync_code', code); document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${code}호차`; toggleView('owner'); }
 
+        // ⚠️ [3번 피처 개조]: 발주 전송 버튼 클릭 시, 다이렉트 전송을 멈추고 초대형 요약 모달 검증창을 띄우는 가로채기 엔진
         function submitOrderToLiveNetwork() {
             if(activeRows.length === 0) return;
             const orderDate = document.getElementById('order-date').value;
@@ -332,68 +268,114 @@
             if(!store) return;
 
             let items = [];
+            let previewRowsHtml = ''; // 팝업 내 가독성 요약본 조립 버퍼
+
             for (let id of activeRows) {
-                const category = getRowResolvedValue(id, 'category'); 
-                const item = getRowResolvedValue(id, 'item'); 
-                
-                // 🟢 사이즈 추출 바인딩 파트
-                const size = getRowResolvedValue(id, 'size'); 
-                
-                const origin = getRowResolvedValue(id, 'origin'); 
-                const process = getRowResolvedValue(id, 'process'); 
-                const qty = getRowResolvedValue(id, 'qty'); 
-                const unit = getRowResolvedValue(id, 'unit'); 
-                const memo = document.getElementById(`input-memo-${id}`).value || "없음";
-                
+                const category = getRowResolvedValue(id, 'category'); const item = getRowResolvedValue(id, 'item'); const size = getRowResolvedValue(id, 'size'); const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process'); const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit'); const memo = document.getElementById(`input-memo-${id}`).value || "없음";
                 if(!item || !qty) return; 
-                
-                // 🟢 전송 패킷 구조 내에 size 명밀하게 추가 기입 조립
                 items.push({ category, item, size, origin, process, qty, unit, memo });
+
+                // 사장님 가독성용 총알 리스트 텍스트 설계
+                previewRowsHtml += `
+                    <div class="border-b pb-1.5 text-slate-900 font-black text-base">
+                        🐟 <span class="text-blue-700">[${item}]</span> / 크기: <span class="text-amber-700">${size}</span> <br>
+                        ➡️ 수량: <span class="underline">${qty}${unit}</span> (${process})
+                    </div>
+                `;
             }
 
             const currentStamp = Date.now();
             const uniqueOrderId = `${store.replace(/\s+/g, '')}_${currentStamp}`;
-            const orderPacket = { orderId: uniqueOrderId, status: "ordered", orderDate, store, phone, address, items, alarmActive: true, serverTimestamp: currentStamp };
-            const syncCode = localStorage.getItem('sync_code');
+            
+            // 글로벌 임시 버퍼에 완성된 무선 패킷 대기 바인딩
+            currentPendingPacket = { syncCode: localStorage.getItem('sync_code'), uniqueOrderId, store, orderPacket: { orderId: uniqueOrderId, status: "ordered", orderDate, store, phone, address, items, alarmActive: true, serverTimestamp: currentStamp }, rawItems: items };
 
-            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(orderPacket) })
+            // 대형 확인 모달 구동 및 데이터 주입
+            document.getElementById('prev-modal-store').innerText = store;
+            document.getElementById('prev-modal-items-list').innerHTML = previewRowsHtml;
+            document.getElementById('order-preview-modal').classList.remove('hidden');
+        }
+
+        function closePreviewLargeModal() { document.getElementById('order-preview-modal').classList.add('hidden'); currentPendingPacket = null; }
+
+        // 진짜 검증 완료 버튼을 눌렀을 때 작동하는 최종 실시간 무선 송출부
+        function executeActualOrderSubmission() {
+            if(!currentPendingPacket) return;
+            const p = currentPendingPacket;
+            document.getElementById('order-preview-modal').classList.add('hidden'); // 검증창 숨김
+
+            fetch(`${cloudRelayUrl}${p.syncCode}`, { method: 'POST', body: JSON.stringify(p.orderPacket) })
             .then(res => {
-                document.getElementById('success-modal-title').innerText = store;
+                // 🟢 [1번 피처 연동]: 성공 시 해당 발주 품목을 단골 메모리 장부에 마스터 보존 백업
+                localStorage.setItem('last_submitted_items', JSON.stringify(p.rawItems));
+
+                document.getElementById('success-modal-title').innerText = p.store;
                 document.getElementById('success-large-modal').classList.remove('hidden');
 
                 let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
-                mySentLog.unshift({ orderId: uniqueOrderId, store, orderDate, status: 'ordered' });
+                mySentLog.unshift({ orderId: p.uniqueOrderId, store: p.store, orderDate: p.orderPacket.orderDate, status: 'ordered' });
                 localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog));
                 renderSentOrdersLog();
 
                 document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = []; addFormRow();
+                currentPendingPacket = null;
             });
+        }
+
+        // 🟢 [1번 피처 핵심 스크립트]: 기억장치에서 직전 품목들을 역추적하여 폼에 자동 고속 꽂아넣기
+        function loadLastOrderFromMemory() {
+            const savedData = localStorage.getItem('last_submitted_items');
+            if(!savedData) { alert("💡 직전에 보냈던 발주 기억(데이터)이 없습니다.\n처음 한 번 발주를 성공한 이후부터 불러오기가 가동됩니다."); return; }
+            
+            const items = JSON.parse(savedData);
+            
+            // 기존 폼 깨끗이 초기화
+            document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = [];
+
+            items.forEach((item) => {
+                addFormRow(); // 신규 빈 라인 로딩 가동
+                const id = activeRows[activeRows.length - 1]; // 현재 줄의 고유 번호 추출
+
+                // 자바스크립트 콤보박스 역매핑 로직 가동
+                setDropdownOrCustom(`sel-category-${id}`, `input-category-${id}`, item.category);
+                setDropdownOrCustom(`sel-item-${id}`, `input-item-${id}`, item.item);
+                
+                // 품목명이 세팅되었으므로 사이즈 종속 리스트 강제 새로고침 가동
+                updateItemSizeOptions(id);
+
+                setDropdownOrCustom(`sel-size-${id}`, `input-size-${id}`, item.size);
+                setDropdownOrCustom(`sel-origin-${id}`, `input-origin-${id}`, item.origin);
+                setDropdownOrCustom(`sel-process-${id}`, `input-process-${id}`, item.process);
+                setDropdownOrCustom(`sel-qty-${id}`, `input-qty-${id}`, item.qty);
+                setDropdownOrCustom(`sel-unit-${id}`, `input-unit-${id}`, item.unit);
+
+                document.getElementById(`input-memo-${id}`).value = item.memo;
+            });
+
+            alert("⭐ 직전 발주 품목들과 사이즈를 그대로 불러왔습니다!\n[📅 납품 요청 날짜]가 내일 날짜로 정확한지만 확인하신 뒤 전송하세요.");
+        }
+
+        // 프리디파인 콤보 박스 매핑 에이전트 서브 루틴
+        function setDropdownOrCustom(selectId, inputId, value) {
+            const sel = document.getElementById(selectId); const inp = document.getElementById(inputId); if(!sel) return;
+            let found = false;
+            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === value) { sel.value = value; found = true; break; } }
+            if(!found) { sel.value = 'custom'; if(inp) { inp.classList.remove('hidden'); inp.value = value; } } 
+            else { if(inp) inp.classList.add('hidden'); }
         }
 
         function closeSuccessLargeModal() { document.getElementById('success-large-modal').classList.add('hidden'); }
 
         function cancelOrderFromOwner(orderId, store) {
             if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?\n기사님 단말기에 즉시 취소 경고가 전달됩니다.`)) return;
-            const syncCode = localStorage.getItem('sync_code');
-            const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() };
-
-            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(cancelPacket) })
-            .then(() => {
-                let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
-                mySentLog = mySentLog.map(o => { if(o.orderId === orderId) o.status = 'cancelled'; return o; });
-                localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog));
-                renderSentOrdersLog();
-                document.getElementById('cancel-modal-title').innerText = store;
-                document.getElementById('cancel-large-modal').classList.remove('hidden');
-            });
+            const syncCode = localStorage.getItem('sync_code'); const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() };
+            fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(cancelPacket) }).then(() => { let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); mySentLog = mySentLog.map(o => { if(o.orderId === orderId) o.status = 'cancelled'; return o; }); localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog)); renderSentOrdersLog(); document.getElementById('cancel-modal-title').innerText = store; document.getElementById('cancel-large-modal').classList.remove('hidden'); });
         }
 
         function closeCancelLargeModal() { document.getElementById('cancel-large-modal').classList.add('hidden'); }
 
         function renderSentOrdersLog() {
-            const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]');
-            const container = document.getElementById('owner-sent-log-container');
-            if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; }
+            const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); const container = document.getElementById('owner-sent-log-container'); if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; }
             container.innerHTML = mySentLog.slice(0, 5).map(o => `
                 <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold">
                     <div><span class="text-slate-900">${o.store}</span><span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span></div>
