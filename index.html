@@ -105,7 +105,7 @@
                 <div id="owner-sent-log-container" class="space-y-2"></div>
             </div>
         </section>
-    </header>
+    </main>
 
     <div id="order-preview-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-blue-600 animate-in zoom-in duration-150">
@@ -154,18 +154,18 @@
     </div>
 
     <script>
-        let rowIdx = 0; let activeRows = []; let currentPendingPacket = null;
+        let rowIdx = 0;
+        let activeRows = []; let currentPendingPacket = null;
         const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
-
         const itemSizesDatabase = {
             "광어": ["500 ~ 700", "800 ~ 900", "K ~ K300", "K400 ~ K600", "K700 ~ K900", "2K ~ 2.1K", "2.3K", "2.5K", "3K"], "우럭": ["400", "450", "500", "550", "600", "700", "800"], "연어": ["노르웨이 6~7K", "연어필렛 2~ 2.5K"], "연어알": ["500g"], "농어": ["小 1.5K 전후", "中 2K 전후", "大 2.5K 전후"], "도미": ["小 1.5K 전후", "中 2K 전후", "大 3K 전후"], "잿방어": ["4K 전후"], "시아아지": ["2K 전후"], "점성어": ["4K 전후"], "개숭어": ["기본 / 규격없음"], "참숭어": ["기본 / 규격없음"], "이백이": ["기본 / 규격없음"], "중방어": ["기본 / 규격없음"], "소방어": ["기본 / 규격없음"], "히라스": ["기본 / 규격없음"], "활새우": ["기본 / 규격없음"], "산오징어": ["기본 / 규격없음"], "고등어": ["기본 / 규격없음"], "우니(성게알)": ["기본 / 규격없음"], "전복": ["기본 / 규격없음"], "멍게": ["기본 / 규격없음"], "백상합": ["기본 / 규격없음"], "개불": ["기본 / 규격없음"], "소라": ["기본 / 규격없음"], "해삼": ["기본 / 규격없음"], "가리비": ["기본 / 규격없음"]
         };
-
         if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '1');
         document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
         document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${localStorage.getItem('sync_code')}호차`;
 
-        const today = new Date(); const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+        const today = new Date();
+        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
 
         function handleRowSelectChange(selectEl, id, fieldName) { const inputEl = document.getElementById(`input-${fieldName}-${id}`); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
@@ -197,7 +197,7 @@
                     <div class="space-y-1.5">
                         <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
                         <select id="sel-item-${id}" onchange="updateItemSizeOptions(${id})" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="광어">광어</option><option value="우럭">우럭</option><option value="연어">연어</option><option value="연어알">연어알</option><option value="농어">농어</option><option value="도미">도미</option><option value="잿방어">잿방어</option><option value="시아아지">시아아지</option><option value="점성어">점성어</option><option value="개숭어">개숭어</option><option value="참숭어">참숭어</option><option value="이백이">이백이</option><option value="중방어">중방어</option><option value="소방어">소방어</option><option value="히라스">히라스</option><option value="활새우">활새우</option><option value="산오징어">산오징어</option><option value="고등어">고등어</option><option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option><option value="가리비">가리비</option><option value="custom">기타 (✍️ 미취급 품목 직접 입력)</option>
+                            <option value="광어">광어</option><option value="우럭">우럭</option><option value="연어">연어</option><option value="연어알">연어알</option><option value="농어">농어</option><option value="도미</option><option value="잿방어">잿방어</option><option value="시아아지">시아아지</option><option value="점성어">점성어</option><option value="개숭어">개숭어</option><option value="참숭어">참숭어</option><option value="이백이">이백이</option><option value="중방어">중방어</option><option value="소방어">소방어</option><option value="히라스">히라스</option><option value="활새우">활새우</option><option value="산오징어">산오징어</option><option value="고등어">고등어</option><option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option><option value="가리비">가리비</option><option value="custom">기타 (✍️ 미취급 품목 직접 입력)</option>
                         </select>
                         <input id="input-item-${id}" type="text" placeholder="어종명을 직접 기입하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
                     </div>
@@ -261,12 +261,12 @@
 
             let items = [];
             let previewRowsHtml = '';
-
             for (let id of activeRows) {
-                const category = getRowResolvedValue(id, 'category'); const item = getRowResolvedValue(id, 'item'); const size = getRowResolvedValue(id, 'size'); const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process'); const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit'); const memo = document.getElementById(`input-memo-${id}`).value || "없음";
-                if(!item || !qty) return; 
+                const category = getRowResolvedValue(id, 'category');
+                const item = getRowResolvedValue(id, 'item'); const size = getRowResolvedValue(id, 'size'); const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process');
+                const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit'); const memo = document.getElementById(`input-memo-${id}`).value || "없음";
+                if(!item || !qty) return;
                 items.push({ category, item, size, origin, process, qty, unit, memo });
-
                 previewRowsHtml += `
                     <div class="border-b pb-1.5 text-slate-900 font-black text-base">
                         🐟 <span class="text-blue-700">[${item}]</span> / 크기: <span class="text-amber-700">${size}</span> <br>
@@ -278,7 +278,6 @@
             const currentStamp = Date.now();
             const uniqueOrderId = `${store.replace(/\s+/g, '')}_${currentStamp}`;
             currentPendingPacket = { syncCode: localStorage.getItem('sync_code'), uniqueOrderId, store, orderPacket: { orderId: uniqueOrderId, status: "ordered", orderDate, store, phone, address, items, alarmActive: true, serverTimestamp: currentStamp }, rawItems: items };
-
             document.getElementById('prev-modal-store').innerText = store;
             document.getElementById('prev-modal-items-list').innerHTML = previewRowsHtml;
             document.getElementById('order-preview-modal').classList.remove('hidden');
@@ -287,7 +286,8 @@
         function closePreviewLargeModal() { document.getElementById('order-preview-modal').classList.add('hidden'); currentPendingPacket = null; }
 
         function executeActualOrderSubmission() {
-            if(!currentPendingPacket) return; const p = currentPendingPacket; document.getElementById('order-preview-modal').classList.add('hidden');
+            if(!currentPendingPacket) return;
+            const p = currentPendingPacket; document.getElementById('order-preview-modal').classList.add('hidden');
             fetch(`${cloudRelayUrl}${p.syncCode}`, { method: 'POST', body: JSON.stringify(p.orderPacket) })
             .then(res => {
                 localStorage.setItem('last_submitted_items', JSON.stringify(p.rawItems));
@@ -297,10 +297,11 @@
             });
         }
 
-        // 🟢 [형변환 패치]: == 문법으로 바꾸어 문자/숫자 호환 완벽 연동 보장
         function loadLastOrderFromMemory() {
-            const savedData = localStorage.getItem('last_submitted_items'); if(!savedData) { alert("💡 직전에 보냈던 발주 데이터가 없습니다."); return; }
-            const items = JSON.parse(savedData); document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = [];
+            const savedData = localStorage.getItem('last_submitted_items');
+            if(!savedData) { alert("💡 직전에 보냈던 발주 데이터가 없습니다."); return; }
+            const items = JSON.parse(savedData);
+            document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = [];
             items.forEach((item) => {
                 addFormRow(); const id = activeRows[activeRows.length - 1];
                 setDropdownOrCustom(`sel-category-${id}`, `input-category-${id}`, item.category);
@@ -317,7 +318,8 @@
         }
 
         function setDropdownOrCustom(selectId, inputId, value) {
-            const sel = document.getElementById(selectId); const inp = document.getElementById(inputId); if(!sel) return;
+            const sel = document.getElementById(selectId);
+            const inp = document.getElementById(inputId); if(!sel) return;
             let found = false;
             for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value == value) { sel.value = value; found = true; break; } }
             if(!found) { sel.value = 'custom'; if(inp) { inp.classList.remove('hidden'); inp.value = value; } } else { if(inp) { inp.classList.add('hidden'); inp.value = ''; } }
@@ -326,7 +328,7 @@
         function closeSuccessLargeModal() { document.getElementById('success-large-modal').classList.add('hidden'); }
         function cancelOrderFromOwner(orderId, store) { if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?`)) return; const syncCode = localStorage.getItem('sync_code'); const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() }; fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(cancelPacket) }).then(() => { let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); mySentLog = mySentLog.map(o => { if(o.orderId === orderId) o.status = 'cancelled'; return o; }); localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog)); renderSentOrdersLog(); document.getElementById('cancel-modal-title').innerText = store; document.getElementById('cancel-large-modal').classList.remove('hidden'); }); }
         function closeCancelLargeModal() { document.getElementById('cancel-large-modal').classList.add('hidden'); }
-        function renderSentOrdersLog() { const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); const container = document.getElementById('owner-sent-log-container'); if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; } container.innerHTML = mySentLog.slice(0, 5).map(o => ` <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"> <div><span class="text-slate-900">${o.store}</span><span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span></div> <div>${o.status === 'cancelled' ? `<span class="text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">❌ 취소완료</span>` : `<button onclick="cancelOrderFromOwner('${o.orderId}', '${o.store}')" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg transition shadow-sm">❌ 발주취소</button>`}</div> </div> `).join(''); }
+        function renderSentOrdersLog() { const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); const container = document.getElementById('owner-sent-log-container'); if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; } container.innerHTML = mySentLog.slice(0, 5).map(o => ` <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"> <div><span class="text-slate-900">${o.store}</span><span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span></div> <div>${o.status === 'cancelled' ? `<span class="text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">❌ 취소완료</span>` : `<button onclick=\"cancelOrderFromOwner('${o.orderId}', '${o.store}')\" class=\"bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg transition shadow-sm\">❌ 발주취소</button>`}</div> </div> `).join(''); }
         function checkUrlParameters() { const urlParams = new URLSearchParams(window.location.search); const urlStore = urlParams.get('store'); const urlCar = urlParams.get('car'); if (urlCar) { const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if (cleanedCar) { localStorage.setItem('sync_code', cleanedCar); document.getElementById('input-sync-code').value = cleanedCar; document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`; } } if (urlStore) { const selStore = document.getElementById('sel-store'); let isExistOption = false; for(let i=0; i<selStore.options.length; i++) { if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; } } if(!isExistOption) { selStore.value = 'custom'; const inputStore = document.getElementById('input-store'); inputStore.classList.remove('hidden'); inputStore.value = urlStore; } } }
         function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); else document.getElementById('view-settings').classList.add('hidden'); }
         addFormRow(); checkUrlParameters(); renderSentOrdersLog();
