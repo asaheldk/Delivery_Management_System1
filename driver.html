@@ -1,417 +1,419 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>수산물 물류 시스템 - 배송원 관제</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.03em; }
-        .blink-fast { animation: pulse-blink 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse-blink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(0.98); } }
-        @media print {
-            body { background: white; color: black; padding-bottom: 0; }
-            header, main, button, #alarm-banner, #confirm-popup, .print-hidden-btns, #mobile-image-popup-zone { display: none !important; }
-            #company-document-print-zone { display: block !important; }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#123c5a">
+  <title>배송 관리 관제탑</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root{--navy:#123c5a;--teal:#0f8b82;--teal-dark:#086e68;--ink:#182833;--muted:#687985;--line:#dce5e9;--bg:#edf3f5;--warn:#d96c27;--danger:#b7453d;--white:#fff;--shadow:0 12px 35px rgba(23,54,72,.13)}
+    *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--ink);background:var(--bg);font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;-webkit-tap-highlight-color:transparent}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}.app{width:min(100%,760px);min-height:100dvh;margin:auto;padding:0 0 92px;background:#f8fbfc;box-shadow:var(--shadow)}
+    .top{position:sticky;top:0;z-index:10;padding:16px 18px;color:#fff;background:linear-gradient(135deg,var(--navy),#195d78)}.topline{display:flex;align-items:center;justify-content:space-between;gap:12px}.top h1{margin:3px 0 0;font-size:22px}.top p{margin:5px 0 0;color:#d5e7ee;font-size:12px}.top button{min-width:54px;min-height:40px;border:1px solid rgba(255,255,255,.35);border-radius:12px;color:#fff;background:rgba(255,255,255,.1);font-weight:800}.datebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.18)}.datebar input{min-height:38px;padding:0 8px;border:0;border-radius:10px;color:var(--navy);background:#fff;font-weight:800}.autosave{font-size:12px;font-weight:800}
+    main{padding:17px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:13px 9px;border:1px solid var(--line);border-radius:15px;background:#fff;text-align:center}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;margin-top:5px;color:var(--navy);font-size:24px}.section{margin-top:20px}.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px}.heading h2{margin:0;font-size:18px}.heading p{margin:4px 0 0;color:var(--muted);font-size:11px}.heading-actions{display:flex;gap:6px}.mini,.small-primary{min-height:38px;padding:0 11px;border-radius:10px;font-size:12px;font-weight:900}.mini{border:1px solid #c6d4db;color:var(--navy);background:#fff}.small-primary{border:0;color:#fff;background:var(--teal)}
+    .excel{width:100%;min-height:50px;margin-top:10px;border:0;border-radius:14px;color:#fff;background:var(--teal);font-weight:900}.tank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tank{min-height:90px;padding:11px;border:1px solid #c8dce5;border-radius:14px;background:#eef8fb}.tank strong{display:block;color:var(--navy)}.tank p{margin:5px 0 0;color:#3d5d6d;font-size:11px;line-height:1.45}.empty{padding:26px 15px;border:1px dashed #bfced5;border-radius:16px;color:var(--muted);background:#fff;text-align:center;font-size:13px}.stop-list,.customer-list{display:grid;gap:9px}.stop,.customer-row{display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff;text-align:left}.order{display:grid;place-items:center;flex:0 0 37px;height:37px;border-radius:11px;color:#fff;background:var(--navy);font-weight:900}.stop-copy,.customer-copy{min-width:0;flex:1}.stop-copy strong,.customer-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stop-copy small,.customer-copy small{display:block;margin-top:4px;color:var(--muted);font-size:11px}.progress{flex:0 0 43px;color:var(--teal-dark);font-size:12px;font-weight:900;text-align:right}.completed{border-color:#a6d9d3;background:#effaf8}.completed .order{background:var(--teal)}.customer-row>button{min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:9px;color:var(--navy);background:#fff;font-size:12px;font-weight:900}.reorder{display:flex;gap:4px}.reorder select,.reorder button{height:36px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:12px}.reorder button{width:36px;font-weight:900}
+    .settings-card{display:grid;gap:12px;padding:15px;border:1px solid var(--line);border-radius:17px;background:#fff}.field{display:grid;gap:6px}.field>span{font-size:12px;font-weight:900}.field input,.field select,.field textarea{width:100%;min-height:48px;padding:10px 12px;border:1px solid #cbd8de;border-radius:12px;color:var(--ink);background:#fff}.field textarea{min-height:82px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.primary,.outline,.danger,.warning{width:100%;min-height:52px;border-radius:14px;font-weight:900}.primary{border:0;color:#fff;background:var(--teal)}.outline{border:1px solid #bdccd4;color:var(--navy);background:#fff}.danger{border:1px solid #e0aca8;color:#a33d36;background:#fff3f2}.warning{border:1px solid #efbd99;color:#98460f;background:#fff4eb}.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.notice{padding:11px 12px;border-radius:12px;color:#176d78;background:#eaf8f5;font-size:12px;line-height:1.5}
+    nav{position:fixed;right:0;bottom:0;left:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,760px);height:72px;margin:auto;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--line);background:#fff}nav button{border:0;color:#7b8a93;background:#fff;font-size:12px;font-weight:900}nav button span{display:block;margin-bottom:4px;font-size:20px}nav button.active{color:var(--teal)}
+    dialog{width:min(calc(100% - 20px),700px);max-height:92dvh;padding:0;border:0;border-radius:22px;background:#fff;box-shadow:0 20px 70px rgba(8,37,53,.27)}dialog::backdrop{background:rgba(6,24,35,.54)}.modal-head{position:sticky;top:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 17px;border-bottom:1px solid var(--line);background:#fff}.modal-head h2{margin:0;font-size:20px}.modal-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.close{flex:0 0 39px;height:39px;border:0;border-radius:50%;color:var(--navy);background:#edf3f5;font-size:22px}.modal-body{display:grid;gap:13px;padding:16px}.sticky-save{position:sticky;bottom:0;z-index:2;box-shadow:0 -8px 20px rgba(255,255,255,.95)}
+    .subhead{display:flex;align-items:flex-end;justify-content:space-between;margin-top:5px}.subhead strong{font-size:16px}.subhead small{color:var(--muted);font-size:11px}.item-editor{display:grid;gap:10px;padding:13px;border:1px solid var(--line);border-radius:16px;background:#f8fbfc}.item-title{display:flex;align-items:center;justify-content:space-between}.item-title button{border:0;color:var(--danger);background:transparent;font-size:12px;font-weight:900}.three{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px}.check-inline{display:flex;align-items:center;gap:8px;padding:11px;border:1px solid #eac89c;border-radius:12px;background:#fff9f1;font-size:12px;font-weight:900}.check-inline input{width:20px;height:20px}.box-editor{display:grid;gap:8px}.box-row{display:grid;grid-template-columns:35px 1fr;align-items:center;gap:8px}.box-row b{display:grid;place-items:center;height:35px;border-radius:10px;color:#fff;background:var(--navy)}.box-row input{min-height:45px;padding:8px 10px;border:1px solid var(--line);border-radius:11px}
+    .alert{padding:13px;border:1px solid #efb181;border-radius:14px;color:#91440e;background:#fff2e8;font-size:12px;line-height:1.5}.check-list{display:grid;gap:8px}.check-row{display:flex;align-items:center;gap:11px;min-height:69px;padding:11px;border:1px solid var(--line);border-radius:15px;background:#fff}.check-row.checked{border-color:#9fd7d0;background:#effaf8}.check-row input{width:25px;height:25px;accent-color:var(--teal)}.check-copy{flex:1}.check-copy strong,.check-copy small{display:block}.check-copy small{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.45}.tag{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:7px;color:#9b5014;background:#fff0dc;font-size:10px;font-weight:900}.statement{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}.statement h1{margin:0;color:var(--navy);font-size:24px}.statement-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:13px 0 17px;padding:12px 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line)}.statement-meta p{display:grid;grid-template-columns:62px 1fr;gap:7px;margin:0;font-size:12px}.statement-meta p.address{grid-column:1/-1}.statement-meta span{color:var(--muted)}.statement-meta b{overflow-wrap:anywhere}.line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0;padding-top:9px;border-top:1px dashed var(--line);font-size:12px}.line b{white-space:nowrap}.subtotal,.balance,.total{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-weight:900}.subtotal{padding-top:11px;border-top:1px dashed var(--line)}.balance{color:#ac581b}.total{padding-top:11px;border-top:2px solid var(--navy);color:var(--navy);font-size:16px}.statement-note{padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:11px;white-space:pre-wrap}.output-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.output-actions button{min-height:45px;border:1px solid #b8d7d3;border-radius:11px;color:var(--teal-dark);background:#eff9f7;font-size:12px;font-weight:900}.hidden{display:none!important}
+    
+    /* 🚨 [신규 연동 디자인]: 실시간 클라우드 수신 상태를 알려주는 무선 지시계 인프라 스타일 */
+    .network-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: rgba(0,0,0,0.25); font-size: 11px; font-weight: 800; color: #38bdf8; }
+    .network-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; }
+    .network-dot.loading { background: #eab308; animation: pulse 1s infinite; }
+    .consolidated-card { background: #fffbeb; border: 2px solid #f59e0b; padding: 16px; border-radius: 18px; margin-bottom: 14px; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    @media(max-width:440px){.tank-grid{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.statement-meta{grid-template-columns:1fr}.statement-meta p.address{grid-column:auto}.output-actions{grid-template-columns:1fr 1fr}.output-actions button:first-child{grid-column:1/-1}}
+    @media print{@page{size:auto;margin:0}body{background:#fff}body *{visibility:hidden!important}#statementPrint,#statementPrint *{visibility:visible!important}#statementPrint{position:fixed;inset:0;width:100%;padding:12mm;border:0;border-radius:0;box-shadow:none}.output-actions,.modal-head,.no-print{display:none!important}}
+  </style>
 </head>
-<body class="bg-[#e5e7eb] text-[#0f172a] antialiased pb-32">
-
-    <header class="bg-[#0f172a] text-white px-6 py-6 shadow-md sticky top-0 z-50 flex justify-between items-center border-b-2 border-slate-700">
-        <div class="flex flex-col">
-            <div class="flex items-center space-x-2">
-                <span id="sync-indicator" class="w-4 h-4 rounded-full bg-emerald-500 animate-pulse"></span>
-                <h1 id="brand-logo" class="text-xl font-black tracking-tight text-slate-100">FISH-NET 관제탑</h1>
-            </div>
-            <span id="sync-code-text" class="text-sm text-[#38bdf8] font-black mt-1">🚚 배송 마감 통합 원장</span>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="topline">
+        <div>
+          <h1 id="headerCompany">회사명 입력</h1>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <p id="headerDriver" style="margin:0;">차량 호차 미입력 · 배송담당자 미입력</p>
+            <span class="network-badge"><span class="network-dot" id="netDot"></span><span id="netText">실시간 동기화중</span></span>
+          </div>
         </div>
-        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-base font-black px-5 py-3 rounded-2xl transition border-2 border-slate-600">⚙️ 차량 변경</button>
+        <button type="button" data-nav="settings">설정</button>
+      </div>
+      <div class="datebar"><input id="workDate" type="date" aria-label="업무 날짜"><span class="autosave">● 클라우드 수신대기</span></div>
     </header>
+    <main>
+      <div id="consolidatedZone" class="section no-print"></div>
 
-    <main class="max-w-md mx-auto p-3 space-y-6">
-        <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border-4 border-slate-400 space-y-5">
-            <div class="border-b-2 border-slate-200 pb-3"><h2 class="text-xl font-black text-slate-900">⚙️ 관제 차량 번호 세팅</h2></div>
-            <div class="space-y-2">
-                <label class="block text-base font-black text-slate-700">🔗 배송 차량 호수 (숫자만 입력)</label>
-                <input id="input-sync-code" type="text" value="1" class="w-full p-5 bg-slate-100 border-3 border-slate-300 rounded-2xl text-xl font-black outline-none text-center focus:border-blue-600">
-            </div>
-            <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black transition">차량 설정 저장 완료</button>
-        </section>
-
-        <div id="alarm-banner" class="hidden bg-rose-600 text-white p-6 rounded-3xl items-center justify-between shadow-2xl blink-fast border-3 border-rose-400">
-            <div class="flex items-center space-x-4"><span class="text-4xl">🚨</span><div><h4 class="text-xl font-black tracking-tight">새로운 발주서 도착!</h4><p class="text-sm text-rose-100 font-bold mt-1">새 주문이 들어왔습니다. 소리를 끄려면 우측 버튼 터치</p></div></div>
-            <button onclick="stopAlarmServer()" class="bg-white text-rose-700 text-base font-black px-5 py-4 rounded-2xl shadow-md shrink-0">소리 끄기</button>
-        </div>
-
-        <div class="bg-white p-4 rounded-3xl shadow-lg border-3 border-amber-500 space-y-2">
-            <p class="text-xs font-black text-amber-600 uppercase tracking-wider pl-1">诚 사내 구매부서 전달 전용 프로세스</p>
-            <button onclick="generateTotalConsolidatedPurchaseDoc()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-md flex items-center justify-center gap-2 active:scale-95">
-                📊 당일 품목별 총 매입 취합장 발행
-            </button>
-        </div>
-
-        <div class="bg-[#0f172a] text-white p-6 rounded-3xl shadow-xl border-2 border-slate-800 relative">
-            <p class="text-sm font-black uppercase text-slate-400 tracking-wider">실시간 외상/미수 관리 장부 (총액)</p>
-            <div class="flex justify-between items-center mt-2"><h3 id="total-receivables-display" class="text-4xl font-black font-mono text-yellow-400">0 원</h3><button onclick="toggleReceivablesForm()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 font-black px-4 py-2.5 rounded-xl border border-slate-600 transition">✏️ 장부 수정</button></div>
-            <div id="receivables-list-area" class="mt-4 pt-4 border-t-2 border-slate-800 text-base space-y-2 text-slate-200 font-bold"></div>
-            <div id="receivables-edit-form" class="hidden mt-4 pt-4 border-t-2 border-slate-800 space-y-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-700">
-                <p class="text-sm font-black text-blue-400">📊 거래처 장부 편집 및 💵수금 차감 기입란</p>
-                <div id="receivables-edit-inputs-container" class="space-y-3"></div>
-                <div class="flex gap-2 pt-1"><button onclick="addEmptyReceivableRow()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-200 py-3.5 rounded-xl text-xs font-black border border-slate-600">➕ 거래처 추가</button><button onclick="saveReceivables()" class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl text-sm font-black transition">💾 변경사항 장부 반영</button></div>
-            </div>
-        </div>
-
-        <div class="space-y-4">
-            <div class="flex justify-between items-center bg-slate-700 text-white px-4 py-2 rounded-xl shadow-sm">
-                <p class="text-base font-black tracking-wide uppercase pt-1">📋 실시간 접수 거래처 대기열 목록</p>
-                <button onclick="downloadMasterExcelFile()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition border border-emerald-500 shadow-sm">📅 오늘 전체 물량 엑셀 다운</button>
-            </div>
-            <div id="driver-queue-container" class="space-y-4"></div>
-        </div>
+      <section id="todayView"></section>
+      <section id="customersView" class="hidden"></section>
+      <section id="settingsView" class="hidden"></section>
     </main>
+    <nav aria-label="주요 메뉴">
+      <button type="button" class="active" data-nav="today"><span>✓</span>배송</button>
+      <button type="button" data-nav="customers"><span>▤</span>거래처</button>
+      <button type="button" data-nav="settings"><span>⚙</span>설정</button>
+    </nav>
+  </div>
 
-    <div id="confirm-popup" class="hidden fixed inset-0 bg-[#0f172a]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-slate-400 animate-in zoom-in-95 duration-150">
-            <div class="flex items-center space-x-2 text-amber-500"><span class="text-3xl">⚠️</span><h3 class="text-xl font-black text-slate-900">최종 금액 최종 검증</h3></div>
-            <div class="bg-slate-100 p-4 rounded-2xl text-base space-y-4 text-slate-800 border font-bold">
-                <div class="flex justify-between border-b pb-2 text-lg"><span>정산 점포명:</span><span id="pop-store" class="text-slate-900 font-black text-xl"></span></div>
-                <div id="pop-items-list" class="space-y-2 max-h-48 overflow-y-auto text-base"></div>
-                <div class="flex justify-between border-t border-slate-300 pt-4 mt-2 font-black text-blue-600 text-lg"><span>최종 정산 합계:</span><span id="pop-total" class="font-mono text-2xl underline underline-offset-4"></span></div>
-            </div>
-            <div class="grid grid-cols-2 gap-3"><button onclick="closeConfirmPopup()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-5 rounded-2xl text-base font-black border">금액 수정</button><button onclick="executeFinalSubmit()" class="bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-base font-black transition">금액 맞음 (확인)</button></div>
-        </div>
+  <dialog id="customerDialog"></dialog>
+  <dialog id="deliveryDialog"></dialog>
+  <dialog id="checklistDialog"></dialog>
+  <input id="restoreInput" class="hidden" type="file" accept="application/json,.json">
+
+  <div id="mobileImagePopup" class="hidden" style="position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:100; display:flex; flex-col; align-items:center; justify-content:center; p:16px;">
+    <div style="background:#fff; width:min(100%, 400px); padding:20px; border-radius:24px; text-align:center; box-shadow:var(--shadow);">
+      <p style="font-size:16px; font-weight:900; color:var(--navy); margin:0 0 10px 0;">📸 [카톡 저장용] 사진 저장 방법</p>
+      <p style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:15px;">아래 명세서 이미지를 <span style="color:var(--danger); underline">손가락으로 2초 동안 꾹 누르시면</span> 메뉴가 뜹니다!</p>
+      <div style="border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:15px; background:#fff;">
+        <img id="popupImg" src="" alt="거래명세표" style="width:100%; h-auto:display:block;">
+      </div>
+      <button type="button" onclick="document.getElementById('mobileImagePopup').classList.add('hidden')" style="width:100%; min-height:48px; background:var(--navy); color:#fff; font-weight:900; border:0; border-radius:12px;">관제탑으로 돌아가기</button>
     </div>
+  </div>
 
-    <div id="label-output-section" class="max-w-md mx-auto px-3 hidden mb-6">
-        <div class="bg-white border-4 border-slate-900 p-6 rounded-3xl shadow-xl space-y-4 relative text-slate-900">
-            <span class="absolute top-4 right-4 border border-slate-900 px-2 py-0.5 text-xs font-black bg-slate-900 text-white">CARGO MANIFEST</span>
-            <div class="text-center border-b-2 border-slate-900 pb-3"><h4 id="label-brand" class="font-black text-2xl tracking-tight">FISH-NET LOGISTICS</h4><p class="text-xs text-slate-500 font-bold tracking-tight mt-1">DIGITAL MANAGEMENT SYSTEM LABELLING</p></div>
-            <div class="grid grid-cols-1 gap-2.5 text-base font-bold">
-                <div class="flex justify-between text-lg"><span class="text-blue-600">• 납품 지정일:</span><span id="lbl-lbl-date" class="font-black text-blue-600 underline"></span></div>
-                <div class="flex justify-between text-lg"><span>• 상호 (STORE):</span><span id="lbl-lbl-store" class="font-black text-xl text-slate-900"></span></div>
-                <div class="flex justify-between"><span>• 연락처 (TEL):</span><span id="lbl-lbl-phone"></span></div>
-                <div class="flex justify-between"><span>• 주소 (DEST):</span><span id="lbl-lbl-address" class="truncate max-w-[200px]"></span></div>
-                <hr class="border-dashed border-slate-900 my-1"><div id="lbl-lbl-items-area" class="space-y-2 text-base font-black"></div><hr class="border-dashed border-slate-400 my-1">
-                <div class="border-t-2 border-slate-900 pt-3 mt-1 flex justify-between text-xl font-black"><span>★ 정산합계액:</span><span id="lbl-lbl-total" class="text-blue-600 font-mono text-2xl"></span></div>
-            </div>
-            <div class="bg-slate-100 h-12 w-full mt-4 flex items-center justify-center font-mono text-slate-400 border border-slate-300 rounded-lg">|||| | ||||| ||| | ||| ||</div>
+  <script>
+  (()=>{
+    "use strict";
+    const STORAGE_KEY="jangbaek_delivery_html_v1";
+    // 원격 연동 중계 서버 베이스 주소 기입
+    const CLOUD_RELAY_URL = "https://ntfy.sh/fish_net_relay_";
+
+    const categories=["활어","패류","냉동제품","필렛 제품"];
+    const species=["광어","도미","농어","점성어","연어","우니(성게알)","전복","백상합","멍게","개불","소라","해삼","가리비","기타"];
+    const origins=["대한민국","일본","중국","러시아","노르웨이","칠레","캐나다","미국","호주","뉴질랜드","베트남","태국","인도네시아","필리핀","대만","페루","멕시코","기타"];
+    const $=s=>document.querySelector(s);
+    const money=n=>new Intl.NumberFormat("ko-KR").format(Math.round(Number(n)||0));
+    const id=()=>Date.now()+Math.floor(Math.random()*100000);
+    const dateLocal=()=>{const d=new Date(),o=d.getTimezoneOffset()*60000;return new Date(d-o).toISOString().slice(0,10)};
+    const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+    const safeName=v=>String(v||"배송").replace(/[\\/:*?"<>|]/g,"_");
+    
+    let state=load();
+    let view="today";
+    let workDate=dateLocal();
+    let customerEditId=null;
+    let deliveryEditId=null;
+    let selectedDeliveryId=null;
+    let customerReorder=false;
+    let syncIntervalTimer=null; // 실시간 폴링 타이머 제어용 버퍼
+
+    function emptyState(){return{profile:{companyName:"",driverName:"",vehicleNumber:""},customers:[],deliveries:[]}}
+    function load(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");return data&&data.profile&&Array.isArray(data.customers)&&Array.isArray(data.deliveries)?data:emptyState()}catch{return emptyState()}}
+    function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));renderHeader()}
+    function byOrder(a,b){return(Number(a.routeOrder)||999)-(Number(b.routeOrder)||999)||a.id-b.id}
+    function customers(){return[...state.customers].sort(byOrder)}
+    function deliveries(){return state.deliveries.filter(d=>d.deliveryDate===workDate).sort(byOrder)}
+    function customerOf(d){return state.customers.find(c=>c.id===d.customerId)||{name:d.fallbackStoreName||"알 수 없는 매장",deliveryPlace:"",address:"",phone:""}}
+    function itemQty(i){return i.category==="냉동제품"?`${i.requestedQty||0}팩`:i.actualWeight?`${i.actualWeight}kg`:`${i.requestedQty||0}${i.unit||"마리"}`}
+    function baseAmount(i){if(i.category==="냉동제품")return(Number(i.requestedQty)||0)*(Number(i.unitPrice)||0);return(Number(i.actualWeight)||0)*(Number(i.unitPrice)||0)}
+    function itemAmount(i){return baseAmount(i)+(i.category==="필렛 제품"?(Number(i.actualWeight)||0)*(Number(i.processingFeePerKg)||0):0)}
+    function progress(d){const all=[...(d.items||[]),...(d.boxes||[])],done=all.filter(x=>x.checked).length;return{done,total:all.length}}
+
+    function renderHeader(){
+      $("#headerCompany").textContent=state.profile.companyName||"회사명 입력";
+      $("#headerDriver").textContent=`${state.profile.vehicleNumber||"차량 미입력"} · ${state.profile.driverName||"배송담당자 미입력"}`;
+      $("#workDate").value=workDate;
+    }
+    function setView(next){view=next;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===view));$("#todayView").classList.toggle("hidden",view!=="today");$("#customersView").classList.toggle("hidden",view!=="customers");$("#settingsView").classList.toggle("hidden",view!=="settings");render()}
+    
+    function render(){
+      renderHeader();
+      if(viewInnerCheck()) return; 
+      if(viewInternalBuild()) return;
+    }
+    
+    function viewInnerCheck(){ if(view==="today")renderToday();if(view==="customers")renderCustomers();if(view==="settings")renderSettings();return false; }
+
+    function renderToday(){
+      const rows=deliveries(),ready=rows.filter(d=>d.status!=="completed").length,complete=rows.filter(d=>d.status==="completed").length,boxes=rows.reduce((s,d)=>s+(d.boxes||[]).length,0);
+      const tanks=Array.from({length:6},(_,x)=>{const n=x+1,loads=rows.flatMap(d=>(d.items||[]).filter(i=>Number(i.tankNumber)===n).map(i=>`${customerOf(d).name} · ${i.species} ${itemQty(i)}`));return`<div class="tank"><strong>${n}번 수조</strong><p>${loads.length?loads.map(esc).join("<br>"):"비어 있음"}</p></div>`}).join("");
+      const stops=rows.length?rows.map(d=>{const c=customerOf(d),p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");return`<button type="button" class="stop ${d.status==="completed"?"completed":""}" data-open-check="${d.id}"><span class="order">${d.routeOrder}</span><span class="stop-copy"><strong>${esc(c.name)}</strong><small>${esc(names||"품목 없음")}${(d.boxes||[]).length?` · ${d.boxes.length}박스`:""}</small></span><span class="progress">${p.done}/${p.total}</span></button>`}).join(""):`<div class="empty">오늘 접수된 클라우드 발주가 없습니다.<br>점주 앱에서 발주를 전송하면 이곳에 실시간 노출됩니다.</div>`;
+      $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions"><button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>＋ 발주</button></div></div><div class="stop-list">${stops}</div></div>`;
+      
+      // 상단 총 매입 취합장 빌더 가동
+      renderConsolidatedPurchaseView(rows);
+    }
+
+    // 🟢 [요청 기능 구현]: 전 점포 수량 분별 합산 자동 계산 및 매입지출용 뷰어 빌더
+    function renderConsolidatedPurchaseView(rows) {
+      const activeRows = rows.filter(d => d.status !== "completed");
+      if(!activeRows.length) {
+        $("#consolidatedZone").innerHTML = "";
+        return;
+      }
+
+      let consolidatedMap = {};
+      activeRows.forEach(d => {
+        const c = customerOf(d);
+        (d.items || []).forEach(item => {
+          const key = `${item.species}_||_${item.size || '규격없음'}_||_${item.unit || '마리'}`;
+          if(!consolidatedMap[key]) {
+            consolidatedMap[key] = { name: item.species, size: item.size || "기본 규격", unit: item.unit || "마리", totalQty: 0, stores: [] };
+          }
+          consolidatedMap[key].totalQty += (Number(item.requestedQty) || 0);
+          consolidatedMap[key].stores.push(`${c.name}(${item.requestedQty}${item.unit})`);
+        });
+      });
+
+      let itemsHtml = Object.values(consolidatedMap).map(row => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed var(--line); font-size:13px; font-weight:700;">
+          <div>
+            <span style="font-size:15px; color:var(--navy);">🐟 ${esc(row.name)}</span> 
+            <span style="color:var(--warn); font-size:12px;">[${esc(row.size)}]</span>
+            <small style="display:block; color:var(--muted); font-weight:normal; font-size:11px; margin-top:2px;">↳ 분별내역: ${esc(row.stores.join(', '))}</small>
+          </div>
+          <div style="font-size:16px; color:var(--teal-dark); font-weight:900;">총 ${row.totalQty} ${esc(row.unit)}</div>
         </div>
-    </div>
+      `).join('');
 
-    <div id="company-document-print-zone" class="max-w-md mx-auto px-3 hidden mb-24 bg-white rounded-3xl overflow-hidden shadow-2xl border-2 border-slate-300">
-        <div class="bg-slate-800 text-white p-5 flex flex-col gap-3 print:hidden border-b-2 border-slate-900 print-hidden-btns">
-            <span id="doc-top-title-banner" class="text-base font-black text-yellow-400 text-center tracking-wide">📄 사내 통합 정산 문서 발행 완료</span>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white text-sm font-black py-4 rounded-xl shadow transition">🖨️ 종이 인쇄 / PDF</button>
-                <button id="btn-excel-export-dynamic" onclick="downloadExcelFile()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black py-4 rounded-xl shadow transition">🟢 사내용 엑셀 다운</button>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="downloadDocumentAsImage('png')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-black py-4 rounded-xl shadow transition flex items-center justify-center gap-1">🖼️ PNG 사진 보기</button>
-                <button onclick="downloadDocumentAsImage('jpg')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black py-4 rounded-xl shadow transition flex items-center justify-center gap-1">📸 JPG 사진 보기</button>
-            </div>
+      $("#consolidatedZone").innerHTML = `
+        <div class="consolidated-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f59e0b; padding-bottom:6px; margin-bottom:10px;">
+            <strong style="color:#b45309; font-size:14px;">📊 구매담당자 전달용 [당일 총 매입 취합장]</strong>
+            <button class="mini" type="button" onclick="window.print()" style="min-height:28px; font-size:11px; padding:0 8px; border-radius:6px; border-color:#f59e0b; background:#fff;">수기 인쇄</button>
+          </div>
+          <div style="display:grid; gap:4px;">${itemsHtml}</div>
         </div>
-        
-        <div id="capture-target-sub-zone" class="bg-white p-5 space-y-8 text-black">
-            <div class="border-2 border-slate-900 p-4 rounded-xl space-y-3 relative bg-white">
-                <div class="text-center border-b-2 border-slate-900 pb-2">
-                    <h2 id="doc-main-sheet-title" class="text-2xl font-black tracking-widest underline underline-offset-4">매 입 발 주 장</h2>
-                    <p id="doc-sub-sheet-title" class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">( 사내 제품 매입 담당자 제출용 명세서 )</p>
-                </div>
-                <div class="grid grid-cols-2 text-xs font-bold gap-y-1 text-slate-700">
-                    <div>• 제출대상: <span id="doc-purchase-store" class="text-slate-900 text-sm font-black">구매 부서 담당자 귀하</span></div>
-                    <div class="text-right">마감일자: <span id="doc-purchase-date">-</span></div>
-                    <div class="col-span-2">• 관제차량: <span id="doc-purchase-car" class="text-slate-900">-</span></div>
-                </div>
-                
-                <table class="w-full text-left text-xs border-collapse border border-slate-400 mt-2 font-bold">
-                    <thead id="doc-purchase-table-header-inject"></thead>
-                    <tbody id="doc-purchase-table-body"></tbody>
-                </table>
-            </div>
+      `;
+    }
 
-            <div id="doc-part-b-dispatch-panel" class="border-2 border-dashed border-red-600 p-4 rounded-xl space-y-3 bg-slate-50/50 relative">
-                <div class="text-center border-b-2 border-red-600 pb-2"><h2 class="text-2xl font-black tracking-tight text-red-600">작업 및 출고 명세서</h2><p class="text-[10px] text-slate-500 font-bold tracking-tight mt-0.5">⚠️ ( 출고 전 작업팀 및 마감 확인 필수 )</p></div>
-                <div id="doc-dispatch-alert-zone" class="space-y-1.5"></div>
-                <div class="text-xs font-bold text-slate-700"><div>• 거래처명: <span id="doc-dispatch-store" class="text-slate-900 text-sm font-black"></span></div><div class="mt-1">• 배송 요망지: <span id="doc-dispatch-address" class="text-slate-900"></span></div></div>
-                <div class="bg-white border border-slate-300 rounded-xl p-3 space-y-2.5 shadow-inner"><p class="text-xs font-black text-slate-400 uppercase tracking-wider">🐟 출고 품목별 세부 작업 지시</p><div id="doc-dispatch-items-list" class="space-y-2 text-sm font-black text-slate-900"></div></div>
-                <p class="text-[11px] text-center font-bold text-red-500 bg-red-50 p-2 rounded-lg border border-red-200">※ 출고팀은 위 작업방식을 반드시 엄수하여 차량에 상차해 주세요.</p>
-            </div>
-        </div>
-    </div>
+    function renderCustomers(){
+      const list=customers();
+      $("#customersView").innerHTML=`<div class="heading"><div><h2>내 거래처</h2><p>거래처명·납품처·주소·연락처와 기본 순서를 관리합니다.</p></div><div class="heading-actions">${list.length>1?`<button class="mini" type="button" data-reorder-customers>${customerReorder?"변경 완료":"순서 변경"}</button>`:""}<button class="small-primary" type="button" data-new-customer>＋ 추가</button></div></div><div class="customer-list">${list.length?list.map((c,i)=>`<div class="customer-row"><span class="order">${i+1}</span><span class="customer-copy"><strong>${esc(c.name)}</strong><small>${esc(c.deliveryPlace||c.address||`기본 배송순서 ${i+1}`)}</small></span>${customerReorder?`<span class="reorder"><select data-customer-position="${c.id}" aria-label="${esc(c.name)} 순서">${list.map((_,p)=>`<option value="${p+1}" ${p===i?"selected":""}>${p+1}번</option>`).join("")}</select><button type="button" data-move-customer="${c.id}" data-dir="-1" ${i===0?"disabled":""}>↑</button><button type="button" data-move-customer="${c.id}" data-dir="1" ${i===list.length-1?"disabled":""}>↓</button></span>`:`<button type="button" data-edit-customer="${c.id}">수정</button>`}</div>`).join("")}:`<div class="empty">등록된 거래처가 없습니다.</div>`}</div>`;
+    }
 
-    <div id="mobile-image-popup-zone" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 overflow-y-auto p-4 flex flex-col items-center justify-start pt-10 space-y-4">
-        <div class="bg-yellow-400 text-[#0f172a] p-4 rounded-2xl w-full max-w-sm text-center shadow-xl border-2 border-white"><p class="text-lg font-black tracking-tight">🚨 [5060 현장 필수] 사진 저장 방법</p><p class="text-sm font-bold mt-1 text-slate-800">아래 사진을 <span class="text-red-700 underline underline-offset-2 font-black">2초 동안 손가락으로 꾹~ 누르시면</span> [이미지 저장] 또는 [카카오톡 전달] 메뉴가 튀어 나옵니다!</p></div>
-        <div class="bg-white p-2 rounded-2xl shadow-2xl max-w-sm border border-slate-300"><img id="mobile-canvas-to-img-tag" src="" alt="발주장서류" class="w-full h-auto rounded-xl"></div>
-        <button onclick="closeMobileImagePopup()" class="w-full max-w-sm bg-slate-800 text-white py-5 rounded-2xl text-lg font-black border-2 border-slate-600 transition">❌ 닫기 (관제탑으로 돌아가기)</button>
-    </div>
+    function renderSettings(){
+      $("#settingsView").innerHTML=`<div class="heading"><div><h2>회사·차량 정보</h2><p>입력한 내용은 화면과 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input name="companyName" value="${esc(state.profile.companyName)}" placeholder="예: 장백수산"></label><label class="field"><span>배송담당자 이름</span><input name="driverName" value="${esc(state.profile.driverName)}" placeholder="예: 홍길동"></label><label class="field"><span>차량 호차</span><input id="setVehicleNum" name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 7호차 또는 숫자 1"></label><button class="primary" type="submit">회사·차량 정보 저장 및 무선망 연결</button><div class="notice">이 HTML 파일의 자료는 현재 브라우저에 자동 저장됩니다. 휴대폰 변경이나 브라우저 초기화 전에 반드시 백업 파일을 저장해 주세요.</div><div class="backup-actions"><button class="outline" type="button" data-backup>백업 저장</button><button class="outline" type="button" data-restore>백업 복원</button></div></form>`;
+    }
 
-    <script>
-        let globalOrdersCache = {}; let activeProcessingOrderId = null; let currentExpandedOrderId = null;
-        let audioCtx = null; let alarmInterval = null; let syncTimer = null; let isConsolidatedMode = false;
+    function openCustomer(customerId){
+      customerEditId=customerId||null;const c=state.customers.find(x=>x.id===customerId)||{name:"",deliveryPlace:"",address:"",phone:"",routeOrder:customers().length+1};
+      const dlg=$("#customerDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${customerId?"거래처 수정":"거래처 등록"}</h2><p>거래처와 실제 납품처 상세 정보를 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="customerForm" class="modal-body"><label class="field"><span>거래처명 (필수)</span><input name="name" required value="${esc(c.name)}" placeholder="예: 동해횟집 본점"></label><label class="field"><span>납품처</span><input name="deliveryPlace" value="${esc(c.deliveryPlace)}" placeholder="예: 동해횟집 강남점"></label><label class="field"><span>주소</span><input name="address" value="${esc(c.address)}" placeholder="예: 서울시 강남구 테헤란로 00"></label><label class="field"><span>연락처</span><input name="phone" type="tel" value="${esc(c.phone)}" placeholder="예: 010-1234-5678"></label><label class="field"><span>기본 배송순서</span><select name="routeOrder">${Array.from({length:Math.max(1,customers().length+(customerId?0:1))},(_,i)=>`<option value="${i+1}" ${Number(c.routeOrder)===i+1?"selected":""}>${i+1}번</option>`).join("")}</select></label><button class="primary sticky-save" type="submit">${customerId?"변경 내용 저장":"거래처 저장"}</button>${customerId?`<button class="danger" type="button" data-delete-customer="${customerId}">거래처 삭제</button>`:""}</form>`;dlg.showModal();
+    }
+    function saveCustomer(form){
+      const data=Object.fromEntries(new FormData(form));const value={name:String(data.name).trim(),deliveryPlace:String(data.deliveryPlace).trim(),address:String(data.address).trim(),phone:String(data.phone).trim(),routeOrder:Number(data.routeOrder)||1};if(!value.name)return;
+      if(customerEditId){const i=state.customers.findIndex(c=>c.id===customerEditId);state.customers[i]={...state.customers[i],...value}}else state.customers.push({id:id(),...value});normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers();
+    }
+    function normalizeCustomerOrder(){customers().forEach((c,i)=>{c.routeOrder=i+1})}
+    function moveCustomer(customerId,target){const list=customers(),i=list.findIndex(c=>c.id===customerId),to=Math.max(0,Math.min(list.length-1,target));if(i<0||i===to)return;const [m]=list.splice(i,1);list.splice(to,0,m);list.forEach((c,x)=>{const real=state.customers.find(r=>r.id===c.id);real.routeOrder=x+1;state.deliveries.filter(d=>d.customerId===c.id&&d.deliveryDate===workDate).forEach(d=>d.routeOrder=x+1)});save();renderCustomers()}
 
-        const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
+    function blankItem(){return{id:id(),category:"활어",species:"광어",size:"기본 규격",originCountry:"",requestedQty:1,unit:"마리",actualWeight:"",unitPrice:"",processingFeePerKg:"",processing:"찍어바리",tankNumber:0,rubberBand:false,rubberBandQuantity:"",rubberBandColor:"",includedNote:"",checked:false}}
+    
+    function openDelivery(deliveryId){
+      deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[{id:id(),boxNumber:1,contents:"",checked:false}]};
+      const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"발주·포장 수정":"발주·포장 입력"}</h2><p>카카오톡 발주 내용을 한 번만 옮겨 적습니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong><small>실제 포장 결과를 입력</small></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 특별 확인</span><textarea name="coPackNote" placeholder="예: 1번 광어 박스 안에 연어 1팩 동봉">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" inputmode="numeric" type="number" min="0" value="${d.previousBalance||""}" placeholder="예: 150000"></label><label class="field"><span>전체 메모</span><textarea name="notes" placeholder="거래처 요청사항을 기록해 주세요.">${esc(d.notes)}</textarea></label><button class="primary sticky-save" type="submit">발주·포장 저장</button></form>`;
+      dlg._draft=d;renderItemEditors();renderBoxEditors();dlg.showModal();
+    }
+    function itemEditor(i,x){return`<div class="item-editor" data-item-index="${x}"><div class="item-title"><strong>${x+1}번 품목</strong><button type="button" data-remove-item="${x}">삭제</button></div><div class="three"><label class="field"><span>구분</span><select data-item="category">${categories.map(v=>`<option ${i.category===v?"selected":""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종·품목</span><input data-item="species" list="speciesList" value="${esc(i.species)}"></label><label class="field"><span>규격/사이즈</span><input data-item="size" value="${esc(i.size||'기본 규격')}" placeholder="예: 2.3K, 500g"></label></div><div class="three"><label class="field"><span>원산지</span><input data-item="originCountry" list="originList" value="${esc(i.originCountry)}" placeholder="선택·직접입력"></label><label class="field"><span>주문 수량</span><input data-item="requestedQty" type="number" min="0" step="0.01" value="${i.requestedQty}"></label><label class="field"><span>단위</span><select data-item="unit"><option ${i.unit==="마리"?"selected":""}>마리</option><option ${i.unit==="팩"?"selected":""}>팩</option><option ${i.unit==="박스"?"selected":""}>박스</option><option ${i.unit==="개"?"selected":""}>개</option><option ${i.unit==="kg"?"selected":""}>kg</option></select></label></div><div class="three"><label class="field"><span>실제 중량(kg)</span><input data-item="actualWeight" type="number" min="0" step="0.01" value="${i.actualWeight??""}" ${i.category==="냉동제품"?"disabled":""}></label><label class="field"><span>${i.category==="냉동제품"?"팩당 가격":"kg당 단가"}</span><input data-item="unitPrice" type="number" min="0" value="${i.unitPrice||""}"></label><label class="field"><span>수조 위치</span><select data-item="tankNumber"><option value="0">박스·별도</option>${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>${n+1}번 수조</option>`).join("")}</select></label></div><div class="two"><label class="field"><span>필렛 작업비/kg</span><input data-item="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg||""}" ${i.category==="필렛 제품"?"":"disabled"}></label><label class="field"><span>작업·보관</span><input data-item="processing" value="${esc(i.processing)}" placeholder="예: 찍어바리, 냉동 보관"></label></div><label class="check-inline"><input data-item-check="rubberBand" type="checkbox" ${i.rubberBand?"checked":""}>꼬리 고무밴드 작업</label><div class="two"><label class="field"><span>고무밴드 수량</span><input data-item="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity||""}" ${i.rubberBand?"":"disabled"}></label><label class="field"><span>고무밴드 색상</span><input data-item="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand?"":"disabled"} placeholder="예: 빨강"></label></div><label class="field"><span>품목·동봉 메모</span><input data-item="includedNote" value="${esc(i.includedNote)}"></label></div>`}
+    function renderItemEditors(){const d=$("#deliveryDialog")._draft;$("#itemEditors").innerHTML=d.items.map(itemEditor).join("")+`<datalist id="speciesList">${species.map(v=>`<option value="${v}">`).join("")}</datalist><datalist id="originList">${origins.map(v=>`<option value="${v}">`).join("")}</datalist>`}
+    function renderBoxEditors(){const d=$("#deliveryDialog")._draft;$("#boxEditors").innerHTML=d.boxes.map((b,i)=>`<label class="box-row"><b>${i+1}</b><input data-box="${i}" value="${esc(b.contents)}" placeholder="예: 광어 + 연어 1팩 동봉"></label>`).join("")}
+    function syncDraft(){const dlg=$("#deliveryDialog"),d=dlg._draft;dlg.querySelectorAll("[data-item-index]").forEach(row=>{const i=d.items[Number(row.dataset.itemIndex)];row.querySelectorAll("[data-item]").forEach(el=>{i[el.dataset.item]=el.value});const ch=row.querySelector("[data-item-check]");i.rubberBand=ch.checked});dlg.querySelectorAll("[data-box]").forEach(el=>{d.boxes[Number(el.dataset.box)].contents=el.value})}
+    function saveDelivery(form){syncDraft();const fd=Object.fromEntries(new FormData(form)),d=$("#deliveryDialog")._draft;if(!d.items.length)return alert("품목을 한 개 이상 입력해 주세요.");Object.assign(d,{customerId:Number(fd.customerId),deliveryDate:fd.deliveryDate,routeOrder:Math.max(1,Number(fd.routeOrder)||1),coPackNote:String(fd.coPackNote||""),notes:String(fd.notes||""),previousBalance:Math.max(0,Number(fd.previousBalance)||0)});d.items=d.items.map(i=>({...i,requestedQty:Number(i.requestedQty)||0,actualWeight:i.category==="냉동제품"?null:(i.actualWeight===""?null:Number(i.actualWeight)),unit:i.category==="냉동제품"?"팩":i.unit,unitPrice:Number(i.unitPrice)||0,processingFeePerKg:i.category==="필렛 제품"?Number(i.processingFeePerKg)||0:0,tankNumber:Number(i.tankNumber)||0,rubberBandQuantity:i.rubberBand?Number(i.rubberBandQuantity)||0:0,rubberBandColor:i.rubberBand?i.rubberBandColor:""}));if(deliveryEditId){const x=state.deliveries.findIndex(v=>v.id===deliveryEditId);d.id=deliveryEditId;state.deliveries[x]=d}else{d.id=id();d.status="ready";d.createdAt=new Date().toISOString();state.deliveries.push(d)}save();$("#deliveryDialog").close();workDate=d.deliveryDate;render()}
 
-        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '1');
-        document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
-        document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${localStorage.getItem('sync_code')}호차`;
+    function openChecklist(deliveryId){selectedDeliveryId=deliveryId;const d=state.deliveries.find(x=>x.id===deliveryId);if(!d)return;const c=customerOf(d),p=progress(d),amount=d.items.reduce((s,i)=>s+itemAmount(i),0),allChecked=p.total>0&&p.done===p.total;
+      const itemChecks=d.items.map(i=>`<label class="check-row ${i.checked?"checked":""}"><input type="checkbox" data-check-item="${i.id}" ${i.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong>${esc(i.species)} ${esc(itemQty(i))} <span style="color:var(--warn)">[${esc(i.size||"규격없음")}]</span></strong><small>${esc(i.category)} · ${esc(i.processing||"")}${i.originCountry?` · 원산지 ${esc(i.originCountry)}`:""}${i.tankNumber?` · ${i.tankNumber}번 수조에서 하차`:""}</small>${i.rubberBand?`<b class="tag">꼬리 고무밴드 ${esc(i.rubberBandColor)} ${i.rubberBandQuantity||0}개 확인</b>`:""}</span></label>`).join("");
+      const boxChecks=d.boxes.map(b=>`<label class="check-row ${b.checked?"checked":""}"><input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong>${b.boxNumber}번 박스</strong><small>${esc(b.contents||"박스 내용 미입력")}</small></span></label>`).join("");
+      const statement=statementHTML(d,c,amount);const dlg=$("#checklistDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print"><button type="button" data-print>인쇄</button><button type="button" data-image="png">PNG 팝업</button><button type="button" data-image="jpg">JPG 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}">잘못 입력한 오늘 배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"}>${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;if(!dlg.open)dlg.showModal();
+    }
+    function statementHTML(d,c,amount){const lines=d.items.map(i=>{const base=baseAmount(i),fee=i.category==="필렛 제품"?(Number(i.actualWeight)||0)*(Number(i.processingFeePerKg)||0):0;if(!base&&!fee)return"";return`<div>${base?`<div class="line"><span>${esc(i.species)} [${esc(i.size||"기본")}] ${esc(itemQty(i))} × ${money(i.unitPrice)}원/${i.category==="냉동제품"?"팩":"kg"}</span><b>${money(base)}원</b></div>`:""}${fee?`<div class="line"><span>필렛 작업비 ${i.actualWeight||0}kg × ${money(i.processingFeePerKg)}원</span><b>${money(fee)}원</b></div>`:""}</div>`}).join("");const due=amount+(Number(d.previousBalance)||0);return`<h1>${esc(c.name)} 거래명세</h1><div class="statement-meta"><p><span>거래처명</span><b>${esc(c.name)}</b></p><p><span>납품처</span><b>${esc(c.deliveryPlace||"-")}</b></p><p class="address"><span>주소</span><b>${esc(c.address||"-")}</b></p><p><span>연락처</span><b>${esc(c.phone||"-")}</b></p><p><span>배송일</span><b>${esc(d.deliveryDate)}</b></p></div>${lines}<div class="subtotal"><span>당일 공급금액</span><b>${money(amount)}원</b></div>${d.previousBalance?`<div class="balance"><span>전날 미수금액</span><b>${money(d.previousBalance)}원</b></div>`:""}<div class="total"><span>최종 합계</span><b>${money(due)}원</b></div>${d.notes?`<div class="statement-note">${esc(d.notes)}</div>`:""}`}
+    function updateCheck(type,itemId,checked){const d=state.deliveries.find(x=>x.id===selectedDeliveryId),list=type==="item"?d.items:d.boxes,obj=list.find(x=>x.id===itemId);if(obj)obj.checked=checked;save();openChecklist(selectedDeliveryId)}
+    
+    // 🛠️ [버그 원천 수리]: 카톡 모바일 브라우저 한계 우회용 이미지 스캔 및 팝업 전시 함수 개조
+    async function saveStatementImage(format){
+      if(typeof html2canvas!=="function")return alert("이미지 저장 모듈을 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.");
+      const node=$("#statementPrint");
+      
+      // 스크롤 오류 방지를 위해 0.1초 렌더링 락 확보 후 스캔
+      setTimeout(async ()=>{
+        try {
+          const canvas = await html2canvas(node,{
+            scale:2,
+            backgroundColor:"#ffffff",
+            useCORS:true,
+            scrollX:0,
+            scrollY:0
+          });
+          const mimeType = format==="jpg"?"image/jpeg":"image/png";
+          const base64Data = canvas.toDataURL(mimeType, 0.95);
+          
+          // 가운뎃정렬 모달 이미지 태그에 리소스 주입 및 가동
+          $("#popupImg").src = base64Data;
+          $("#mobileImagePopup").classList.remove("hidden");
+        } catch(e) {
+          alert("모바일 드라이버 캔버스 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+      }, 100);
+    }
 
-        if(!localStorage.getItem('driver_acked_cancels')) localStorage.setItem('driver_acked_cancels', JSON.stringify([]));
-        if(!localStorage.getItem('fish_collect_history')) localStorage.setItem('fish_collect_history', JSON.stringify([]));
+    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,규격사이즈:i.size||"기본 규격",원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
+    function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`배송관리_백업_${dateLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+    function restore(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d.profile||!Array.isArray(d.customers)||!Array.isArray(d.deliveries))throw 0;if(confirm("현재 자료를 백업 파일 내용으로 교체할까요?")){state=d;save();render();alert("백업 자료를 복원했습니다.")}}catch{alert("올바른 배송관리 백업 파일이 아닙니다.")}};reader.readAsText(file)}
 
-        function playBeep() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = "sine"; osc.frequency.value = 950; gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
-        function updateSettingsMaster() { const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if(!code) return; localStorage.setItem('sync_code', code); document.getElementById('sync-code-text').innerText = `🟢 활성 채널망: ${code}호차`; globalOrdersCache = {}; currentExpandedOrderId = null; document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-500 font-bold text-lg"><span class="block text-2xl animate-bounce mb-2">⏳</span>[${code}호차] 장부를 동기화 중입니다...</div>`; for (let i = localStorage.length - 1; i >= 0; i--) { const key = localStorage.key(i); if (key && key.startsWith('temp_')) { localStorage.removeItem(key); } } stopAlarmServer(); startCloudSync(); toggleView('settings'); }
-        function stopAlarmServer() { if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } document.getElementById('alarm-banner').className = "hidden"; let maxStamp = 0; Object.values(globalOrdersCache).forEach(o => { if(o.serverTimestamp > maxStamp) maxStamp = o.serverTimestamp; }); localStorage.setItem('last_muted_timestamp', maxStamp); }
-        function initReceivablesSystem() { if(!localStorage.getItem('fish_receivables')) { localStorage.setItem('fish_receivables', JSON.stringify([])); } renderReceivablesData(); }
-
-        function renderReceivablesData() {
-            const receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]'); let total = 0; const listArea = document.getElementById('receivables-list-area'); if (receivables.length === 0) { listArea.innerHTML = `<p class="text-sm text-slate-400 italic py-1">장부에 등록된 거래처가 없습니다.</p>`; } else { listArea.innerHTML = receivables.map(r => { total += parseInt(r.balance) || 0; return `<div class="flex justify-between border-b border-slate-800 pb-1"><span>🏪 ${r.name}:</span><span class="font-black text-slate-100">${(parseInt(r.balance) || 0).toLocaleString()}원</span></div>`; }).join(''); }
-            const collectHistory = JSON.parse(localStorage.getItem('fish_collect_history') || '[]'); if(collectHistory.length > 0) { listArea.innerHTML += `<div class="mt-4 pt-2 border-t-2 border-dashed border-slate-700 space-y-1"><p class="text-xs font-black text-emerald-400 flex items-center gap-1">🟢 당일 실시간 현장 수금 확인 내역</p>` + collectHistory.map(h => `<div class="flex justify-between text-sm text-emerald-300 font-bold bg-emerald-950/20 px-2 py-0.5 rounded"><span>[${h.time}] ${h.name}</span><span>-${h.amount.toLocaleString()}원 차감완료</span></div>`).join('') + `</div>`; }
-            document.getElementById('total-receivables-display').innerText = total.toLocaleString() + " 원"; const inputsContainer = document.getElementById('receivables-edit-inputs-container'); inputsContainer.innerHTML = receivables.map((r, idx) => `<div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-700 space-y-2"><div class="flex items-center gap-2"><input id="rec-edit-name-${idx}" type="text" value="${r.name}" class="w-1/2 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-black text-sm outline-none" placeholder="거래처명"><input id="rec-edit-bal-${idx}" type="number" value="${r.balance}" class="w-1/2 p-3 bg-slate-800 border-2 border-slate-600 rounded-xl text-white font-mono text-right font-black text-sm outline-none" placeholder="미수금"></div><div class="flex items-center gap-2 bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/80"><span class="text-xs font-black text-emerald-400 shrink-0">💵 현금/이체 수금차감:</span><input id="rec-edit-collect-${idx}" type="number" value="0" class="w-full p-2 bg-slate-800 border border-emerald-600 rounded-lg text-emerald-400 font-mono text-right font-black text-sm outline-none"><button onclick="deleteReceivableRow(${idx})" class="bg-rose-900 text-white font-black px-2.5 py-2 rounded-xl text-xs shrink-0">❌ 삭제</button></div></div>`).join('');
+    // 🚨 [무선 클라우드 동기화 핵심 엔진]: 점주가 전송한 발주 데이터를 실시간으로 파싱하여 로컬 구조로 가공 적재
+    function startCloudSync() {
+      if(syncIntervalTimer) clearInterval(syncIntervalTimer);
+      
+      const fetchExecute = () => {
+        const carCode = String(state.profile.vehicleNumber || "").trim().replace(/[^a-zA-Z0-9_-]/g, '');
+        if(!carCode) {
+          $("#netDot").className = "network-dot loading";
+          $("#netText").textContent = "호차 입력필수";
+          return;
         }
 
-        function toggleReceivablesForm() { document.getElementById('receivables-edit-form').classList.toggle('hidden'); }
-        function getReceivablesFromCurrentInputs() { const container = document.getElementById('receivables-edit-inputs-container'); const rows = container.children; let list = []; for(let i=0; i<rows.length; i++) { const nameInp = document.getElementById(`rec-edit-name-${i}`); const balInp = document.getElementById(`rec-edit-bal-${i}`); const collectInp = document.getElementById(`rec-edit-collect-${i}`); if(nameInp && balInp) { list.push({ name: nameInp.value.trim(), balance: parseInt(balInp.value) || 0, collect: collectInp ? (parseInt(collectInp.value) || 0) : 0 }); } } return list; }
-        function addEmptyReceivableRow() { const currentData = getReceivablesFromCurrentInputs(); currentData.push({ name: '', balance: 0, collect: 0 }); localStorage.setItem('fish_receivables', JSON.stringify(currentData)); renderReceivablesData(); }
-        function deleteReceivableRow(idx) { let currentData = getReceivablesFromCurrentInputs(); currentData.splice(idx, 1); localStorage.setItem('fish_receivables', JSON.stringify(currentData)); renderReceivablesData(); }
-        function saveReceivables() { let currentInputs = getReceivablesFromCurrentInputs(); let finalLogs = []; let historyLog = JSON.parse(localStorage.getItem('fish_collect_history') || '[]'); const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); currentInputs.forEach(item => { if(item.name.length > 0) { let finalBalance = item.balance; if(item.collect > 0) { finalBalance = item.balance - item.collect; historyLog.unshift({ time: nowTime, name: item.name, amount: item.collect }); } finalLogs.push({ name: item.name, balance: finalBalance }); } }); localStorage.setItem('fish_receivables', JSON.stringify(finalLogs)); localStorage.setItem('fish_collect_history', JSON.stringify(historyLog.slice(0, 10))); renderReceivablesData(); toggleReceivablesForm(); alert("💵 현장 수금 차감 및 장부 업데이트가 성공적으로 완료되었습니다."); }
-        window.saveReceivables = saveReceivables;
+        $("#netDot").className = "network-dot loading";
+        $("#netText").textContent = "동기화망 조회중";
 
-        function toggleStoreFolder(orderId) { saveCurrentInputsToMemory(); if(currentExpandedOrderId === orderId) { currentExpandedOrderId = null; } else { currentExpandedOrderId = orderId; } refreshQueueDOM(); }
-        window.toggleStoreFolder = toggleStoreFolder;
-        function saveCurrentInputsToMemory() { const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { localStorage.setItem(`temp_${input.id}`, input.value); }); }
+        fetch(`${CLOUD_RELAY_URL}${carCode}/json?poll=1`)
+        .then(res => res.text())
+        .then(text => {
+          $("#netDot").className = "network-dot";
+          $("#netText").textContent = `${carCode}호차 수신동기화망`;
 
-        function acknowledgeCancellation(orderId) { let acked = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]'); acked.push(orderId); localStorage.setItem('driver_acked_cancels', JSON.stringify(acked)); if(currentExpandedOrderId === orderId) currentExpandedOrderId = null; refreshQueueDOM(); }
-        window.acknowledgeCancellation = acknowledgeCancellation;
-        function deleteOrderFromDriver(orderId, store) { if(!confirm(`⚠️ [${store}] 발주를 대시보드 목록에서 강제 삭제하시겠습니까?`)) return; const syncCode = localStorage.getItem('sync_code'); const deletePacket = { orderId: orderId, status: "deleted", store: store, serverTimestamp: Date.now() }; fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(deletePacket) }).then(() => { if(currentExpandedOrderId === orderId) currentExpandedOrderId = null; alert(`✅ [${store}] 발주 삭제 완료`); }); }
-        window.deleteOrderFromDriver = deleteOrderFromDriver;
+          if(!text.trim()) return;
+          const lines = text.trim().split('\n');
+          let isDataChanged = false;
 
-        // 🟢 1. 단일 상점용 개별 서류 생성기 (매입단가 제거 버전)
-        function generateCompanyDocuments(orderId) {
-            isConsolidatedMode = false; activeProcessingOrderId = orderId; 
-            const order = globalOrdersCache[orderId]; if(!order) return;
-            const carNum = localStorage.getItem('sync_code') || '1';
-            
-            document.getElementById('doc-top-title-banner').innerText = "📄 사내 정산/출고 명세서 발행 완료";
-            document.getElementById('doc-main-sheet-title').innerText = "매 입 발 주 장";
-            document.getElementById('doc-sub-sheet-title').innerText = "( 사내 제품 매입 담당자 제출용 명세서 )";
-            document.getElementById('doc-purchase-store').innerText = order.store; document.getElementById('doc-purchase-date').innerText = order.orderDate; document.getElementById('doc-purchase-car').innerText = `${carNum}호 배송 차량`; document.getElementById('doc-dispatch-store').innerText = order.store; document.getElementById('doc-dispatch-address').innerText = order.address;
-            document.getElementById('btn-excel-export-dynamic').innerText = "🟢 사내용 엑셀 다운";
-            document.getElementById('doc-part-b-dispatch-panel').style.display = "block";
+          lines.forEach(line => {
+            try {
+              const rawData = JSON.parse(line);
+              if(!rawData.message) return;
+              const packet = JSON.parse(rawData.message);
+              
+              // 마감되거나 정상 정산 오더 패킷 검증
+              if(!packet.orderId || packet.status !== "ordered") return;
 
-            document.getElementById('doc-purchase-table-header-inject').innerHTML = `
-                <tr class="bg-slate-100 border-b border-slate-400 text-[11px] font-bold">
-                    <th class="p-1.5 border-r border-slate-400">품목 / 규격</th>
-                    <th class="p-1.5 border-r border-slate-400 text-center">원산지/작업</th>
-                    <th class="p-1.5 border-r border-slate-400 text-center bg-blue-50 text-blue-900">점주 주문량</th>
-                    <th class="p-1.5 text-center bg-emerald-50 text-emerald-900">기사 실측량</th>
-                </tr>
-            `;
+              // 이미 내역에 들어가 있는 오더 아이디인지 스캔 검사 (중복 삽입 완전 락)
+              const isExist = state.deliveries.some(d => d.cloudOrderId === packet.orderId);
+              if(isExist) return;
 
-            let tableRowsHtml = ''; let dispatchItemsHtml = ''; let processTypesFound = new Set();
-            order.items.forEach((item, idx) => {
-                const wInput = document.getElementById(`weight-${orderId}-${idx}`); const driverWeight = wInput && wInput.value.trim() !== "" ? wInput.value.trim() : "-";
-                const storeQty = (item.qty !== undefined && item.qty !== null && item.qty !== "") ? item.qty : "-"; const storeUnit = item.unit || "개";
+              // 1단계: 거래처 북(customers) 장부에 등록 유무 검사 및 자동 신설
+              let targetCustomer = state.customers.find(c => c.name === packet.store.trim());
+              if(!targetCustomer) {
+                targetCustomer = { id: id(), name: packet.store.trim(), deliveryPlace: packet.store.trim(), address: packet.address || "", phone: packet.phone || "", routeOrder: customers().length + 1 };
+                state.customers.push(targetCustomer);
+              }
 
-                tableRowsHtml += `<tr class="border-b border-slate-300"><td class="p-1.5 border-r border-slate-300 text-slate-900 font-bold text-sm">${item.item} <span class="text-blue-600 text-xs">[${item.size || '기본'}]</span></td><td class="p-1.5 border-r border-slate-300 text-center text-xs text-slate-600">${item.origin}<br><span class="text-[10px]">(${item.process})</span></td><td class="p-1.5 border-r border-slate-300 text-center font-mono text-slate-950 text-base font-black bg-blue-50/50">${storeQty} ${storeUnit}</td><td class="p-1.5 text-center font-mono text-emerald-700 text-base font-black bg-emerald-50/50">${driverWeight} ${storeUnit}</td></tr>`;
-                dispatchItemsHtml += `<div class="border-b border-slate-200 pb-1.5">• <span class="text-base text-blue-700 font-extrabold">[${item.item}]</span> 규격: <span class="text-amber-700 font-bold">${item.size || '기본'}</span> ➡️ 요청량: <span class="underline">${storeQty}${storeUnit}</span> / 작업보관: <span class="text-red-600 underline">${item.process}</span><p class="text-xs text-slate-500 font-bold ml-3 mt-0.5">↳ 현장메모: ${item.memo}</p></div>`;
-                if(item.process.includes('찍어바리')) processTypesFound.add('찍어바리');
-                if(item.process.includes('합포장')) processTypesFound.add('합포장');
-                if(item.process.includes('개별포장')) processTypesFound.add('개별포장');
-                if(item.process.includes('필렛')) processTypesFound.add('필렛');
-            });
-            document.getElementById('doc-purchase-table-body').innerHTML = tableRowsHtml; document.getElementById('doc-dispatch-items-list').innerHTML = dispatchItemsHtml;
-            const alertZone = document.getElementById('doc-dispatch-alert-zone'); let alertBanners = '';
-            if(processTypesFound.has('찍어바리')) { alertBanners += `<div class="bg-red-600 text-white p-3 rounded-xl text-center font-black text-sm animate-pulse border-2 border-white shadow">🔥 [특보] 찍어바리 작업팀 필독 오더!</div>`; }
-            if(processTypesFound.has('합포장')) { alertBanners += `<div class="bg-blue-600 text-white p-3 rounded-xl text-center font-black text-sm">📦 [경고] 합포장 부서 작업 대기 오더!</div>`; }
-            if(processTypesFound.has('개별포장')) { alertBanners += `<div class="bg-purple-600 text-white p-3 rounded-xl text-center font-black text-sm">🏷️ [알림] 개별 결속 포장팀 전용 오더!</div>`; }
-            if(processTypesFound.has('필렛')) { alertBanners += `<div class="bg-emerald-600 text-white p-3 rounded-xl text-center font-black text-sm">🐟 [안내] 필렛 가공팀 라인 배정 오더!</div>`; }
-            if(alertBanners === '') { alertBanners = `<div class="bg-slate-800 text-white p-2.5 rounded-xl text-center font-black text-xs">🟢 일반 규격 출고 물량 (특이공정 없음)</div>`; }
-            alertZone.innerHTML = alertBanners; document.getElementById('company-document-print-zone').classList.remove('hidden'); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-        window.generateCompanyDocuments = generateCompanyDocuments;
+              // 2단계: 점주가 보낸 어종 데이터를 기사 제어 포맷(items) 양식으로 다이렉트 변환 매핑
+              const mappedItems = packet.items.map(pi => ({
+                id: id(),
+                category: pi.category || "활어",
+                species: pi.item || "광어",
+                size: pi.size || "기본 규격",
+                originCountry: pi.origin || "국내산",
+                requestedQty: Number(pi.qty) || 1,
+                unit: pi.unit || "마리",
+                actualWeight: "", // 기사가 채워 넣을 중량 버퍼 초기화
+                unitPrice: "25000", 
+                processingFeePerKg: "0",
+                processing: pi.process || "찍어바리",
+                tankNumber: 1, // 수조 위치 1번 수조 자동 기본값 안착
+                rubberBand: false,
+                rubberBandQuantity: "",
+                rubberBandColor: "",
+                includedNote: pi.memo || "",
+                checked: false
+              }));
 
-        // 🟢 2. [수기 완벽 재현]: 전 점포 명세서를 매장별로 1차 분별 후, 최하단에 종합 합산 총수량까지 동시에 연출하는 매입 취합장 엔진
-        function generateTotalConsolidatedPurchaseDoc() {
-            const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
-            const activeOrders = Object.values(globalOrdersCache).filter(o => {
-                if(o.status === "deleted" || o.status === "completed") return false;
-                if(o.status === "cancelled") return !ackedCancels.includes(o.orderId);
-                return true;
-            });
+              // 3단계: 로컬 최종 장부에 바인딩 적재
+              const newDelivery = {
+                id: id(),
+                cloudOrderId: packet.orderId,
+                customerId: targetCustomer.id,
+                fallbackStoreName: packet.store.trim(),
+                deliveryDate: packet.orderDate || workDate,
+                routeOrder: targetCustomer.routeOrder,
+                notes: "",
+                coPackNote: "",
+                previousBalance: "0",
+                status: "ready",
+                items: mappedItems,
+                boxes: Array.from({length: 1}, (_, bIdx) => ({ id: id(), boxNumber: bIdx + 1, contents: "수산물 상차 박스", checked: false }))
+              };
 
-            if(activeOrders.length === 0) { alert("📋 현재 대기열 목록에 접수된 당일 실시간 발주서 내역이 없어 취합장을 생성할 수 없습니다."); return; }
-            
-            isConsolidatedMode = true;
-            const carNum = localStorage.getItem('sync_code') || '1';
-            const todayStr = new Date().toISOString().split('T')[0];
+              state.deliveries.push(newDelivery);
+              isDataChanged = true;
+            } catch(e){}
+          });
 
-            document.getElementById('doc-top-title-banner').innerText = "📊 당일 차량별 전 점포 품목 총 매입 취합장";
-            document.getElementById('doc-main-sheet-title').innerText = "매 입 취 합 장";
-            document.getElementById('doc-sub-sheet-title').innerText = "( 사내 구매 담당자 제출용 명세서 )";
-            document.getElementById('doc-purchase-store').innerText = "사내 구매(매입) 담당 부서 귀하";
-            document.getElementById('doc-purchase-date').innerText = todayStr;
-            document.getElementById('doc-purchase-car').innerText = `🚚 ${carNum}호차 통합 상차 물량`;
-            
-            document.getElementById('btn-excel-export-dynamic').innerText = "🟢 취합장 엑셀 다운 (.xlsx)";
-            document.getElementById('doc-part-b-dispatch-panel').style.display = "none"; 
+          if(isDataChanged) {
+            save();
+            render();
+          }
+        }).catch(err => {
+          $("#netDot").className = "network-dot loading";
+          $("#netText").textContent = "통신 연결 지연";
+        });
+      };
 
-            // 1구역: 매장별 세부 분별 인젝션 바인딩
-            let injectHtml = `
-                <tr>
-                    <td colspan="4" class="p-2.5 bg-slate-800 text-white font-black text-sm tracking-tight rounded-t-lg">📍 1. 각 매장별 상세 발주 분별 명세 (수기대조용)</td>
-                </tr>
-                <tr class="bg-slate-100 border-b-2 border-slate-400 text-xs font-black text-slate-700">
-                    <td class="p-2 border-r border-slate-300">🏪 발주 매장명</td>
-                    <td class="p-2 border-r border-slate-300">제품명 (어종)</td>
-                    <td class="p-2 border-r border-slate-300">제품 규격/사이즈/무게</td>
-                    <td class="p-2 text-center text-blue-700">발주 수량</td>
-                </tr>
-            `;
+      fetchExecute();
+      syncIntervalTimer = setInterval(fetchExecute, 4000); // 4초 간격 자동 기속 스캔 모드 가동
+    }
 
-            let consolidatedMap = {}; // 하단 총수량용 버퍼
+    function viewInternalBuild(){
+      // 윈도우 마스터 저장 함수 우회 노출 제어 바인딩
+      window.viewInternalBuild = true;
+      return false;
+    }
 
-            activeOrders.forEach(order => {
-                order.items.forEach((item, idx) => {
-                    const fishItem = item.item || "미지정어종";
-                    const fishSize = item.size || "기본 규격";
-                    const fishUnit = item.unit || "개";
-                    const fishQty = parseFloat(item.qty) || 0;
-
-                    // 매장별 로우 렌더링
-                    injectHtml += `
-                        <tr class="border-b border-slate-200 text-sm font-bold text-slate-900">
-                            <td class="p-2 border-r border-slate-300 bg-slate-50/50">${order.store}</td>
-                            <td class="p-2 border-r border-slate-300 text-blue-900">${fishItem}</td>
-                            <td class="p-2 border-r border-slate-300 text-slate-600 text-xs">${fishSize}</td>
-                            <td class="p-2 text-center font-mono text-slate-900 font-black">${fishQty} ${fishUnit}</td>
-                        </tr>
-                    `;
-
-                    // 2구역 연산을 위한 해시맵 취합 연산
-                    const uniqueGroupKey = `${fishItem}_||_${fishSize}_||_${fishUnit}`;
-                    if(!consolidatedMap[uniqueGroupKey]) {
-                        consolidatedMap[uniqueGroupKey] = { item: fishItem, size: fishSize, unit: fishUnit, totalQty: 0 };
-                    }
-                    consolidatedMap[uniqueGroupKey].totalQty += fishQty;
-                });
-            });
-
-            // 2구역: 품목별 최종 총합산 수량 인젝션 바인딩
-            injectHtml += `
-                <tr>
-                    <td colspan="4" class="p-2.5 bg-slate-950 text-yellow-400 font-black text-sm tracking-tight pt-5">📊 2. 금일 제품 종류별 최종 매입 총 수량 (구매부 요약)</td>
-                </tr>
-                <tr class="bg-slate-200 border-b-2 border-slate-400 text-xs font-black text-slate-900">
-                    <td colspan="2" class="p-2 border-r border-slate-300">제품 종류 (어종명)</td>
-                    <td class="p-2 border-r border-slate-300 text-center">상세 규격 / 사이즈 명세</td>
-                    <td class="p-2 text-center text-emerald-800 text-sm">🔥 최종 매입 총량</td>
-                </tr>
-            `;
-
-            Object.values(consolidatedMap).forEach(row => {
-                injectHtml += `
-                    <tr class="border-b-2 border-slate-300 text-base font-black bg-amber-50/30">
-                        <td colspan="2" class="p-2.5 border-r border-slate-300 text-slate-900">${row.item}</td>
-                        <td class="p-2.5 border-r border-slate-300 text-center text-sm text-slate-700">${row.size}</td>
-                        <td class="p-2.5 text-center font-mono text-blue-700 text-lg bg-yellow-100 underline decoration-2 decoration-blue-500">${row.totalQty.toLocaleString()} ${row.unit}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('doc-purchase-table-header-inject').innerHTML = '';
-            document.getElementById('doc-purchase-table-body').innerHTML = injectHtml;
-            document.getElementById('company-document-print-zone').classList.remove('hidden');
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
-        window.generateTotalConsolidatedPurchaseDoc = generateTotalConsolidatedPurchaseDoc;
-
-        // 🟢 3. 가변형 엑셀 내보내기 다운로더 (매장별 목록과 총수량 요약본을 동시 기입 가동)
-        function downloadExcelFile() {
-            const orderId = activeProcessingOrderId; const carNum = localStorage.getItem('sync_code') || '1'; const todayStr = new Date().toISOString().split('T')[0];
-
-            if (isConsolidatedMode) {
-                const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]');
-                const activeOrders = Object.values(globalOrdersCache).filter(o => { if(o.status === "deleted" || o.status === "completed") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; });
-
-                let excelRows = [
-                    [`[👑 ${carNum}호차 당일 품목별 매입 취합 마스터 원장]`], [],
-                    ["출력일자", todayStr, "배송차량", `${carNum}호차 차량`], [],
-                    ["📍 1. 각 매장별 상세 발주 분별 명세"],
-                    ["발주 매장명", "제품명(어종)", "상세 규격/사이즈", "주문 수량", "단위"]
-                ];
-
-                let consolidatedMap = {};
-                activeOrders.forEach(order => {
-                    order.items.forEach(item => {
-                        excelRows.push([order.store, item.item, item.size || "기본 규격", item.qty, item.unit || "개"]);
-                        const k = `${item.item}_||_${item.size || '기본'}_||_${item.unit || '개'}`;
-                        if(!consolidatedMap[k]) consolidatedMap[k] = { item: item.item, size: item.size || "기본 규격", unit: item.unit || "개", totalQty: 0 };
-                        consolidatedMap[k].totalQty += (parseFloat(item.qty) || 0);
-                    });
-                });
-
-                excelRows.push([]);
-                excelRows.push(["📊 2. 금일 제품 종류별 최종 매입 총 수량 요약"]);
-                excelRows.push(["제품 종류(어종명)", "상세 규격/사이즈 명세", "최종 매입 총 수량", "단위"]);
-
-                Object.values(consolidatedMap).forEach(row => {
-                    excelRows.push([row.item, row.size, row.totalQty, row.unit]);
-                });
-
-                const worksheet = XLSX.utils.aoa_to_sheet(excelRows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "통합매입원장");
-                worksheet['!cols'] = [{wch:18}, {wch:18}, {wch:20}, {wch:18}, {wch:10}]; XLSX.writeFile(workbook, `${carNum}호차_${todayStr}_매입취합마스터.xlsx`);
-                return;
-            }
-
-            const order = globalOrdersCache[orderId]; if(!order) { alert("⚠️ 선택된 주문 정보가 없습니다."); return; }
-            let excelRows = [["[사내용 매입 발주장 명세서]"], [], ["발주처(상호)", order.store, "납품요청일", order.orderDate], ["담당 배송차량", `${carNum}호차 차량`], ["배송지 주소", order.address], [], ["품목 및 어종명", "규격/사이즈", "카테고리", "원산지", "작업 및 보관방식", "점주 주문요청량", "기사 현장실측량", "단위", "점포 요구사항 메모"]];
-            order.items.forEach((item, idx) => { const wInput = document.getElementById(`weight-${orderId}-${idx}`); const driverWeight = wInput && wInput.value.trim() !== "" ? wInput.value.trim() : "-"; excelRows.push([item.item, item.size || "기본", item.category, item.origin, item.process, item.qty || "-", driverWeight, item.unit || "개", item.memo]); });
-            const worksheet = XLSX.utils.aoa_to_sheet(excelRows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "매입장"); worksheet['!cols'] = [{wch:18}, {wch:15}, {wch:12}, {wch:10}, {wch:18}, {wch:14}, {wch:14}, {wch:8}, {wch:25}]; XLSX.writeFile(workbook, `${order.store}_${order.orderDate}_매입발주장.xlsx`);
-        }
-        window.downloadExcelFile = downloadExcelFile;
-
-        function downloadMasterExcelFile() {
-            const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]'); const activeOrders = Object.values(globalOrdersCache).filter(o => { if(o.status === "deleted") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; }); if(activeOrders.length === 0) { alert("⚠️ 금일 적재된 발주서 내역이 없습니다."); return; }
-            const carNum = localStorage.getItem('sync_code') || '1'; const todayStr = new Date().toISOString().split('T')[0];
-            let excelRows = [[`[👑 ${carNum}호차 통합 매입 및 출고 정산 마스터 원장]`], [], ["마감일자", todayStr, "배송차량", `${carNum}호 배송 차량`], [], ["순번", "거래처 상호명", "품목/어종명", "상세 규격/사이즈", "카테고리", "원산지", "출고 작업방식", "점주요청량", "배송원 실측량", "단위", "확정단가(원)", "최종정산액(원)", "현장 특이메모", "진행상태"]]; let totalSum = 0; let rowIdxCounter = 1;
-            activeOrders.forEach(order => { order.items.forEach((item, idx) => { const wInput = document.getElementById(`weight-${order.orderId}-${idx}`); const pInput = document.getElementById(`price-${order.orderId}-${idx}`); const weight = wInput ? (parseFloat(wInput.value) || parseFloat(item.qty)) : parseFloat(item.qty); const price = pInput ? (parseInt(pInput.value) || 25000) : 25000; const rowTotal = Math.round(weight * price); if(order.status !== "cancelled") totalSum += rowTotal; excelRows.push([rowIdxCounter++, order.store, item.item, item.size || "기본 규격", item.category, item.origin, item.process, item.qty || "-", weight, item.unit, price, order.status === "cancelled" ? 0 : rowTotal, item.memo, order.status === "completed" ? "정산확정완료" : (order.status === "cancelled" ? "❌점주취소오더" : "배송대기중")]); }); });
-            excelRows.push([]); excelRows.push(["", "", "", "", "", "", "", "", "", "", "🔥 금일 총 정산액 합계", totalSum, "", ""]); const worksheet = XLSX.utils.aoa_to_sheet(excelRows); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "통합배송마감"); worksheet['!cols'] = [{wch:6}, {wch:18}, {wch:15}, {wch:18}, {wch:12}, {wch:10}, {wch:18}, {wch:12}, {wch:12}, {wch:8}, {wch:14}, {wch:16}, {wch:25}, {wch:14}]; XLSX.writeFile(workbook, `${carNum}호차_오늘통합정산마스터원장.xlsx`);
-        }
-        window.downloadMasterExcelFile = downloadMasterExcelFile;
-
-        function downloadDocumentAsImage(fileExtension) {
-            const orderId = activeProcessingOrderId; const order = globalOrdersCache[orderId]; const nameHeader = isConsolidatedMode ? "통합취합장" : (order ? order.store : "명세서"); const todayStr = new Date().toISOString().split('T')[0]; const captureArea = document.getElementById('capture-target-sub-zone');
-            setTimeout(() => {
-                html2canvas(captureArea, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0, windowWidth: document.documentElement.offsetWidth, windowHeight: document.documentElement.offsetHeight }).then(canvas => {
-                    const mimeType = fileExtension === 'jpg' ? 'image/jpeg' : 'image/png'; const base64Data = canvas.toDataURL(mimeType, 0.9);
-                    const imgTag = document.getElementById('mobile-canvas-to-img-tag'); imgTag.src = base64Data; document.getElementById('mobile-image-popup-zone').classList.remove('hidden');
-                }).catch(err => { alert("⚠️ 이미지 팝업 처리가 실패했습니다."); });
-            }, 250); 
-        }
-        window.downloadDocumentAsImage = downloadDocumentAsImage;
-
-        function closeMobileImagePopup() { document.getElementById('mobile-image-popup-zone').classList.add('hidden'); }
-        window.closeMobileImagePopup = closeMobileImagePopup;
-
-        function startCloudSync() {
-            if(syncTimer) clearInterval(syncTimer);
-            const fetchExecute = () => {
-                const syncCode = localStorage.getItem('sync_code'); fetch(`${cloudRelayUrl}${syncCode}/json?poll=1`).then(res => res.text()).then(text => { if(!text.trim()) { globalOrdersCache = {}; document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`; stopAlarmServer(); return; } const lines = text.trim().split('\n'); let ordersMap = {}; lines.forEach(line => { try { const rawData = JSON.parse(line); if(rawData.message) { const packet = JSON.parse(rawData.message); if(packet.orderId) { if(packet.status === "cancelled" || packet.status === "deleted") { if(!ordersMap[packet.orderId]) ordersMap[packet.orderId] = packet; else { ordersMap[packet.orderId].status = packet.status; ordersMap[packet.orderId].serverTimestamp = packet.serverTimestamp; } } else { if(!ordersMap[packet.orderId] || (ordersMap[packet.orderId].status !== "cancelled" && ordersMap[packet.orderId].status !== "deleted" && ordersMap[packet.orderId].status !== "completed")) { ordersMap[packet.orderId] = packet; } } } } } catch(e){} }); globalOrdersCache = ordersMap; const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]'); const activeOrders = Object.values(ordersMap).filter(o => { if(o.status === "completed" || o.status === "deleted") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; }); if(activeOrders.length === 0) { document.getElementById('driver-queue-container').innerHTML = `<div class="bg-white p-12 rounded-3xl text-center text-slate-400 font-bold text-lg">📭 접수된 실시간 발주 오더 원장이 없습니다.</div>`; stopAlarmServer(); return; } let receivables = JSON.parse(localStorage.getItem('fish_receivables') || '[]'); let isUpdated = false; activeOrders.forEach(order => { if (order.store && order.store.trim() !== "" && order.status === "ordered" && !receivables.some(r => r.name === order.store.trim())) { receivables.push({ name: order.store.trim(), balance: 0 }); isUpdated = true; } }); if (isUpdated) { localStorage.setItem('fish_receivables', JSON.stringify(receivables)); renderReceivablesData(); } const lastMuted = parseInt(localStorage.getItem('last_muted_timestamp')) || 0; activeOrders.forEach(o => { if(o.alarmActive && o.serverTimestamp > lastMuted) hasNewAlarm = true; }); if(hasNewAlarm) { document.getElementById('alarm-banner').className = "flex bg-rose-600 text-white p-5 rounded-2xl items-center justify-between shadow-xl blink-fast"; if(!alarmInterval) alarmInterval = setInterval(playBeep, 500); } else { if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; } document.getElementById('alarm-banner').className = "hidden"; } saveCurrentInputsToMemory(); refreshQueueDOM(); }).catch(err => {});
-            }; fetchExecute(); syncTimer = setInterval(fetchExecute, 3000);
-        }
-
-        function refreshQueueDOM() {
-            const ackedCancels = JSON.parse(localStorage.getItem('driver_acked_cancels') || '[]'); const activeOrders = Object.values(globalOrdersCache).filter(o => { if(o.status === "completed" || o.status === "deleted") return false; if(o.status === "cancelled") return !ackedCancels.includes(o.orderId); return true; }); const queueContainer = document.getElementById('driver-queue-container'); if(activeOrders.length === 0) return;
-            queueContainer.innerHTML = activeOrders.map((order, orderIdx) => { if(order.status === "cancelled") { return `<div class="bg-rose-100 rounded-3xl shadow-xl border-4 border-rose-500 p-6 space-y-4"><div class="flex justify-between items-center text-rose-800"><span class="bg-rose-600 text-white font-black text-sm px-3 py-1.5 rounded-xl">🛑 발주 전면취소</span><span class="text-2xl font-black text-rose-950">${order.store}</span></div><p class="text-lg font-black text-rose-800 leading-snug bg-white p-4 rounded-xl border border-rose-300 shadow-inner">⚠️ 점주가 발주를 취소했습니다!<br><span class="text-rose-600 underline">절대 물건을 싣거나 배송하지 마세요.</span></p><button onclick="acknowledgeCancellation('${order.orderId}')" class="w-full bg-rose-600 text-white py-4 rounded-2xl text-base font-black transition">취소 확인완료 (화면에서 삭제)</button></div>`; } const isExpanded = order.orderId === currentExpandedOrderId; return `<div class="bg-white rounded-3xl shadow-xl border-3 border-slate-300 overflow-hidden transition-all"><button onclick="toggleStoreFolder('${order.orderId}')" class="w-full text-left p-5 flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition border-b border-slate-200"><div class="space-y-2"><div class="flex items-center space-x-2"><span class="bg-[#0f172a] text-white font-black text-sm px-3 py-1 rounded-lg">대기 #${orderIdx + 1}</span><span class="text-2xl font-black text-slate-900 tracking-tight">${order.store}</span></div><p class="text-base text-slate-500 font-bold">📅 배송요청일: <span class="text-slate-800 underline">${order.orderDate}</span></p></div><div class="flex items-center space-x-3" onclick="event.stopPropagation();"><button onclick="deleteOrderFromDriver('${order.orderId}', '${order.store}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 border-2 border-rose-200 px-3.5 py-2 rounded-xl text-sm font-black transition shadow-sm">❌ 삭제</button><span class="text-base font-black px-3 py-2 bg-blue-100 text-blue-700 rounded-xl shadow-sm border border-blue-200">${isExpanded ? '▲ 접기' : '▼ 보기'}</span></div></button><div class="${isExpanded ? 'block' : 'hidden'} p-5 space-y-5 bg-white"><div class="bg-slate-100 p-4 rounded-xl text-base space-y-1.5 text-slate-700 border-2 border-slate-200 font-bold"><div>• 📞 현장전화: <span class="text-slate-900">${order.phone}</span></div><div class="leading-relaxed">• 📍 주소지: <span class="text-slate-900 underline">${order.address}</span></div></div><div class="space-y-4">${order.items.map((p, itemIdx) => `<div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-300 space-y-3 shadow-inner"><div class="text-base font-bold text-slate-600"><span class="bg-slate-800 text-white text-xs px-2 py-0.5 rounded-md font-sans mr-1">${p.category}</span><span class="text-xl font-black text-slate-900">[ ${p.item} ]</span> <span class="text-lg font-black text-blue-600 font-mono">(${p.size || '규격없음'})</span><div class="text-sm font-bold text-slate-400 mt-1">↳ 원산지/가공: ${p.origin} / ${p.process}</div><div class="text-base text-amber-900 mt-2 bg-amber-100 border-2 border-amber-300 p-3 rounded-xl font-black">💬 요청사항: ${p.memo}</div></div><div class="grid grid-cols-2 gap-3 pt-1"><div><label class="block text-sm font-black text-slate-500 mb-1">⚖️ 실측 중량 (${p.unit})</label><input id="weight-${order.orderId}-${itemIdx}" type="number" placeholder="${p.qty}" step="0.1" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none"></div><div><label class="block text-sm font-black text-slate-500 mb-1">💰 확정 단가 (원)</label><input id="price-${order.orderId}-${itemIdx}" type="number" value="25000" step="100" oninput="calculateQueueTotal('${order.orderId}')" class="w-full p-4 border-3 border-slate-300 rounded-2xl text-xl font-black text-center bg-white text-blue-700 outline-none"></div></div></div>`).join('')}</div><button onclick="generateCompanyDocuments('${order.orderId}')" class="w-full bg-slate-800 hover:bg-slate-900 text-yellow-400 py-4 rounded-2xl font-black text-base transition shadow border-b-4 border-slate-950 flex items-center justify-center gap-2">📋 사내 매입발주서 & 출고명세서 인쇄/다운</button><div class="bg-slate-900 p-5 rounded-2xl flex justify-between items-center text-white border-2 border-slate-800 shadow-md"><span class="text-sm font-black text-slate-400">이 점포 마감 합계금액:</span><span id="total-price-${order.orderId}" class="text-2xl font-black font-mono text-yellow-400">0 원</span></div><button onclick="triggerConfirmPopup('${order.orderId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-lg transition shadow-xl border-b-4 border-emerald-800 tracking-wide active:scale-95">💾 이 점포 정산 마감 및 라벨 인쇄</button></div></div>`; }).join('');
-            const inputs = document.querySelectorAll('input[id^="weight-"], input[id^="price-"]'); inputs.forEach(input => { const savedValue = localStorage.getItem(`temp_${input.id}`); if(savedValue !== null) input.value = savedValue; }); activeOrders.forEach(order => { if(order.status !== "cancelled") calculateQueueTotal(order.orderId); });
-        }
-
-        function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); }
-        initReceivablesSystem(); startCloudSync();
-    </script>
+    document.addEventListener("click",e=>{
+      const b=e.target.closest("button");if(!b)return;
+      if(b.dataset.nav){setView(b.dataset.nav);return}
+      if(b.hasAttribute("data-close")){b.closest("dialog").close();return}
+      if(b.hasAttribute("data-new-customer"))return openCustomer();
+      if(b.dataset.editCustomer)return openCustomer(Number(b.dataset.editCustomer));
+      if(b.hasAttribute("data-reorder-customers")){customerReorder=!customerReorder;return renderCustomers()}
+      if(b.dataset.moveCustomer)return moveCustomer(Number(b.dataset.moveCustomer),customers().findIndex(c=>c.id===Number(b.dataset.moveCustomer))+Number(b.dataset.dir));
+      if(b.dataset.deleteCustomer){const cid=Number(b.dataset.deleteCustomer);if(state.deliveries.some(d=>d.customerId===cid))return alert("이 거래처의 배송 기록이 있어 삭제할 수 없습니다. 배송 기록을 먼저 삭제해 주세요.");if(confirm("이 거래처를 삭제할까요?")){state.customers=state.customers.filter(c=>c.id!==cid);normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers()}return}
+      if(b.hasAttribute("data-new-delivery"))return openDelivery();
+      if(b.dataset.openCheck)return openChecklist(Number(b.dataset.openCheck));
+      if(b.hasAttribute("data-add-item")){syncDraft();$("#deliveryDialog")._draft.items.push(blankItem());return renderItemEditors()}
+      if(b.dataset.removeItem!==undefined){syncDraft();const d=$("#deliveryDialog")._draft;if(d.items.length===1)return alert("품목은 한 개 이상 필요합니다.");d.items.splice(Number(b.dataset.removeItem),1);return renderItemEditors()}
+      if(b.dataset.editDelivery){$("#checklistDialog").close();return openDelivery(Number(b.dataset.editDelivery))}
+      if(b.dataset.deleteDelivery){if(confirm("오늘 배송 기록을 삭제할까요?")){state.deliveries=state.deliveries.filter(d=>d.id!==Number(b.dataset.deleteDelivery));save();$("#checklistDialog").close();render()}return}
+      if(b.dataset.complete){const d=state.deliveries.find(x=>x.id===Number(b.dataset.complete));d.status="completed";d.completedAt=new Date().toISOString();save();$("#checklistDialog").close();render();return}
+      if(b.dataset.cancelComplete){if(confirm("하차 완료를 취소하고 모든 체크를 초기화할까요?")){const d=state.deliveries.find(x=>x.id===Number(b.dataset.cancelComplete));d.status="ready";d.completedAt=null;d.items.forEach(i=>i.checked=false);d.boxes.forEach(x=>x.checked=false);save();openChecklist(d.id)}return}
+      if(b.hasAttribute("data-print"))return window.print();
+      if(b.dataset.image)return void saveStatementImage(b.dataset.image);
+      if(b.hasAttribute("data-export-excel"))return exportExcel();
+      if(b.hasAttribute("data-backup"))return backup();
+      if(b.hasAttribute("data-restore"))return $("#restoreInput").click();
+    });
+    
+    document.addEventListener("submit",e=>{
+      e.preventDefault();
+      if(e.target.id==="customerForm")saveCustomer(e.target);
+      if(e.target.id==="deliveryForm")saveDelivery(e.target);
+      if(e.target.id==="settingsForm"){
+        const fd=Object.fromEntries(new FormData(e.target));
+        state.profile={companyName:String(fd.companyName).trim(),driverName:String(fd.driverName).trim(),vehicleNumber:String(fd.vehicleNumber).trim()};
+        save();
+        renderSettings();
+        // 정보가 바뀌면 무선 통신 기동망 재부팅 가동
+        startCloudSync();
+        alert("회사·차량 정보를 저장하고 무선 실시간 수신망을 동기화했습니다.");
+      }
+    });
+    
+    document.addEventListener("change",e=>{
+      if(e.target.id==="workDate"){workDate=e.target.value||dateLocal();render()}
+      if(e.target.dataset.customerPosition)return moveCustomer(Number(e.target.dataset.customerPosition),Number(e.target.value)-1);
+      if(e.target.id==="boxCount"){syncDraft();const d=$("#deliveryDialog")._draft,n=Math.max(0,Math.min(20,Number(e.target.value)||0));d.boxes=Array.from({length:n},(_,i)=>d.boxes[i]||{id:id(),boxNumber:i+1,contents:"",checked:false});d.boxes.forEach((b,i)=>b.boxNumber=i+1);renderBoxEditors()}
+      const row=e.target.closest("[data-item-index]");if(row&&(e.target.dataset.item==="category"||e.target.dataset.itemCheck!==undefined)){syncDraft();renderItemEditors()}
+      if(e.target.dataset.checkItem)return updateCheck("item",Number(e.target.dataset.checkItem),e.target.checked);
+      if(e.target.dataset.checkBox)return updateCheck("box",Number(e.target.dataset.checkBox),e.target.checked);
+      if(e.target.id==="restoreInput"&&e.target.files[0])restore(e.target.files[0]);
+    });
+    
+    render();
+    // 앱이 실행될 때 차량 호차가 등록되어 있다면 자동으로 무선 동기화 루틴 기동
+    startCloudSync();
+  })();
+  </script>
 </body>
 </html>
