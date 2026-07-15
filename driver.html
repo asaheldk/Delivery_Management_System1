@@ -25,30 +25,31 @@
     
     .statement{padding:18px;border:2px solid var(--navy);border-radius:16px;background:#fff}.statement h1{margin:0;color:var(--navy);font-size:24px;font-weight:900}.statement-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:13px 0 17px;padding:12px 0;border-top:2px solid var(--navy);border-bottom:2px solid var(--line)}.statement-meta p{display:grid;grid-template-columns:68px 1fr;gap:7px;margin:0;font-size:13px;font-weight:700}.statement-meta p.address{grid-column:1/-1}.statement-meta span{color:var(--muted)}.statement-meta b{overflow-wrap:anywhere;color:var(--ink)}.line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0;padding-top:9px;border-top:1px dashed var(--line);font-size:13px;font-weight:700}.line b{white-space:nowrap;color:var(--navy)}.subtotal,.balance,.total{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-weight:900}.subtotal{padding-top:11px;border-top:1px dashed var(--line);font-size:14px}.balance{color:#ac581b;font-size:14px}.total{padding-top:11px;border-top:3px solid var(--navy);color:var(--navy);font-size:18px}.statement-note{padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:12px;white-space:pre-wrap;font-weight:700}.output-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.output-actions button{min-height:48px;border:2px solid #b8d7d3;border-radius:11px;color:var(--teal-dark);background:#eff9f7;font-size:14px;font-weight:900}.hidden{display:none!important}
     
-    /* 무선망 인디케이터 */
     .network-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 900; color: #38bdf8; }
     .network-dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; display: inline-block; }
     .network-dot.loading { background: #f59e0b; animation: blinkPulse 0.8s infinite; }
     @keyframes blinkPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    /* 취합장 박스 */
     .purchase-master-box { background: #fffbeb; border: 3px solid #f59e0b; border-left: 8px solid #f59e0b; padding: 18px; border-radius: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
     .prod-group-card { background: #ffffff; border: 2px solid #fde68a; padding: 12px; border-radius: 14px; margin-top: 10px; }
     .prod-group-title { font-size: 16px; font-weight: 900; color: var(--navy); border-bottom: 2px solid #fcd34d; padding-bottom: 4px; margin-bottom: 6px; }
     .prod-store-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: #334155; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; }
     .prod-total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--danger); margin-top: 6px; padding-top: 4px; border-top: 1px solid #fcd34d; }
 
-    /* 물리 진동 알림 전광판 */
+    /* 일반 새 주문 수신 알림 전광판 */
     .vibrate-alarm-banner { background: #e11d48; color: #ffffff; padding: 16px; text-align: center; font-size: 16px; font-weight: 900; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 3px solid #be123c; animation: blinkRed 0.6s infinite; }
     .vibrate-alarm-banner button { background: #ffffff; color: #e11d48; border: 0; padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     @keyframes blinkRed { 0%, 100% { background: #e11d48; } 50% { background: #9f1239; } }
 
-    /* 카톡 인앱 브라우저 우회 팝업 */
+    /* 🚨 5060 전용 취소 오더 긴급 알림 전체화면 팝업 */
+    #cancelAlarmModal { position:fixed; inset:0; background:rgba(159, 18, 57, 0.95); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; animation: bgBlink 0.5s infinite alternate; }
+    @keyframes bgBlink { 0% { background:rgba(159, 18, 57, 0.95); } 100% { background:rgba(0, 0, 0, 0.95); } }
+
     #mobileImagePopup { position:fixed; inset:0; background:rgba(15,23,42,0.94); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
     
     @media print {
       body { background: #fff !important; }
-      .app, header, main, nav, dialog, #mobileImagePopup, #liveAlarmBanner { display: none !important; }
+      .app, header, main, nav, dialog, #mobileImagePopup, #liveAlarmBanner, #cancelAlarmModal { display: none !important; }
       #printCaptureZone { display: block !important; position: absolute; top: 0; left: 0; width: 100%; padding: 10mm; background: #fff; }
       #statementPrint { display: block !important; }
     }
@@ -59,6 +60,16 @@
   <div id="liveAlarmBanner" class="vibrate-alarm-banner hidden">
     <span>🚨 새 발주서가 실시간 접수되었습니다!</span>
     <button type="button" onclick="window.stopLiveOrderAlarm()">🔊 알림 끄기</button>
+  </div>
+
+  <div id="cancelAlarmModal" class="hidden">
+      <div style="background:#fff; padding:30px; border-radius:24px; width:100%; max-width:400px; box-shadow:0 12px 35px rgba(0,0,0,0.5);">
+          <span style="font-size:50px;">🚨</span>
+          <h2 style="color:#e11d48; font-size:28px; font-weight:900; margin:10px 0;">발주 취소 긴급알림</h2>
+          <p id="cancelAlarmStoreName" style="font-size:24px; font-weight:900; color:#182833; margin:15px 0; background:#fee2e2; padding:10px; border-radius:12px; border:2px solid #fda4af;">점포명</p>
+          <p style="font-size:16px; font-weight:900; color:#9f1239; line-height:1.4; margin-bottom:20px;">방금 점주님이 발주를 취소했습니다!<br>절대 물건을 배송하지 마세요!</p>
+          <button type="button" onclick="window.stopCancelAlarm()" style="width:100%; min-height:60px; background:#e11d48; color:#fff; font-size:18px; font-weight:900; border:0; border-radius:14px; box-shadow:0 4px 12px rgba(225, 29, 72, 0.4);">확인했습니다 (알림 끄기)</button>
+      </div>
   </div>
 
   <div class="app">
@@ -141,8 +152,10 @@
     let syncIntervalTimer=null; 
     let isAlarmPlaying = false; 
     let alarmIntervalPointer = null; 
+    
+    let isCancelAlarmPlaying = false;
+    let cancelAlarmInterval = null;
 
-    // 사진첩 저장 시 파일명을 유연하게 지정하기 위한 전역 변수
     window.currentDownloadName = `거래명세서_${dateLocal()}.png`;
 
     function emptyState(){return{profile:{companyName:"",driverName:"",vehicleNumber:""},customers:[],deliveries:[]}}
@@ -155,7 +168,6 @@
     
     function itemQty(i){return i.category==="냉동제품"?`${i.requestedQty||0}팩`:i.actualWeight?`${i.actualWeight}kg`:`${i.requestedQty||0}${i.unit||"마리"}`}
     
-    // 🚨 1. 거래명세서 자동 계산 로직 적용 (실제중량이 없으면 주문수량으로 덮어써서 자동 계산)
     function baseAmount(i){
       if(i.category==="냉동제품") return (Number(i.requestedQty)||0)*(Number(i.unitPrice)||0);
       const w = i.actualWeight ? Number(i.actualWeight) : Number(i.requestedQty);
@@ -166,7 +178,6 @@
       return baseAmount(i) + (i.category==="필렛 제품"?(w||0)*(Number(i.processingFeePerKg)||0):0);
     }
 
-    // 발주 모달 내에서 실시간으로 합계금액을 계산해주는 함수
     function calcLiveTotal() {
         if(!$("#deliveryDialog").open) return;
         syncDraft();
@@ -191,11 +202,27 @@
     function render(){renderHeader();if(view==="today")renderToday();if(view==="customers")renderCustomers();if(view==="settings")renderSettings()}
 
     function renderToday(){
-      const rows=deliveries(),ready=rows.filter(d=>d.status!=="completed").length,complete=rows.filter(d=>d.status==="completed").length,boxes=rows.reduce((s,d)=>s+(d.boxes||[]).length,0);
-      const tanks=Array.from({length:6},(_,x)=>{const n=x+1,loads=rows.flatMap(d=>(d.items||[]).filter(i=>Number(i.tankNumber)===n).map(i=>`${customerOf(d).name} · ${i.species} ${itemQty(i)}`));return`<div class="tank"><strong>${n}번 수조</strong><p>${loads.length?loads.map(esc).join("<br>"):"비어 있음"}</p></div>`}).join("");
+      const rows=deliveries(),ready=rows.filter(d=>d.status!=="completed"&&d.status!=="cancelled").length,complete=rows.filter(d=>d.status==="completed").length,boxes=rows.reduce((s,d)=>s+(d.boxes||[]).length,0);
+      const tanks=Array.from({length:6},(_,x)=>{const n=x+1,loads=rows.flatMap(d=>(d.items||[]).filter(i=>Number(i.tankNumber)===n&&d.status!=="cancelled").map(i=>`${customerOf(d).name} · ${i.species} ${itemQty(i)}`));return`<div class="tank"><strong>${n}번 수조</strong><p>${loads.length?loads.map(esc).join("<br>"):"비어 있음"}</p></div>`}).join("");
       
       const stops=rows.length?rows.map((d, index)=>{
-          const c=customerOf(d),p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");
+          const c=customerOf(d);
+          
+          // 🚨 [새로운 취소 알림 UI]: 취소된 오더일 경우 대기열에 새빨간색 카드로 강제 노출
+          if (d.status === "cancelled") {
+              return `
+                <div class="stop" style="display:flex; flex-direction:column; padding:0; background:#fff1f2; border:3px solid var(--danger); border-radius:16px; margin-bottom:10px; overflow:hidden;">
+                  <div style="padding:20px; text-align:center;">
+                    <span style="display:inline-block; background:var(--danger); color:#fff; padding:6px 12px; border-radius:8px; font-weight:900; font-size:16px; margin-bottom:10px;">🛑 발주 전면 취소됨</span>
+                    <strong style="display:block; font-size:24px; color:var(--danger);">${esc(c.name)}</strong>
+                    <p style="margin:12px 0 16px 0; font-size:15px; font-weight:900; color:#9f1239; line-height:1.4;">점주가 발주를 취소했습니다.<br>절대 물건을 싣거나 배송하지 마세요!</p>
+                    <button type="button" data-ack-cancel="${d.id}" style="width:100%; min-height:54px; background:var(--danger); color:#fff; border:0; border-radius:12px; font-size:16px; font-weight:900; box-shadow:0 4px 10px rgba(183, 69, 61, 0.3);">확인완료 (목록에서 삭제)</button>
+                  </div>
+                </div>
+              `;
+          }
+
+          const p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");
           const naviUrl = `https://map.kakao.com/link/search/${encodeURIComponent(c.address || c.name)}`;
           
           if (deliveryReorder) {
@@ -253,7 +280,7 @@
     }
 
     function renderConsolidatedPurchaseView(rows) {
-      const activeRows = rows.filter(d => d.status !== "completed");
+      const activeRows = rows.filter(d => d.status !== "completed" && d.status !== "cancelled");
       if(!activeRows.length) { $("#consolidatedZone").innerHTML = ""; return; }
 
       let consolidatedMap = {};
@@ -277,7 +304,6 @@
         injectHtml += `<div class="prod-group-card"><div class="prod-group-title">🐟 ${esc(prod.name)} <span style="font-size:13px; color:var(--muted); font-weight:bold;">[${esc(prod.size)}]</span></div><div style="padding:2px 8px;">${storeLines}</div><div class="prod-total-row"><span>🔥 최종 매입 총 수량:</span><span>${productSum} ${esc(prod.unit)}</span></div></div>`;
       });
 
-      // 🚨 4. 매입발주서 (당일 총 매입 취합장) 전용 [📸 사진 저장] 팝업 버튼 신설
       $("#consolidatedZone").innerHTML = `
         <div id="consolidatedPrintArea" class="purchase-master-box">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f59e0b; padding-bottom:6px; margin-bottom:10px;">
@@ -292,7 +318,6 @@
       `;
     }
 
-    // 프린터 인쇄 필터
     window.printConsolidatedDocOnly = () => {
       const zone = $("#consolidatedPrintArea").innerHTML;
       const captureZone = document.getElementById('printCaptureZone');
@@ -302,12 +327,9 @@
       window.print();
     };
 
-    // 🚨 4. 매입발주서 전용 사진 캡처 후 팝업 띄우기 함수
     window.saveConsolidatedImage = async function() {
         if(typeof html2canvas!=="function") return alert("이미지 모듈을 불러오지 못했습니다.");
         const zone = document.getElementById("consolidatedPrintArea");
-        
-        // 캡처 중 버튼 숨기기
         const btns = zone.querySelectorAll('.no-print');
         btns.forEach(b => b.style.display = 'none');
         
@@ -315,17 +337,12 @@
             try {
                 const canvas = await html2canvas(zone, {scale:2, backgroundColor:"#fffbeb", scrollX:0, scrollY:0, useCORS:true});
                 const base64Data = canvas.toDataURL("image/png", 0.95);
-                
                 document.getElementById("popupTitle").innerText = "📸 매입발주서 저장";
                 document.getElementById("popupImg").src = base64Data;
                 window.currentDownloadName = `당일_매입발주서_${dateLocal()}.png`;
                 document.getElementById("mobileImagePopup").classList.remove("hidden");
-            } catch(e) {
-                alert("이미지 변환 중 오류가 발생했습니다.");
-            } finally {
-                // 캡처 완료 후 버튼 복구
-                btns.forEach(b => b.style.display = '');
-            }
+            } catch(e) { alert("이미지 변환 중 오류가 발생했습니다."); } 
+            finally { btns.forEach(b => b.style.display = ''); }
         }, 150);
     };
 
@@ -359,10 +376,10 @@
       deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[{id:id(),boxNumber:1,contents:"",checked:false}]};
       const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"수동 발주 수정":"수동 발주 입력"}</h2><p>수동 발주 내용을 직접 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 메모</span><textarea name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" type="number" min="0" value="${d.previousBalance||""}"></label><label class="field"><span>전체 메모</span><textarea name="notes">${esc(d.notes)}</textarea></label><div style="margin-top:10px; padding:16px; background:#effaf8; border:2px solid var(--teal); border-radius:12px; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:900; color:var(--teal-dark);"><span>실시간 계산 합계금액</span><b id="liveTotalWon" style="font-size:22px;">0원</b></div><button class="primary sticky-save" type="submit">저장</button></form>`;
       dlg._draft=d;renderItemEditors();renderBoxEditors();dlg.showModal();
-      calcLiveTotal(); // 창 열림과 동시에 1회 자동 계산 실행
+      calcLiveTotal(); 
     }
     
-    function itemEditor(i,x){return`<div class="item-editor" data-item-index="${x}"><div class="item-title"><strong>${x+1}번 품목</strong><button type="button" data-remove-item="${x}">삭제</button></div><div class="three"><label class="field"><span>구분</span><select data-item="category">${categories.map(v=>`<option ${i.category===v?"selected":""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종</span><input data-item="species" list="speciesList" value="${esc(i.species)}"></label><label class="field"><span>규격/무게</span><input data-item="size" value="${esc(i.size||'기본 규격')}"></label></div><div class="three"><label class="field"><span>원산지</span><input data-item="originCountry" list="originList" value="${esc(i.originCountry)}"></label><label class="field"><span>주문 수량</span><input data-item="requestedQty" type="number" min="0" step="0.01" value="${i.requestedQty}"></label><label class="field"><span>단위</span><select data-item="unit"><option ${i.unit==="마리"?"selected":""}>마리</option><option ${i.unit==="팩"?"selected":""}>팩</option><option ${i.unit==="박스"?"selected":""}>박스</option><option ${i.unit==="개"?"selected":""}>개</option><option ${i.unit==="kg"?"selected":""}>kg</option></select></label></div><div class="three"><label class="field"><span>실제 중량</span><input data-item="actualWeight" type="number" min="0" step="0.01" value="${i.actualWeight??""}" ${i.category==="냉동제품"?"disabled":""} placeholder="미입력시 주문수량으로 계산"></label><label class="field"><span>단가</span><input data-item="unitPrice" type="number" min="0" value="${i.unitPrice||""}"></label><label class="field"><span>수조 위치</span><select data-item="tankNumber"><option value="0">박스·별도</option>${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>${n+1}번 수조</option>`).join("")}</select></label></div><div class="two"><label class="field"><span>필렛 작업비</span><input data-item="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg||""}" ${i.category==="필렛 제품"?"":"disabled"}></label><label class="field"><span>작업·보관</span><input data-item="processing" value="${esc(i.processing)}"></label></div><label class="check-inline"><input data-item-check="rubberBand" type="checkbox" ${i.rubberBand?"checked":""}>꼬리 밴드 작업</label><div class="two"><label class="field"><span>수량</span><input data-item="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity||""}" ${i.rubberBand?"":"disabled"}></label><label class="field"><span>색상</span><input data-item="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand?"":"disabled"}></label></div><label class="field"><span>메모</span><input data-item="includedNote" value="${esc(i.includedNote)}"></label></div>`}
+    function itemEditor(i,x){return`<div class="item-editor" data-item-index="${x}"><div class="item-title"><strong>${x+1}번 품목</strong><button type="button" data-remove-item="${x}">삭제</button></div><div class="three"><label class="field"><span>구분</span><select data-item="category">${categories.map(v=>`<option ${i.category===v?"selected":""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종</span><input data-item="species" list="speciesList" value="${esc(i.species)}"></label><label class="field"><span>규격/무게</span><input data-item="size" value="${esc(i.size||'기본 규격')}"></label></div><div class="three"><label class="field"><span>원산지</span><input data-item="originCountry" list="originList" value="${esc(i.originCountry)}"></label><label class="field"><span>주문 수량</span><input data-item="requestedQty" type="number" min="0" step="0.01" value="${i.requestedQty}"></label><label class="field"><span>단위</span><select data-item="unit"><option ${i.unit==="마리"?"selected":""}>마리</option><option ${i.unit==="팩"?"selected":""}>팩</option><option ${i.unit==="박스"?"selected":""}>박스</option><option ${i.unit==="개"?"selected":""}>개</option><option ${i.unit==="kg"?"selected":""}>kg</option></select></label></div><div class="three"><label class="field"><span>실제 중량</span><input data-item="actualWeight" type="number" min="0" step="0.01" value="${i.actualWeight??""}" ${i.category==="냉동제품"?"disabled":""} placeholder="미입력시 주문수량 적용"></label><label class="field"><span>단가</span><input data-item="unitPrice" type="number" min="0" value="${i.unitPrice||""}"></label><label class="field"><span>수조 위치</span><select data-item="tankNumber"><option value="0">박스·별도</option>${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>${n+1}번 수조</option>`).join("")}</select></label></div><div class="two"><label class="field"><span>필렛 작업비</span><input data-item="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg||""}" ${i.category==="필렛 제품"?"":"disabled"}></label><label class="field"><span>작업·보관</span><input data-item="processing" value="${esc(i.processing)}"></label></div><label class="check-inline"><input data-item-check="rubberBand" type="checkbox" ${i.rubberBand?"checked":""}>꼬리 밴드 작업</label><div class="two"><label class="field"><span>수량</span><input data-item="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity||""}" ${i.rubberBand?"":"disabled"}></label><label class="field"><span>색상</span><input data-item="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand?"":"disabled"}></label></div><label class="field"><span>메모</span><input data-item="includedNote" value="${esc(i.includedNote)}"></label></div>`}
     function renderItemEditors(){const d=$("#deliveryDialog")._draft;$("#itemEditors").innerHTML=d.items.map(itemEditor).join("")+`<datalist id="speciesList">${species.map(v=>`<option value="${v}">`).join("")}</datalist><datalist id="originList">${origins.map(v=>`<option value="${v}">`).join("")}</datalist>`}
     function renderBoxEditors(){const d=$("#deliveryDialog")._draft;$("#boxEditors").innerHTML=d.boxes.map((b,i)=>`<label class="box-row"><b>${i+1}</b><input data-box="${i}" value="${esc(b.contents)}"></label>`).join("")}
     
@@ -384,12 +401,10 @@
       const boxChecks=d.boxes.map(b=>`<label class="check-row ${b.checked?"checked":""}"><input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:16px;">${b.boxNumber}번 박스</strong><small>${esc(b.contents||"박스 내용 미입력")}</small></span></label>`).join("");
       const statement=statementHTML(d,c,amount);
       const dlg=$("#checklistDialog");
-      // 🚨 3. 거래명세서 사진 팝업을 띄우는 버튼 배치
-      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print" style="grid-template-columns: 1fr 1fr;"><button type="button" data-print>🖨️ 인쇄</button><button type="button" data-image="png">📸 거래명세서 사진 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
+      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print" style="grid-template-columns: 1fr 1fr;"><button type="button" data-print>🖨️ 인쇄</button><button type="button" data-image="png">📸 사진 저장/공유</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
       if(!dlg.open)dlg.showModal();
     }
 
-    // 🚨 2. "거래명세서" 명칭 변경 및 0원(단가 미입력)이어도 품목은 무조건 보이게 방어 해제
     function statementHTML(d,c,amount){
       const lines=d.items.map(i=>{
         const base=baseAmount(i);
@@ -397,9 +412,7 @@
         const fee=i.category==="필렛 제품"?(w||0)*(Number(i.processingFeePerKg)||0):0;
         
         let str = `<div><div class="line"><span>${esc(i.species)}${i.originCountry?` (원산지 ${esc(i.originCountry)})`:""} ${esc(itemQty(i))} ${Number(i.unitPrice)>0 ? `× ${money(i.unitPrice)}원/${i.category==="냉동제품"?"팩":"kg"}` : ""}</span><b>${money(base)}원</b></div>`;
-        if(fee) {
-            str += `<div class="line"><span style="color:#687985; font-size:11px;"> ↳ 필렛 작업비 ${w||0}kg × ${money(i.processingFeePerKg)}원</span><b>${money(fee)}원</b></div>`;
-        }
+        if(fee) { str += `<div class="line"><span style="color:#687985; font-size:11px;"> ↳ 필렛 작업비 ${w||0}kg × ${money(i.processingFeePerKg)}원</span><b>${money(fee)}원</b></div>`; }
         str += `</div>`;
         return str;
       }).join("");
@@ -410,7 +423,6 @@
 
     function updateCheck(type,itemId,checked){const d=state.deliveries.find(x=>x.id===selectedDeliveryId),list=type==="item"?d.items:d.boxes,obj=list.find(x=>x.id===itemId);if(obj)obj.checked=checked;save();openChecklist(selectedDeliveryId)}
     
-    // 거래명세서 사진 팝업 오픈 함수 (파일명 세팅 포함)
     async function saveStatementImage(format){
       if(typeof html2canvas!=="function")return alert("이미지 저장 모듈을 불러오지 못했습니다.");
       const node=$("#statementPrint");
@@ -430,7 +442,6 @@
       }, 100);
     }
     
-    // 🚨 3. 사진첩(갤러리) 다운로드 원터치 버튼 동작 함수
     window.downloadDirectToGallery = function() {
         const imgSrc = $("#popupImg").src;
         if(!imgSrc || imgSrc === "") return alert("이미지가 생성되지 않았습니다.");
@@ -446,6 +457,29 @@
     function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
     function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`배송관리_백업_${dateLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
     function restore(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d.profile||!Array.isArray(d.customers)||!Array.isArray(d.deliveries))throw 0;if(confirm("현재 자료를 백업 파일 내용으로 교체할까요?")){state=d;save();render();alert("백업 자료를 복원했습니다.")}}catch{alert("올바른 배송관리 백업 파일이 아닙니다.")}};reader.readAsText(file)}
+
+    window.stopCancelAlarm = () => {
+        isCancelAlarmPlaying = false;
+        if(cancelAlarmInterval) { clearInterval(cancelAlarmInterval); cancelAlarmInterval = null; }
+        $("#cancelAlarmModal").classList.add("hidden");
+    }
+
+    function triggerCancelAlarm(storeName) {
+        $("#cancelAlarmStoreName").innerText = storeName;
+        $("#cancelAlarmModal").classList.remove("hidden");
+        isCancelAlarmPlaying = true;
+        if(navigator.vibrate) navigator.vibrate([800, 400, 800, 400, 800, 400, 800]);
+        cancelAlarmInterval = setInterval(() => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = "sawtooth"; osc.frequency.value = 400; gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } catch(err){}
+            if(navigator.vibrate) navigator.vibrate(500); 
+        }, 1000);
+    }
 
     window.stopLiveOrderAlarm = () => {
       isAlarmPlaying = false;
@@ -489,32 +523,48 @@
             try {
               const rawData = JSON.parse(line); if(!rawData.message) return;
               const packet = JSON.parse(rawData.message);
-              if(!packet.orderId || packet.status !== "ordered") return;
-              
-              const isExist = state.deliveries.some(d => d.cloudOrderId === packet.orderId);
-              if(isExist) return;
+              if(!packet.orderId) return;
 
-              let targetCustomer = state.customers.find(c => c.name === packet.store.trim());
-              if(!targetCustomer) {
-                targetCustomer = { id: id(), name: packet.store.trim(), deliveryPlace: packet.store.trim(), address: packet.address || "", phone: packet.phone || "", routeOrder: customers().length + 1 };
-                state.customers.push(targetCustomer);
+              const existingIdx = state.deliveries.findIndex(d => d.cloudOrderId === packet.orderId);
+              
+              if (packet.status === "cancelled") {
+                  if (existingIdx !== -1 && state.deliveries[existingIdx].status !== "cancelled") {
+                      state.deliveries[existingIdx].status = "cancelled";
+                      isDataChanged = true;
+                      triggerCancelAlarm(packet.store);
+                  }
+                  return;
               }
 
-              const mappedItems = packet.items.map(pi => ({
-                id: id(), category: pi.category || "활어", species: pi.item || "광어", size: pi.size || "기본 규격", originCountry: pi.origin || "국내산", requestedQty: Number(pi.qty) || 1, unit: pi.unit || "마리", actualWeight: "", unitPrice: "", processingFeePerKg: "0", processing: pi.process || "찍어바리",
-                tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
-              }));
+              if (packet.status === "ordered") {
+                  if (existingIdx !== -1) return;
 
-              const newDelivery = {
-                id: id(), cloudOrderId: packet.orderId, customerId: targetCustomer.id, fallbackStoreName: packet.store.trim(), deliveryDate: packet.orderDate || workDate, routeOrder: targetCustomer.routeOrder, notes: "", coPackNote: "", previousBalance: "0", status: "ready",
-                items: mappedItems, boxes: Array.from({length: 1}, (_, bIdx) => ({ id: id(), boxNumber: bIdx + 1, contents: "수산물 상차 박스", checked: false }))
-              };
+                  let targetCustomer = state.customers.find(c => c.name === packet.store.trim());
+                  if(!targetCustomer) {
+                    targetCustomer = { id: id(), name: packet.store.trim(), deliveryPlace: packet.store.trim(), address: packet.address || "", phone: packet.phone || "", routeOrder: customers().length + 1 };
+                    state.customers.push(targetCustomer);
+                  }
 
-              state.deliveries.push(newDelivery); isDataChanged = true;
+                  const mappedItems = packet.items.map(pi => ({
+                    id: id(), category: pi.category || "활어", species: pi.item || "광어", size: pi.size || "기본 규격", originCountry: pi.origin || "국내산", requestedQty: Number(pi.qty) || 1, unit: pi.unit || "마리", actualWeight: "", unitPrice: "", processingFeePerKg: "0", processing: pi.process || "찍어바리",
+                    tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
+                  }));
+
+                  const newDelivery = {
+                    id: id(), cloudOrderId: packet.orderId, customerId: targetCustomer.id, fallbackStoreName: packet.store.trim(), deliveryDate: packet.orderDate || workDate, routeOrder: targetCustomer.routeOrder, notes: "", coPackNote: "", previousBalance: "0", status: "ready",
+                    items: mappedItems, boxes: Array.from({length: 1}, (_, bIdx) => ({ id: id(), boxNumber: bIdx + 1, contents: "수산물 상차 박스", checked: false }))
+                  };
+
+                  state.deliveries.push(newDelivery); isDataChanged = true;
+              }
             } catch(e){}
           });
           if(isDataChanged) { 
-            save(); render(); triggerLiveNetworkHardwareAlarm();
+            save(); render(); 
+            if(state.deliveries.some(d => d.status === "ready" && !d.alarmTriggered)) {
+               triggerLiveNetworkHardwareAlarm();
+               state.deliveries.forEach(d => d.alarmTriggered = true);
+            }
           }
         }).catch(err => { $("#netDot").className = "network-dot loading"; $("#netText").textContent = "오프라인"; });
       };
@@ -524,6 +574,12 @@
     document.addEventListener("click",e=>{
       const b=e.target.closest("button");if(!b)return;
       
+      if(b.dataset.ackCancel){
+          const dId = Number(b.dataset.ackCancel);
+          state.deliveries = state.deliveries.filter(d => d.id !== dId);
+          save(); render(); return;
+      }
+
       if(b.hasAttribute("data-reorder-deliveries")){deliveryReorder=!deliveryReorder;return renderToday();}
       if(b.dataset.moveDelivery){return moveDelivery(Number(b.dataset.moveDelivery),deliveries().findIndex(d=>d.id===Number(b.dataset.moveDelivery))+Number(b.dataset.dir));}
 
@@ -564,7 +620,6 @@
       }
     });
 
-    // 🚨 수량이나 단가를 입력할 때마다 실시간 합계 금액 즉시 반영
     document.addEventListener("input", e=>{
       if(e.target.closest("#deliveryForm")) calcLiveTotal();
     });
