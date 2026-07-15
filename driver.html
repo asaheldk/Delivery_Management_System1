@@ -40,7 +40,7 @@
     .vibrate-alarm-banner button { background: #ffffff; color: #e11d48; border: 0; padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     @keyframes blinkRed { 0%, 100% { background: #e11d48; } 50% { background: #9f1239; } }
 
-    /* 🚨 취소 오더 강제 알림 팝업 */
+    /* 취합장 및 사이렌 팝업 */
     #cancelAlarmModal { position:fixed; inset:0; background:rgba(159, 18, 57, 0.95); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; animation: bgBlink 0.5s infinite alternate; }
     @keyframes bgBlink { 0% { background:rgba(159, 18, 57, 0.95); } 100% { background:rgba(0, 0, 0, 0.95); } }
 
@@ -134,13 +134,21 @@
     const $=s=>document.querySelector(s);
     const money=n=>new Intl.NumberFormat("ko-KR").format(Math.round(Number(n)||0));
     const id=()=>Date.now()+Math.floor(Math.random()*100000);
+    
+    // 🚨 [3번 익일 스위칭 패치]: 기사 관제탑 최초 로딩 시 기본 활성화 날짜를 '내일(익일)'로 강제 튜닝
+    const dateTomorrowLocal=()=>{
+      const d=new Date();
+      d.setDate(d.getDate() + 1); // 1일 강제 전개
+      const o=d.getTimezoneOffset()*60000;
+      return new Date(d-o).toISOString().slice(0,10);
+    };
     const dateLocal=()=>{const d=new Date(),o=d.getTimezoneOffset()*60000;return new Date(d-o).toISOString().slice(0,10)};
     const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
     const safeName=v=>String(v||"배송").replace(/[\\/:*?"<>|]/g,"_");
     
     let state=load();
     let view="today";
-    let workDate=dateLocal();
+    let workDate=dateTomorrowLocal(); // 🚨 익일 장부 강제 이식
     let customerEditId=null;
     let deliveryEditId=null;
     let selectedDeliveryId=null;
@@ -257,7 +265,7 @@
               </div>
             `;
           }
-      }).join("") : `<div class="empty">오늘 등록된 배송이 없습니다.<br>점주 앱에서 발주를 전송하면 실시간 노출됩니다.</div>`;
+      }).join("") : `<div class="empty">내일 등록된 배송이 없습니다.<br>점주 앱에서 발주를 전송하면 실시간 노출됩니다.</div>`;
 
       $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions">${rows.length > 0 ? `<button class="mini" type="button" data-reorder-deliveries style="border-color:var(--warn); color:var(--warn);">${deliveryReorder ? "완료" : "순서/삭제"}</button>` : ""}<button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>📞 수동 주문 추가</button></div></div><div class="stop-list">${stops}</div></div>`;
       
@@ -454,7 +462,7 @@
         alert("✅ 갤러리(사진첩)에 성공적으로 저장되었습니다!");
     };
 
-    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
+    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,제품규격사이즈:i.size||"기본 규격",원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
     function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`배송관리_백업_${dateLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
     function restore(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d.profile||!Array.isArray(d.customers)||!Array.isArray(d.deliveries))throw 0;if(confirm("현재 자료를 백업 파일 내용으로 교체할까요?")){state=d;save();render();alert("백업 자료를 복원했습니다.")}}catch{alert("올바른 배송관리 백업 파일이 아닙니다.")}};reader.readAsText(file)}
 
@@ -554,6 +562,7 @@
                     tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
                   }));
 
+                  // 🚨 [날짜 수리완료]: 점주가 어떤 배송요청일로 보냈든지 간에, 배송원의 현재 대시보드 화면 날짜(workDate)에 무조건 100% 안착 처리
                   const newDelivery = {
                     id: id(), cloudOrderId: packet.orderId, customerId: targetCustomer.id, fallbackStoreName: packet.store.trim(), 
                     deliveryDate: workDate, routeOrder: targetCustomer.routeOrder, 
@@ -578,7 +587,6 @@
       fetchExecute(); syncIntervalTimer = setInterval(fetchExecute, 4000);
     }
 
-    // 오리지널 이벤트 리스너 복구 보존 (클릭 마비 해결)
     document.addEventListener("click",e=>{
       const b=e.target.closest("button");if(!b)return;
       
@@ -605,7 +613,7 @@
       if(b.dataset.editCustomer)return openCustomer(Number(b.dataset.editCustomer));
       if(b.hasAttribute("data-reorder-customers")){customerReorder=!customerReorder;return renderCustomers()}
       if(b.dataset.moveCustomer)return moveCustomer(Number(b.dataset.moveCustomer),customers().findIndex(c=>c.id===Number(b.dataset.moveCustomer))+Number(b.dataset.dir));
-      if(b.dataset.deleteCustomer){const cid=Number(b.dataset.deleteCustomer);if(state.deliveries.some(d=>d.customerId===cid))return alert("이 거래처의 배송 기록이 있어 삭제할 수 없습니다. 배송 기록을 먼저 삭제해 주세요.");if(confirm("이 거래처를 삭제할까요?")){state.customers=state.customers.filter(c=>c.id!==cid);normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers()}return}
+      if(b.dataset.deleteCustomer){const cid=Number(b.dataset.deleteCustomer);if(state.deliveries.some(d=>d.customerId===cid))return alert("이 거래처의 배송 기록이 있어 삭제할 수 없습니다. 배송 기록을 먼저 삭제해 주세요.");if(confirm("이 거래처를 삭제할까요?")){state.customers=state.customers.filter(c!==cid);normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers()}return}
       if(b.hasAttribute("data-new-delivery"))return openDelivery();
       if(b.dataset.openCheck)return openChecklist(Number(b.dataset.openCheck));
       if(b.hasAttribute("data-add-item")){syncDraft();$("#deliveryDialog")._draft.items.push(blankItem());return renderItemEditors()}
@@ -656,7 +664,7 @@
     });
     
     document.addEventListener("change",e=>{
-      if(e.target.id==="workDate"){workDate=e.target.value||dateLocal();render()}
+      if(e.target.id==="workDate"){workDate=e.target.value||dateTomorrowLocal();render()}
       if(e.target.dataset.customerPosition)return moveCustomer(Number(e.target.dataset.customerPosition),Number(e.target.value)-1);
       if(e.target.id==="boxCount"){syncDraft();const d=$("#deliveryDialog")._draft,n=Math.max(0,Math.min(20,Number(e.target.value)||0));d.boxes=Array.from({length:n},(_,i)=>d.boxes[i]||{id:id(),boxNumber:i+1,contents:"",checked:false});d.boxes.forEach((b,i)=>b.boxNumber=i+1);renderBoxEditors()}
       const row=e.target.closest("[data-item-index]");if(row&&(e.target.dataset.item==="category"||e.target.dataset.itemCheck!==undefined)){syncDraft();renderItemEditors()}
