@@ -8,7 +8,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
-    /* 🚨 [5060 시니어 UX 패치]: 노안이 오신 기사님들을 위해 글씨 크기를 대폭 키우고 터치 영역을 대형화 */
+    /* 5060 시니어 UX 폰트 및 고대비 색상 */
     :root{--navy:#123c5a;--teal:#0f8b82;--teal-dark:#086e68;--ink:#182833;--muted:#51626e;--line:#cbd6dc;--bg:#edf3f5;--warn:#d96c27;--danger:#b7453d;--white:#fff;--shadow:0 12px 35px rgba(23,54,72,.13)}
     *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;color:var(--ink);background:var(--bg);font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;-webkit-tap-highlight-color:transparent}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}.app{width:min(100%,760px);min-height:100dvh;margin:auto;padding:0 0 92px;background:#f8fbfc;box-shadow:var(--shadow)}
     
@@ -23,34 +23,31 @@
     .subhead{display:flex;align-items:flex-end;justify-content:space-between;margin-top:5px}.subhead strong{font-size:18px;font-weight:900;color:var(--navy)}.subhead small{color:var(--muted);font-size:12px;font-weight:700}.item-editor{display:grid;gap:10px;padding:14px;border:2px solid var(--line);border-radius:16px;background:#f8fbfc}.item-title{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:900}.item-title button{border:0;color:var(--danger);background:transparent;font-size:13px;font-weight:900}.three{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px}.check-inline{display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #eac89c;border-radius:12px;background:#fff9f1;font-size:14px;font-weight:900;color:#98460f}.check-inline input{width:24px;height:24px}.box-editor{display:grid;gap:8px}.box-row{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:8px}.box-row b{display:grid;place-items:center;height:38px;border-radius:10px;color:#fff;background:var(--navy);font-size:15px}.box-row input{min-height:48px;padding:8px 12px;border:2px solid var(--line);border-radius:11px;font-size:14px;font-weight:700}
     .alert{padding:14px;border:2px solid #efb181;border-radius:14px;color:#91440e;background:#fff2e8;font-size:14px;line-height:1.5;font-weight:700}.check-list{display:grid;gap:9px}.check-row{display:flex;align-items:center;gap:12px;min-height:76px;padding:14px;border:2px solid var(--line);border-radius:15px;background:#fff}.check-row.checked{border-color:#82ce7a;background:#f0faf2}.check-row input{width:28px;height:28px;accent-color:var(--teal)}.check-copy{flex:1}.check-copy strong{font-size:16px;font-weight:900}.check-copy small{display:block;margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.tag{display:inline-block;margin-top:5px;padding:4px 8px;border-radius:7px;color:#9b5014;background:#fff0dc;font-size:11px;font-weight:900}
     
-    /* 🚨 [5번 인쇄 개조]: 구매담당자 전용 청정 인쇄 포맷 및 화면 제어 CSS */
     .statement{padding:18px;border:2px solid var(--navy);border-radius:16px;background:#fff}.statement h1{margin:0;color:var(--navy);font-size:24px;font-weight:900}.statement-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:13px 0 17px;padding:12px 0;border-top:2px solid var(--navy);border-bottom:2px solid var(--line)}.statement-meta p{display:grid;grid-template-columns:68px 1fr;gap:7px;margin:0;font-size:13px;font-weight:700}.statement-meta p.address{grid-column:1/-1}.statement-meta span{color:var(--muted)}.statement-meta b{overflow-wrap:anywhere;color:var(--ink)}.line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0;padding-top:9px;border-top:1px dashed var(--line);font-size:13px;font-weight:700}.line b{white-space:nowrap;color:var(--navy)}.subtotal,.balance,.total{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-weight:900}.subtotal{padding-top:11px;border-top:1px dashed var(--line);font-size:14px}.balance{color:#ac581b;font-size:14px}.total{padding-top:11px;border-top:3px solid var(--navy);color:var(--navy);font-size:18px}.statement-note{padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:12px;white-space:pre-wrap;font-weight:700}.output-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.output-actions button{min-height:48px;border:2px solid #b8d7d3;border-radius:11px;color:var(--teal-dark);background:#eff9f7;font-size:13px;font-weight:900}.hidden{display:none!important}
     
-    /* 🚨 무선 전송망 연결 인디케이터 배너 디자인 */
+    /* 무선망 인디케이터 */
     .network-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 900; color: #38bdf8; }
     .network-dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; display: inline-block; }
     .network-dot.loading { background: #f59e0b; animation: blinkPulse 0.8s infinite; }
     @keyframes blinkPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    /* 🚨 [5번 취합장 UI]: 매장별 수량 나열 후 총합산이 노출되는 대형 박스 설계 */
+    /* 취합장 박스 */
     .purchase-master-box { background: #fffbeb; border: 3px solid #f59e0b; border-left: 8px solid #f59e0b; padding: 18px; border-radius: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
     .prod-group-card { background: #ffffff; border: 2px solid #fde68a; padding: 12px; border-radius: 14px; margin-top: 10px; }
     .prod-group-title { font-size: 16px; font-weight: 900; color: var(--navy); border-bottom: 2px solid #fcd34d; padding-bottom: 4px; margin-bottom: 6px; }
     .prod-store-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: #334155; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; }
     .prod-total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--danger); margin-top: 6px; padding-top: 4px; border-top: 1px solid #fcd34d; }
 
-    /* 🚨 [4번 알림용]: 새 주문 수신 시 화면 전체 최상단에 번쩍이는 무전 알림 바 배너 */
+    /* 물리 진동 알림 전광판 */
     .vibrate-alarm-banner { background: #e11d48; color: #ffffff; padding: 16px; text-align: center; font-size: 16px; font-weight: 900; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 3px solid #be123c; animation: blinkRed 0.6s infinite; }
     .vibrate-alarm-banner button { background: #ffffff; color: #e11d48; border: 0; padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     @keyframes blinkRed { 0%, 100% { background: #e11d48; } 50% { background: #9f1239; } }
 
-    /* 이미지 저장 우회 모달 레이어 */
     #mobileImagePopup { position:fixed; inset:0; background:rgba(15,23,42,0.94); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
-
-    /* 인쇄 전용 강제 격리 스타일 시트 */
+    
     @media print {
       body { background: #fff !important; }
-      .app, header, main, nav, dialog, #mobileImagePopup { display: none !important; }
+      .app, header, main, nav, dialog, #mobileImagePopup, #liveAlarmBanner { display: none !important; }
       #printCaptureZone { display: block !important; position: absolute; top: 0; left: 0; width: 100%; padding: 10mm; background: #fff; }
       #statementPrint { display: block !important; }
     }
@@ -59,8 +56,8 @@
 <body>
   
   <div id="liveAlarmBanner" class="vibrate-alarm-banner hidden">
-    <span>🚨 새 발주서가 실시간 접수되었습니다! (진동 작동중)</span>
-    <button type="button" onclick="window.stopLiveOrderAlarm()">⚠️ 알림 끄기</button>
+    <span>🚨 새 발주서가 실시간 접수되었습니다!</span>
+    <button type="button" onclick="window.stopLiveOrderAlarm()">🔊 알림 소리 끄기</button>
   </div>
 
   <div class="app">
@@ -75,7 +72,7 @@
         </div>
         <button type="button" data-nav="settings">설정</button>
       </div>
-      <div class="datebar"><input id="workDate" type="date" aria-label="업무 날짜"><span class="autosave">● 무선자동 동기화</span></div>
+      <div class="datebar"><input id="workDate" type="date" aria-label="업무 날짜"><span class="autosave">● 무선 자동저장</span></div>
     </header>
     
     <main>
@@ -102,12 +99,12 @@
 
   <div id="mobileImagePopup" class="hidden">
     <div style="background:#fff; width:min(100%, 420px); padding:22px; border-radius:24px; text-align:center; box-shadow:var(--shadow);">
-      <p style="font-size:18px; font-weight:900; color:var(--navy); margin:0 0 8px 0;">📸 거래명세서 이미지 팝업</p>
-      <p style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:15px;">아래 명세서를 <span style="color:var(--danger); font-weight:900; underline">2초간 길게 꾹 누르시면</span><br>[이미지 저장] 또는 [카톡 전달]이 무조건 성공합니다!</p>
+      <p style="font-size:18px; font-weight:900; color:var(--navy); margin:0 0 8px 0;">📸 거래명세서 팝업</p>
+      <p style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:15px;">아래 명세서를 <span style="color:var(--danger); font-weight:900; underline">2초간 꾹 누르시면</span><br>[이미지 저장/공유] 창이 뜹니다!</p>
       <div style="border:2px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; background:#fff; max-height:50dvh; overflow-y:auto;">
         <img id="popupImg" src="" alt="거래명세표" style="width:100%; height:auto; display:block;">
       </div>
-      <button type="button" onclick="document.getElementById('mobileImagePopup').classList.add('hidden')" style="width:100%; min-height:52px; background:var(--navy); color:#fff; font-weight:900; border:0; border-radius:14px; font-size:16px;">관제탑 화면으로 돌아가기</button>
+      <button type="button" onclick="document.getElementById('mobileImagePopup').classList.add('hidden')" style="width:100%; min-height:52px; background:var(--navy); color:#fff; font-weight:900; border:0; border-radius:14px; font-size:16px;">관제탑으로 돌아가기</button>
     </div>
   </div>
 
@@ -133,7 +130,9 @@
     let customerEditId=null;
     let deliveryEditId=null;
     let selectedDeliveryId=null;
+    
     let customerReorder=false;
+    let deliveryReorder=false; // 🚨 당일 배송 순서 수정 및 삭제 모드 스위치 추가
 
     let syncIntervalTimer=null; 
     let isAlarmPlaying = false; 
@@ -158,34 +157,74 @@
       $("#workDate").value=workDate;
     }
     
-    // 🚨 [클릭 마비 해결]: 원본 순정 탭 전환 기능 완벽 복구
+    // 오리지널 순정 탭 전환 로직 완벽 보존
     function setView(next){view=next;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===view));$("#todayView").classList.toggle("hidden",view!=="today");$("#customersView").classList.toggle("hidden",view!=="customers");$("#settingsView").classList.toggle("hidden",view!=="settings");render()}
     function render(){renderHeader();if(view==="today")renderToday();if(view==="customers")renderCustomers();if(view==="settings")renderSettings()}
 
-    // 🚨 렌더 투데이 개조 (내비게이션 및 전화 수동 입력)
     function renderToday(){
       const rows=deliveries(),ready=rows.filter(d=>d.status!=="completed").length,complete=rows.filter(d=>d.status==="completed").length,boxes=rows.reduce((s,d)=>s+(d.boxes||[]).length,0);
       const tanks=Array.from({length:6},(_,x)=>{const n=x+1,loads=rows.flatMap(d=>(d.items||[]).filter(i=>Number(i.tankNumber)===n).map(i=>`${customerOf(d).name} · ${i.species} ${itemQty(i)}`));return`<div class="tank"><strong>${n}번 수조</strong><p>${loads.length?loads.map(esc).join("<br>"):"비어 있음"}</p></div>`}).join("");
       
-      const stops=rows.length?rows.map(d=>{
+      const stops=rows.length?rows.map((d, index)=>{
           const c=customerOf(d),p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");
           const naviUrl = `https://map.kakao.com/link/search/${encodeURIComponent(c.address || c.name)}`;
-          return `<div class="stop ${d.status==="completed"?"completed":""}" style="display:flex; flex-direction:column; padding:0; background:#fff; border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">
-            <button type="button" data-open-check="${d.id}" style="display:flex; align-items:center; gap:12px; width:100%; padding:16px; border:0; background:transparent; text-align:left;">
-              <span class="order">${d.routeOrder}</span>
-              <span class="stop-copy"><strong style="font-size:18px;">${esc(c.name)}</strong><small style="font-size:13px;">${esc(names||"품목 없음")}${(d.boxes||[]).length?` · ${d.boxes.length}박스`:""}</small></span>
-              <span class="progress">${p.done}/${p.total}</span>
-            </button>
-            <div class="no-print" style="display:grid; grid-template-columns:1fr 1fr; border-top:2px solid var(--line); background:#f8fbfc;">
-              <a href="${naviUrl}" target="_blank" style="text-align:center; padding:12px; font-size:14px; font-weight:900; color:var(--navy); text-decoration:none; border-right:2px solid var(--line);">🗺️ 내비게이션 연동</a>
-              <button type="button" data-open-check="${d.id}" style="border:0; background:transparent; font-size:14px; font-weight:900; color:var(--teal); padding:12px;">📋 하차 체크리스트</button>
-            </div>
-          </div>`;
+          
+          // 🚨 [당일 배송 순서 삭제/변경 모드 분기 처리]
+          if (deliveryReorder) {
+            return `
+              <div class="stop" style="display:flex; justify-content:space-between; align-items:center; background:#fff; border:2px solid var(--warn); border-radius:16px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="order" style="background:var(--warn);">${d.routeOrder}</span>
+                  <div style="line-height:1.2;">
+                    <strong style="font-size:16px;">${esc(c.name)}</strong><br>
+                    <small style="font-size:12px; color:var(--muted);">${esc(names||"")}</small>
+                  </div>
+                </div>
+                <div class="reorder" style="display:flex; gap:6px;">
+                  <button type="button" data-delete-delivery="${d.id}" style="color:var(--danger); border-color:var(--danger); font-weight:900;">삭제</button>
+                  <button type="button" data-move-delivery="${d.id}" data-dir="-1" ${index===0?"disabled":""}>↑</button>
+                  <button type="button" data-move-delivery="${d.id}" data-dir="1" ${index===rows.length-1?"disabled":""}>↓</button>
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="stop ${d.status==="completed"?"completed":""}" style="display:flex; flex-direction:column; padding:0; background:#fff; border:2px solid var(--line); border-radius:16px; margin-bottom:10px; overflow:hidden;">
+                <button type="button" data-open-check="${d.id}" style="display:flex; align-items:center; gap:12px; width:100%; padding:16px 14px; border:0; background:transparent; text-align:left;">
+                  <span class="order">${d.routeOrder}</span>
+                  <span class="stop-copy"><strong style="font-size:18px;">${esc(c.name)}</strong><small style="font-size:13px;">${esc(names||"품목 없음")}${(d.boxes||[]).length?` · ${d.boxes.length}박스`:""}</small></span>
+                  <span class="progress">${p.done}/${p.total}</span>
+                </button>
+                <div class="no-print" style="display:grid; grid-template-columns:1fr 1fr; border-top:2px solid var(--line); background:#f8fbfc;">
+                  <a href="${naviUrl}" target="_blank" style="text-align:center; padding:12px; font-size:14px; font-weight:900; color:var(--navy); text-decoration:none; border-right:2px solid var(--line);">🗺️ 내비게이션 연동</a>
+                  <button type="button" data-open-check="${d.id}" style="border:0; background:transparent; font-size:14px; font-weight:900; color:var(--teal); padding:12px;">📋 하차 체크리스트</button>
+                </div>
+              </div>
+            `;
+          }
       }).join("") : `<div class="empty">오늘 등록된 배송이 없습니다.<br>점주 앱에서 발주를 전송하면 실시간 노출됩니다.</div>`;
 
-      $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions"><button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>📞 수동 주문 추가</button></div></div><div class="stop-list">${stops}</div></div>`;
+      // 🚨 편집 모드 활성화 버튼 및 수동 주문 버튼 배치
+      $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions">${rows.length > 0 ? `<button class="mini" type="button" data-reorder-deliveries style="border-color:var(--warn); color:var(--warn);">${deliveryReorder ? "완료" : "순서/삭제"}</button>` : ""}<button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>📞 수동 주문 추가</button></div></div><div class="stop-list">${stops}</div></div>`;
       
       renderConsolidatedPurchaseView(rows);
+    }
+
+    // 🚨 [당일 배송 리스트 순서 변경 코어 함수]
+    function moveDelivery(deliveryId, target) {
+        const list = deliveries();
+        const i = list.findIndex(d => d.id === deliveryId);
+        const to = Math.max(0, Math.min(list.length - 1, target));
+        if (i < 0 || i === to) return;
+        const [m] = list.splice(i, 1);
+        list.splice(to, 0, m);
+        // 당일 리스트의 라우트 오더 번호를 모두 재정렬
+        list.forEach((d, x) => {
+            const real = state.deliveries.find(r => r.id === d.id);
+            real.routeOrder = x + 1;
+        });
+        save();
+        renderToday();
     }
 
     function renderConsolidatedPurchaseView(rows) {
@@ -225,13 +264,15 @@
       window.print();
     };
 
+    window.openChecklistInline = (delId) => { selectedDeliveryId = delId; openChecklist(delId); };
+
     function renderCustomers(){
       const list=customers();
       $("#customersView").innerHTML=`<div class="heading"><div><h2>내 거래처</h2><p>거래처명·납품처·주소·연락처와 기본 순서를 관리합니다.</p></div><div class="heading-actions">${list.length>1?`<button class="mini" type="button" data-reorder-customers>${customerReorder?"변경 완료":"순서 변경"}</button>`:""}<button class="small-primary" type="button" data-new-customer>＋ 추가</button></div></div><div class="customer-list">${list.length?list.map((c,i)=>`<div class="customer-row"><span class="order">${i+1}</span><span class="customer-copy"><strong>${esc(c.name)}</strong><small>${esc(c.deliveryPlace||c.address||`기본 배송순서 ${i+1}`)}</small></span>${customerReorder?`<span class="reorder"><select data-customer-position="${c.id}" aria-label="${esc(c.name)} 순서">${list.map((_,p)=>`<option value="${p+1}" ${p===i?"selected":""}>${p+1}번</option>`).join("")}</select><button type="button" data-move-customer="${c.id}" data-dir="-1" ${i===0?"disabled":""}>↑</button><button type="button" data-move-customer="${c.id}" data-dir="1" ${i===list.length-1?"disabled":""}>↓</button></span>`:`<button type="button" data-edit-customer="${c.id}">수정</button>`}</div>`).join(""):`<div class="empty">등록된 거래처가 없습니다.</div>`}</div>`;
     }
     
     function renderSettings(){
-      $("#settingsView").innerHTML=`<div class="heading"><div><h2>회사·차량 정보</h2><p>입력한 내용은 화면과 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input name="companyName" value="${esc(state.profile.companyName)}" placeholder="예: 장백수산"></label><label class="field"><span>배송담당자 이름</span><input name="driverName" value="${esc(state.profile.driverName)}" placeholder="예: 홍길동"></label><label class="field"><span>차량 호차 (숫자 전용)</span><input name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 1"></label><button class="primary" type="submit">회사·차량 정보 저장</button><div class="notice">휴대폰 변경이나 브라우저 초기화 전에 반드시 백업 파일을 저장해 주세요.</div><div class="backup-actions"><button class="outline" type="button" data-backup>백업 저장</button><button class="outline" type="button" data-restore>백업 복원</button></div></form>`;
+      $("#settingsView").innerHTML=`<div class="heading"><div><h2>회사·차량 정보</h2><p>입력한 내용은 화면과 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input name="companyName" value="${esc(state.profile.companyName)}" placeholder="예: 장백수산"></label><label class="field"><span>배송담당자 이름</span><input name="driverName" value="${esc(state.profile.driverName)}" placeholder="예: 홍길동"></label><label class="field"><span>차량 호차 (숫자 전용)</span><input name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 1 또는 2"></label><button class="primary" type="submit">회사·차량 정보 저장</button><div class="notice">휴대폰 변경이나 브라우저 초기화 전에 반드시 백업 파일을 저장해 주세요.</div><div class="backup-actions"><button class="outline" type="button" data-backup>백업 저장</button><button class="outline" type="button" data-restore>백업 복원</button></div></form>`;
     }
 
     function openCustomer(customerId){
@@ -251,7 +292,7 @@
     
     function openDelivery(deliveryId){
       deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[{id:id(),boxNumber:1,contents:"",checked:false}]};
-      const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"발주·포장 수정":"발주·포장 입력"}</h2><p>수동 발주 내용을 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 메모</span><textarea name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" type="number" min="0" value="${d.previousBalance||""}"></label><label class="field"><span>전체 메모</span><textarea name="notes">${esc(d.notes)}</textarea></label><button class="primary sticky-save" type="submit">저장</button></form>`;
+      const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"수동 발주 수정":"수동 발주 입력"}</h2><p>수동 발주 내용을 직접 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 메모</span><textarea name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" type="number" min="0" value="${d.previousBalance||""}"></label><label class="field"><span>전체 메모</span><textarea name="notes">${esc(d.notes)}</textarea></label><button class="primary sticky-save" type="submit">저장</button></form>`;
       dlg._draft=d;renderItemEditors();renderBoxEditors();dlg.showModal();
     }
     
@@ -278,7 +319,7 @@
       const boxChecks=d.boxes.map(b=>`<label class="check-row ${b.checked?"checked":""}"><input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:16px;">${b.boxNumber}번 박스</strong><small>${esc(b.contents||"박스 내용 미입력")}</small></span></label>`).join("");
       const statement=statementHTML(d,c,amount);
       const dlg=$("#checklistDialog");
-      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print"><button type="button" data-print>인쇄</button><button type="button" data-image="png">📸 사진 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
+      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print"><button type="button" data-print>인쇄</button><button type="button" data-image="png">📸 사진 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">현재 배송건 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
       if(!dlg.open)dlg.showModal();
     }
 
@@ -356,6 +397,7 @@
                 state.customers.push(targetCustomer);
               }
 
+              // 🚨 [1번 패치]: 신규 수신된 활어 품목의 수조번호는 무조건 0번(박스·별도)으로 고정 입고
               const mappedItems = packet.items.map(pi => ({
                 id: id(), category: pi.category || "활어", species: pi.item || "광어", size: pi.size || "기본 규격", originCountry: pi.origin || "국내산", requestedQty: Number(pi.qty) || 1, unit: pi.unit || "마리", actualWeight: "", unitPrice: "25000", processingFeePerKg: "0", processing: pi.process || "찍어바리",
                 tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
@@ -377,9 +419,14 @@
       fetchExecute(); syncIntervalTimer = setInterval(fetchExecute, 4000);
     }
 
-    // --- 오리지널 순정 이벤트 리스너: 단 한 줄도 건드리지 않음 ---
+    // 🚨 100% 순정 이벤트 리스너 라우팅 구조 복원 및 삭제/순서변경 모드 결합
     document.addEventListener("click",e=>{
       const b=e.target.closest("button");if(!b)return;
+      
+      // 🚨 [순서/삭제 모드 토글 스위치 이벤트 추가]
+      if(b.hasAttribute("data-reorder-deliveries")){deliveryReorder=!deliveryReorder;return renderToday();}
+      if(b.dataset.moveDelivery){return moveDelivery(Number(b.dataset.moveDelivery),deliveries().findIndex(d=>d.id===Number(b.dataset.moveDelivery))+Number(b.dataset.dir));}
+
       if(b.dataset.nav){setView(b.dataset.nav);return}
       if(b.hasAttribute("data-close")){b.closest("dialog").close();return}
       if(b.hasAttribute("data-new-customer"))return openCustomer();
@@ -392,7 +439,10 @@
       if(b.hasAttribute("data-add-item")){syncDraft();$("#deliveryDialog")._draft.items.push(blankItem());return renderItemEditors()}
       if(b.dataset.removeItem!==undefined){syncDraft();const d=$("#deliveryDialog")._draft;if(d.items.length===1)return alert("품목은 한 개 이상 필요합니다.");d.items.splice(Number(b.dataset.removeItem),1);return renderItemEditors()}
       if(b.dataset.editDelivery){$("#checklistDialog").close();return openDelivery(Number(b.dataset.editDelivery))}
-      if(b.dataset.deleteDelivery){if(confirm("오늘 배송 기록을 삭제할까요?")){state.deliveries=state.deliveries.filter(d=>d.id!==Number(b.dataset.deleteDelivery));save();$("#checklistDialog").close();render()}return}
+      
+      // 당일 배송 삭제 원본 유지 (편집 모드와 체크리스트 창 양쪽에서 호환 작동)
+      if(b.dataset.deleteDelivery){if(confirm("해당 배송 기록을 영구 삭제할까요?")){state.deliveries=state.deliveries.filter(d=>d.id!==Number(b.dataset.deleteDelivery));save();$("#checklistDialog").close();render()}return}
+      
       if(b.dataset.complete){const d=state.deliveries.find(x=>x.id===Number(b.dataset.complete));d.status="completed";d.completedAt=new Date().toISOString();save();$("#checklistDialog").close();render();return}
       if(b.dataset.cancelComplete){if(confirm("하차 완료를 취소하고 모든 체크를 초기화할까요?")){const d=state.deliveries.find(x=>x.id===Number(b.dataset.cancelComplete));d.status="ready";d.completedAt=null;d.items.forEach(i=>i.checked=false);d.boxes.forEach(x=>x.checked=false);save();openChecklist(d.id)}return}
       if(b.hasAttribute("data-print"))return window.print();
@@ -410,8 +460,8 @@
         const fd=Object.fromEntries(new FormData(e.target));
         state.profile={companyName:String(fd.companyName).trim(),driverName:String(fd.driverName).trim(),vehicleNumber:String(fd.vehicleNumber).trim()};
         save();renderSettings();
-        startCloudSync(); // 🚨 차량번호가 바뀌면 즉시 통신망 재부팅
-        alert("회사·차량 정보를 저장하고 무선 수신망을 동기화했습니다.");
+        startCloudSync(); // 차량번호 변경 시 무선 안테나 리붓
+        alert("회사·차량 정보를 저장하고 무선 통신망을 동기화했습니다.");
       }
     });
     
@@ -424,7 +474,7 @@
       if(e.target.dataset.checkBox)return updateCheck("box",Number(e.target.dataset.checkBox),e.target.checked);
       if(e.target.id==="restoreInput"&&e.target.files[0])restore(e.target.files[0]);
       
-      // 🚨 수조 이동 인라인 셀렉터 이벤트 처리 (순정 코드에 안전하게 추가됨)
+      // 🚨 하차 체크리스트 내 수동 수조 변경 이벤트 바인딩
       if(e.target.dataset.tankItem){
         const itemId = Number(e.target.dataset.tankItem);
         const d = state.deliveries.find(x => x.id === selectedDeliveryId);
@@ -439,7 +489,7 @@
     });
     
     render();
-    startCloudSync(); // 🚨 앱 최초 구동 시 무선 안테나 즉시 기동
+    startCloudSync(); // 부팅 즉시 무선망 개통
   })();
   </script>
 </body>
