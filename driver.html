@@ -40,7 +40,6 @@
     .vibrate-alarm-banner button { background: #ffffff; color: #e11d48; border: 0; padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     @keyframes blinkRed { 0%, 100% { background: #e11d48; } 50% { background: #9f1239; } }
 
-    /* 취합장 및 사이렌 팝업 */
     #cancelAlarmModal { position:fixed; inset:0; background:rgba(159, 18, 57, 0.95); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; animation: bgBlink 0.5s infinite alternate; }
     @keyframes bgBlink { 0% { background:rgba(159, 18, 57, 0.95); } 100% { background:rgba(0, 0, 0, 0.95); } }
 
@@ -135,10 +134,10 @@
     const money=n=>new Intl.NumberFormat("ko-KR").format(Math.round(Number(n)||0));
     const id=()=>Date.now()+Math.floor(Math.random()*100000);
     
-    // 🚨 [3번 익일 스위칭 패치]: 기사 관제탑 최초 로딩 시 기본 활성화 날짜를 '내일(익일)'로 강제 튜닝
+    [span_2](start_span)// 🚨 [3대 패치]: 기사 단말기 부팅 시 기본 활성화 날짜를 '내일(익일)'로 강제 튜닝 연동[span_2](end_span)
     const dateTomorrowLocal=()=>{
       const d=new Date();
-      d.setDate(d.getDate() + 1); // 1일 강제 전개
+      d.setDate(d.getDate() + 1);
       const o=d.getTimezoneOffset()*60000;
       return new Date(d-o).toISOString().slice(0,10);
     };
@@ -177,6 +176,7 @@
     
     function itemQty(i){return i.category==="냉동제품"?`${i.requestedQty||0}팩`:i.actualWeight?`${i.actualWeight}kg`:`${i.requestedQty||0}${i.unit||"마리"}`}
     
+    [span_3](start_span)// 🚨 1. 거래명세서 자동 계산 인프라 패치 (실측중량이 빈칸이면 주문수량으로 대체 계산)[span_3](end_span)
     function baseAmount(i){
       if(i.category==="냉동제품") return (Number(i.requestedQty)||0)*(Number(i.unitPrice)||0);
       const w = i.actualWeight ? Number(i.actualWeight) : Number(i.requestedQty);
@@ -187,6 +187,7 @@
       return baseAmount(i) + (i.category==="필렛 제품"?(w||0)*(Number(i.processingFeePerKg)||0):0);
     }
 
+    [span_4](start_span)// 🚨 2. 거래명세서 실시간 수정 자동 동기화용 수식 엔진[span_4](end_span)
     function calcLiveTotal() {
         if(!$("#deliveryDialog").open) return;
         syncDraft();
@@ -198,6 +199,41 @@
         const totalEl = document.getElementById("liveTotalWon");
         if(totalEl) totalEl.innerText = money(sum + prev) + "원";
     }
+
+    // 🚨 2. 하차 체크리스트 내부 실시간 인라인 단가/중량 수정 반영 수식 엔진
+    window.updateChecklistItemInline = (delId, itemId, field, value) => {
+      const d = state.deliveries.find(x => x.id === delId);
+      if(!d) return;
+      const item = d.items.find(i => i.id === itemId);
+      if(item) {
+        item[field] = value;
+        save();
+        const amount = d.items.reduce((s,i)=>s+itemAmount(i),0);
+        $("#statementPrint").innerHTML = statementHTML(d, customerOf(d), amount);
+      }
+    };
+
+    // 🚨 3. 박스 수량 수동 제어 모듈 함수 (수정/삭제/추가)
+    window.updateChecklistBoxContents = (delId, boxId, value) => {
+      const d = state.deliveries.find(x => x.id === delId);
+      if(!d) return;
+      const box = d.boxes.find(b => b.id === boxId);
+      if(box) { box.contents = value; save(); }
+    };
+    window.deleteChecklistBoxInline = (delId, boxId) => {
+      const d = state.deliveries.find(x => x.id === delId);
+      if(!d) return;
+      d.boxes = d.boxes.filter(b => b.id !== boxId);
+      d.boxes.forEach((b, idx) => b.boxNumber = idx + 1);
+      save(); openChecklist(delId);
+    };
+    window.addChecklistBoxInline = (delId) => {
+      const d = state.deliveries.find(x => x.id === delId);
+      if(!d) return;
+      if(!d.boxes) d.boxes = [];
+      d.boxes.push({ id: id(), boxNumber: d.boxes.length + 1, contents: "추가 상차 박스 물품", checked: false });
+      save(); openChecklist(delId);
+    };
 
     function progress(d){const all=[...(d.items||[]),...(d.boxes||[])],done=all.filter(x=>x.checked).length;return{done,total:all.length}}
 
@@ -381,7 +417,7 @@
     function blankItem(){return{id:id(),category:"활어",species:"광어",size:"기본 규격",originCountry:"",requestedQty:1,unit:"마리",actualWeight:"",unitPrice:"",processingFeePerKg:"",processing:"찍어바리",tankNumber:0,rubberBand:false,rubberBandQuantity:"",rubberBandColor:"",includedNote:"",checked:false}}
     
     function openDelivery(deliveryId){
-      deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[{id:id(),boxNumber:1,contents:"",checked:false}]};
+      deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[]};
       const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"수동 발주 수정":"수동 발주 입력"}</h2><p>수동 발주 내용을 직접 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 메모</span><textarea name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" type="number" min="0" value="${d.previousBalance||""}"></label><label class="field"><span>전체 메모</span><textarea name="notes">${esc(d.notes)}</textarea></label><div style="margin-top:10px; padding:16px; background:#effaf8; border:2px solid var(--teal); border-radius:12px; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:900; color:var(--teal-dark);"><span>실시간 계산 합계금액</span><b id="liveTotalWon" style="font-size:22px;">0원</b></div><button class="primary sticky-save" type="submit">저장</button></form>`;
       dlg._draft=d;renderItemEditors();renderBoxEditors();dlg.showModal();
       calcLiveTotal(); 
@@ -394,25 +430,51 @@
     function syncDraft(){const dlg=$("#deliveryDialog"),d=dlg._draft;dlg.querySelectorAll("[data-item-index]").forEach(row=>{const i=d.items[Number(row.dataset.itemIndex)];row.querySelectorAll("[data-item]").forEach(el=>{i[el.dataset.item]=el.value});const ch=row.querySelector("[data-item-check]");i.rubberBand=ch.checked});dlg.querySelectorAll("[data-box]").forEach(el=>{d.boxes[Number(el.dataset.box)].contents=el.value})}
     function saveDelivery(form){syncDraft();const fd=Object.fromEntries(new FormData(form)),d=$("#deliveryDialog")._draft;if(!d.items.length)return alert("품목을 한 개 이상 입력해 주세요.");Object.assign(d,{customerId:Number(fd.customerId),deliveryDate:fd.deliveryDate,routeOrder:Math.max(1,Number(fd.routeOrder)||1),coPackNote:String(fd.coPackNote||""),notes:String(fd.notes||""),previousBalance:Math.max(0,Number(fd.previousBalance)||0)});d.items=d.items.map(i=>({...i,requestedQty:Number(i.requestedQty)||0,actualWeight:i.category==="냉동제품"?null:(i.actualWeight===""?null:Number(i.actualWeight)),unit:i.category==="냉동제품"?"팩":i.unit,unitPrice:Number(i.unitPrice)||0,processingFeePerKg:i.category==="필렛 제품"?Number(i.processingFeePerKg)||0:0,tankNumber:Number(i.tankNumber)||0,rubberBandQuantity:i.rubberBand?Number(i.rubberBandQuantity)||0:0,rubberBandColor:i.rubberBand?i.rubberBandColor:""}));if(deliveryEditId){const x=state.deliveries.findIndex(v=>v.id===deliveryEditId);d.id=deliveryEditId;state.deliveries[x]=d}else{d.id=id();d.status="ready";d.createdAt=new Date().toISOString();state.deliveries.push(d)}save();$("#deliveryDialog").close();workDate=d.deliveryDate;render()}
 
+    [span_5](start_span)// 🚨 [1, 2, 3대 패치 통합 결합]: 하차 체크리스트 내부에서 중량·단가 실시간 자동 계산 수정 엔진 구축 완료[span_5](end_span)
     function openChecklist(deliveryId){
       selectedDeliveryId=deliveryId;const d=state.deliveries.find(x=>x.id===deliveryId);if(!d)return;const c=customerOf(d),p=progress(d),amount=d.items.reduce((s,i)=>s+itemAmount(i),0),allChecked=p.total>0&&p.done===p.total;
+      
       const itemChecks=d.items.map(i=> {
         const tankSelectorHtml = `
-          <select data-tank-item="${i.id}" style="height:44px; font-size:14px; font-weight:900; color:var(--navy); border:2px solid var(--navy); border-radius:8px; background:#fff; padding:0 4px; margin-top:6px; width:100%; max-width:160px;">
+          <select data-tank-item="${i.id}" style="height:44px; font-size:14px; font-weight:900; color:var(--navy); border:2px solid var(--navy); border-radius:8px; background:#fff; padding:0 4px; width:100%; max-width:140px;">
             <option value="0" ${Number(i.tankNumber)===0?"selected":""}>📦 박스·별도</option>
-            ${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>🐟 ${n+1}번 수조지정</option>`).join("")}
+            ${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>🐟 ${n+1}번 수조</option>`).join("")}
           </select>
         `;
-        return `<div class="check-row ${i.checked?"checked":""}" style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><label style="display:flex; align-items:center; gap:12px; flex:1;"><input type="checkbox" data-check-item="${i.id}" ${i.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:17px;">${esc(i.species)} ${esc(itemQty(i))} <span style="color:var(--warn)">[${esc(i.size||"기본규격")}]</span></strong><small style="font-size:13px; font-weight:700;">${esc(i.category)} · ${esc(i.processing||"")}${i.originCountry?` · 원산지 ${esc(i.originCountry)}`:""}</small></span></label><div style="text-align:right;">${d.status==="completed"?"":tankSelectorHtml}</div></div>`;
+        return `
+          <div class="check-row ${i.checked?"checked":""}" style="display:flex; flex-direction:column; padding:14px; gap:8px; border:2px solid var(--line); border-radius:15px; background:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+              <label style="display:flex; align-items:center; gap:12px; flex:1;"><input type="checkbox" data-check-item="${i.id}" ${i.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:18px;">${esc(i.species)} ${esc(itemQty(i))} <span style="color:var(--warn)">[${esc(i.size||"기본규격")}]</span></strong></span></label>
+              <div style="text-align:right;">${d.status==="completed"?"":tankSelectorHtml}</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;">
+              <label style="font-size:12px; font-weight:900; color:var(--navy);">⚖️ 실측 중량(kg) <input type="number" step="0.01" value="${i.actualWeight?esc(i.actualWeight):""}" placeholder="${i.requestedQty}" oninput="window.updateChecklistItemInline(${d.id}, ${i.id}, 'actualWeight', this.value)" style="width:100%; height:40px; padding:6px; border:2px solid var(--line); border-radius:8px; text-align:center; font-weight:900; color:var(--teal-dark);"></label>
+              <label style="font-size:12px; font-weight:900; color:var(--navy);">💰 확정 단가(원) <input type="number" value="${i.unitPrice?esc(i.unitPrice):""}" placeholder="0" oninput="window.updateChecklistItemInline(${d.id}, ${i.id}, 'unitPrice', this.value)" style="width:100%; height:40px; padding:6px; border:2px solid var(--line); border-radius:8px; text-align:center; font-weight:900; color:var(--teal-dark);"></label>
+            </div>
+          </div>
+        `;
       }).join("");
       
-      const boxChecks=d.boxes.map(b=>`<label class="check-row ${b.checked?"checked":""}"><input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:16px;">${b.boxNumber}번 박스</strong><small>${esc(b.contents||"박스 내용 미입력")}</small></span></label>`).join("");
-      const statement=statementHTML(d,c,amount);
-      const dlg=$("#checklistDialog");
-      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print" style="grid-template-columns: 1fr 1fr;"><button type="button" data-print>🖨️ 인쇄</button><button type="button" data-image="png">📸 거래명세서 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
+      [span_6](start_span)// 🚨 [3번 패치]: 1박스 자동생성 전면 폐기 후, 배송원이 직접 실시간 수정/삭제/추가 제어 기능 탑재[span_6](end_span)
+      const boxChecks=d.boxes.map((b, bIdx)=>`
+        <div class="check-row ${b.checked?"checked":""}" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px; border:2px solid var(--line); border-radius:15px; background:#fff;">
+          <label style="display:flex; align-items:center; gap:12px; flex:1;">
+            <input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""}>
+            <span class="check-copy">
+              <strong style="font-size:15px;">${b.boxNumber}번 박스</strong>
+              <input type="text" value="${esc(b.contents)}" oninput="window.updateChecklistBoxContents(${d.id}, ${b.id}, this.value)" placeholder="박스 내용 기입" style="height:38px; padding:4px 8px; border:2px solid var(--line); border-radius:8px; font-size:13px; font-weight:700; width:100%; max-width:210px; margin-top:4px; display:block;">
+            </span>
+          </label>
+          <button type="button" onclick="window.deleteChecklistBoxInline(${d.id}, ${b.id})" style="height:42px; padding:0 12px; color:var(--danger); border:2px solid var(--danger); background:#fff; border-radius:10px; font-size:13px; font-weight:900;">삭제</button>
+        </div>
+      `).join("");
+
+      const statement=statementHTML(d,c,amount);const dlg=$("#checklistDialog");
+      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div><div class="subhead" style="display:flex; justify-content:space-between; align-items:center; width:100%;"><strong>박스 수 확인 (선택 표기)</strong><button type="button" onclick="window.addChecklistBoxInline(${d.id})" style="height:34px; padding:0 12px; background:var(--teal); color:#fff; border:0; border-radius:8px; font-size:13px; font-weight:900;">＋ 박스 추가</button></div><div class="check-list">${d.boxes.length?boxChecks:`<div class="empty" style="padding:15px;">등록된 배송 상차 박스가 없습니다. [박스 추가] 버튼을 눌러 지정하세요.</div>`}</div><div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print" style="grid-template-columns: 1fr 1fr;"><button type="button" data-print>🖨️ 인쇄</button><button type="button" data-image="png">📸 거래명세서 사진 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
       if(!dlg.open)dlg.showModal();
     }
 
+    // 🚨 2번 명세서 명칭 "거래명세서" 보존 및 투명 연동 레이아웃
     function statementHTML(d,c,amount){
       const lines=d.items.map(i=>{
         const base=baseAmount(i);
@@ -462,7 +524,7 @@
         alert("✅ 갤러리(사진첩)에 성공적으로 저장되었습니다!");
     };
 
-    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,제품규격사이즈:i.size||"기본 규격",원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
+    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
     function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`배송관리_백업_${dateLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
     function restore(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d.profile||!Array.isArray(d.customers)||!Array.isArray(d.deliveries))throw 0;if(confirm("현재 자료를 백업 파일 내용으로 교체할까요?")){state=d;save();render();alert("백업 자료를 복원했습니다.")}}catch{alert("올바른 배송관리 백업 파일이 아닙니다.")}};reader.readAsText(file)}
 
@@ -562,13 +624,19 @@
                     tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
                   }));
 
-                  // 🚨 [날짜 수리완료]: 점주가 어떤 배송요청일로 보냈든지 간에, 배송원의 현재 대시보드 화면 날짜(workDate)에 무조건 100% 안착 처리
+                  [span_7](start_span)// 🚨 [3번 패치 연동]: 점주가 옵션에서 단위를 "박스"로 주문했을 때만 최초 박스 기본 행 생성, 그 외엔 빈 어레이 [] 초기화[span_7](end_span)
+                  const initialBoxes = [];
+                  const hasBoxOption = packet.items.some(pi => pi.unit === "박스");
+                  if (hasBoxOption) {
+                    initialBoxes.push({ id: id(), boxNumber: 1, contents: "주문 수선 박스 물품", checked: false });
+                  }
+
                   const newDelivery = {
                     id: id(), cloudOrderId: packet.orderId, customerId: targetCustomer.id, fallbackStoreName: packet.store.trim(), 
                     deliveryDate: workDate, routeOrder: targetCustomer.routeOrder, 
                     notes: (packet.orderDate && packet.orderDate !== workDate) ? `⚠️ [점주 지정 배송요청일: ${packet.orderDate}]` : "", 
                     coPackNote: "", previousBalance: "0", status: "ready",
-                    items: mappedItems, boxes: Array.from({length: 1}, (_, bIdx) => ({ id: id(), boxNumber: bIdx + 1, contents: "수산물 상차 박스", checked: false }))
+                    items: mappedItems, boxes: initialBoxes
                   };
 
                   state.deliveries.push(newDelivery); isDataChanged = true;
@@ -613,7 +681,7 @@
       if(b.dataset.editCustomer)return openCustomer(Number(b.dataset.editCustomer));
       if(b.hasAttribute("data-reorder-customers")){customerReorder=!customerReorder;return renderCustomers()}
       if(b.dataset.moveCustomer)return moveCustomer(Number(b.dataset.moveCustomer),customers().findIndex(c=>c.id===Number(b.dataset.moveCustomer))+Number(b.dataset.dir));
-      if(b.dataset.deleteCustomer){const cid=Number(b.dataset.deleteCustomer);if(state.deliveries.some(d=>d.customerId===cid))return alert("이 거래처의 배송 기록이 있어 삭제할 수 없습니다. 배송 기록을 먼저 삭제해 주세요.");if(confirm("이 거래처를 삭제할까요?")){state.customers=state.customers.filter(c!==cid);normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers()}return}
+      if(b.dataset.deleteCustomer){const cid=Number(b.dataset.deleteCustomer);if(state.deliveries.some(d=>d.customerId===cid))return alert("이 거래처의 배송 기록이 있어 삭제할 수 없습니다. 배송 기록을 먼저 삭제해 주세요.");if(confirm("이 거래처를 삭제할까요?")){state.customers=state.customers.filter(c=>c.id!==cid);normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers()}return}
       if(b.hasAttribute("data-new-delivery"))return openDelivery();
       if(b.dataset.openCheck)return openChecklist(Number(b.dataset.openCheck));
       if(b.hasAttribute("data-add-item")){syncDraft();$("#deliveryDialog")._draft.items.push(blankItem());return renderItemEditors()}
