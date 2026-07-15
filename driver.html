@@ -21,34 +21,38 @@
     nav{position:fixed;right:0;bottom:0;left:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,760px);height:76px;margin:auto;padding-bottom:env(safe-area-inset-bottom);border-top:2px solid var(--line);background:#fff}nav button{border:0;color:#7b8a93;background:#fff;font-size:14px;font-weight:900}nav button span{display:block;margin-bottom:2px;font-size:22px}nav button.active{color:var(--teal)}
     dialog{width:min(calc(100% - 20px),700px);max-height:92dvh;padding:0;border:0;border-radius:22px;background:#fff;box-shadow:0 20px 70px rgba(8,37,53,.27)}dialog::backdrop{background:rgba(6,24,35,.54)}.modal-head{position:sticky;top:0;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 17px;border-bottom:2px solid var(--line);background:#fff}.modal-head h2{margin:0;font-size:22px;font-weight:900}.modal-head p{margin:5px 0 0;color:var(--muted);font-size:13px;font-weight:700}.close{flex:0 0 44px;height:44px;border:0;border-radius:50%;color:var(--navy);background:#edf3f5;font-size:26px;font-weight:900}.modal-body{display:grid;gap:13px;padding:16px}.sticky-save{position:sticky;bottom:0;z-index:2;box-shadow:0 -8px 20px rgba(255,255,255,.95)}
     .subhead{display:flex;align-items:flex-end;justify-content:space-between;margin-top:5px}.subhead strong{font-size:18px;font-weight:900;color:var(--navy)}.subhead small{color:var(--muted);font-size:12px;font-weight:700}.item-editor{display:grid;gap:10px;padding:14px;border:2px solid var(--line);border-radius:16px;background:#f8fbfc}.item-title{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:900}.item-title button{border:0;color:var(--danger);background:transparent;font-size:13px;font-weight:900}.three{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px}.check-inline{display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #eac89c;border-radius:12px;background:#fff9f1;font-size:14px;font-weight:900;color:#98460f}.check-inline input{width:24px;height:24px}.box-editor{display:grid;gap:8px}.box-row{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:8px}.box-row b{display:grid;place-items:center;height:38px;border-radius:10px;color:#fff;background:var(--navy);font-size:15px}.box-row input{min-height:48px;padding:8px 12px;border:2px solid var(--line);border-radius:11px;font-size:14px;font-weight:700}
-    .alert{padding:14px;border:2px solid #efb181;border-radius:14px;color:#91440e;background:#fff2e8;font-size:14px;line-height:1.5;font-weight:700}.check-list{display:grid;gap:9px}.check-row{display:flex;align-items:center;gap:12px;min-height:76px;padding:14px;border:2px solid var(--line);border-radius:15px;background:#fff}.check-row.checked{border-color:#82ce7a;background:#f0faf2}.check-row input{width:28px;height:28px;accent-color:var(--teal)}.check-copy{flex:1}.check-copy strong{font-size:16px;font-weight:900}.check-copy small{display:block}.check-copy small{margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.tag{display:inline-block;margin-top:5px;padding:4px 8px;border-radius:7px;color:#9b5014;background:#fff0dc;font-size:11px;font-weight:900}.statement{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}.statement h1{margin:0;color:var(--navy);font-size:24px}.statement-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:13px 0 17px;padding:12px 0;border-top:2px solid var(--navy);border-bottom:1px solid var(--line)}.statement-meta p{display:grid;grid-template-columns:62px 1fr;gap:7px;margin:0;font-size:12px}.statement-meta p.address{grid-column:1/-1}.statement-meta span{color:var(--muted)}.statement-meta b{overflow-wrap:anywhere}.line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0;padding-top:9px;border-top:1px dashed var(--line);font-size:12px}.line b{white-space:nowrap}.subtotal,.balance,.total{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-weight:900}.subtotal{padding-top:11px;border-top:1px dashed var(--line)}.balance{color:#ac581b}.total{padding-top:11px;border-top:2px solid var(--navy);color:var(--navy);font-size:16px}.statement-note{padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:11px;white-space:pre-wrap}.output-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.output-actions button{min-height:45px;border:1px solid #b8d7d3;border-radius:11px;color:var(--teal-dark);background:#eff9f7;font-size:12px;font-weight:900}.hidden{display:none!important}
+    .alert{padding:14px;border:2px solid #efb181;border-radius:14px;color:#91440e;background:#fff2e8;font-size:14px;line-height:1.5;font-weight:700}.check-list{display:grid;gap:9px}.check-row{display:flex;align-items:center;gap:12px;min-height:76px;padding:14px;border:2px solid var(--line);border-radius:15px;background:#fff}.check-row.checked{border-color:#82ce7a;background:#f0faf2}.check-row input{width:28px;height:28px;accent-color:var(--teal)}.check-copy{flex:1}.check-copy strong{font-size:16px;font-weight:900}.check-copy small{display:block;margin-top:4px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.5}.tag{display:inline-block;margin-top:5px;padding:4px 8px;border-radius:7px;color:#9b5014;background:#fff0dc;font-size:11px;font-weight:900}
     
-    /* 🌐 실시간 무선 안테나 상태 뱃지 및 구동 디자인 */
+    /* 🚨 [5번 인쇄 개조]: 구매담당자 전용 청정 인쇄 포맷 및 화면 제어 CSS */
+    .statement{padding:18px;border:2px solid var(--navy);border-radius:16px;background:#fff}.statement h1{margin:0;color:var(--navy);font-size:24px;font-weight:900}.statement-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;margin:13px 0 17px;padding:12px 0;border-top:2px solid var(--navy);border-bottom:2px solid var(--line)}.statement-meta p{display:grid;grid-template-columns:68px 1fr;gap:7px;margin:0;font-size:13px;font-weight:700}.statement-meta p.address{grid-column:1/-1}.statement-meta span{color:var(--muted)}.statement-meta b{overflow-wrap:anywhere;color:var(--ink)}.line{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:10px 0;padding-top:9px;border-top:1px dashed var(--line);font-size:13px;font-weight:700}.line b{white-space:nowrap;color:var(--navy)}.subtotal,.balance,.total{display:flex;justify-content:space-between;gap:10px;margin:9px 0;font-weight:900}.subtotal{padding-top:11px;border-top:1px dashed var(--line);font-size:14px}.balance{color:#ac581b;font-size:14px}.total{padding-top:11px;border-top:3px solid var(--navy);color:var(--navy);font-size:18px}.statement-note{padding-top:10px;border-top:1px dashed var(--line);color:var(--muted);font-size:12px;white-space:pre-wrap;font-weight:700}.output-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.output-actions button{min-height:48px;border:2px solid #b8d7d3;border-radius:11px;color:var(--teal-dark);background:#eff9f7;font-size:13px;font-weight:900}.hidden{display:none!important}
+    
+    /* 🚨 무선 전송망 연결 인디케이터 배너 디자인 */
     .network-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; background: rgba(0,0,0,0.3); font-size: 11px; font-weight: 900; color: #38bdf8; }
     .network-dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; display: inline-block; }
     .network-dot.loading { background: #f59e0b; animation: blinkPulse 0.8s infinite; }
     @keyframes blinkPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    /* 🚨 [5번 취합장 UI 패치]: 과거 사장님이 수기로 작성하던 포맷 완벽 디지털 복구 양식 박스 */
+    /* 🚨 [5번 취합장 UI]: 매장별 수량 나열 후 총합산이 노출되는 대형 박스 설계 */
     .purchase-master-box { background: #fffbeb; border: 3px solid #f59e0b; border-left: 8px solid #f59e0b; padding: 18px; border-radius: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
     .prod-group-card { background: #ffffff; border: 2px solid #fde68a; padding: 12px; border-radius: 14px; margin-top: 10px; }
-    .prod-group-title { font-size: 17px; font-weight: 900; color: var(--navy); border-bottom: 2px solid #fcd34d; padding-bottom: 4px; margin-bottom: 6px; }
-    .prod-store-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; color: #334155; padding: 5px 0; border-bottom: 1px dashed #f1f5f9; }
-    .prod-total-row { display: flex; justify-content: space-between; font-size: 17px; font-weight: 900; color: var(--danger); margin-top: 6px; padding-top: 5px; border-top: 2px solid #fcd34d; }
+    .prod-group-title { font-size: 16px; font-weight: 900; color: var(--navy); border-bottom: 2px solid #fcd34d; padding-bottom: 4px; margin-bottom: 6px; }
+    .prod-store-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: #334155; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; }
+    .prod-total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--danger); margin-top: 6px; padding-top: 4px; border-top: 1px solid #fcd34d; }
 
-    /* 🚨 [4번 알림 배너 패치]: 새 오더 무선 수신 시 상단에 무한 번쩍이는 경보 슬라이드 */
-    .vibrate-alarm-banner { background: #e11d48; color: #ffffff; padding: 16px; text-align: center; font-size: 17px; font-weight: 900; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 3px solid #be123c; animation: blinkRed 0.6s infinite; }
+    /* 🚨 [4번 알림용]: 새 주문 수신 시 화면 전체 최상단에 번쩍이는 무전 알림 바 배너 */
+    .vibrate-alarm-banner { background: #e11d48; color: #ffffff; padding: 16px; text-align: center; font-size: 16px; font-weight: 900; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 3px solid #be123c; animation: blinkRed 0.6s infinite; }
     .vibrate-alarm-banner button { background: #ffffff; color: #e11d48; border: 0; padding: 8px 16px; border-radius: 10px; font-weight: 900; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     @keyframes blinkRed { 0%, 100% { background: #e11d48; } 50% { background: #9f1239; } }
 
-    /* 카톡 인앱 브라우저 차단 우회용 모달 팝업 */
+    /* 이미지 저장 우회 모달 레이어 */
     #mobileImagePopup { position:fixed; inset:0; background:rgba(15,23,42,0.94); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
 
-    /* 🚨 [5번 전용]: 인쇄 시 다른 UI는 전부 증발하고 오직 수기용 취합장 레이아웃만 깨끗이 나오도록 제어 */
+    /* 인쇄 전용 강제 격리 스타일 시트 */
     @media print {
       body { background: #fff !important; }
-      .app, header, main, nav, dialog, #mobileImagePopup, #liveAlarmBanner { display: none !important; }
+      .app, header, main, nav, dialog, #mobileImagePopup { display: none !important; }
       #printCaptureZone { display: block !important; position: absolute; top: 0; left: 0; width: 100%; padding: 10mm; background: #fff; }
+      #statementPrint { display: block !important; }
     }
   </style>
 </head>
@@ -56,7 +60,7 @@
   
   <div id="liveAlarmBanner" class="vibrate-alarm-banner hidden">
     <span>🚨 새 발주서가 실시간 접수되었습니다! (진동 작동중)</span>
-    <button type="button" onclick="window.stopLiveOrderAlarm()">🔊 알림 소리 끄기</button>
+    <button type="button" onclick="window.stopLiveOrderAlarm()">⚠️ 알림 끄기</button>
   </div>
 
   <div class="app">
@@ -71,7 +75,7 @@
         </div>
         <button type="button" data-nav="settings">설정</button>
       </div>
-      <div class="datebar"><input id="workDate" type="date" aria-label="업무 날짜"><span class="autosave">● 무선 자동저장</span></div>
+      <div class="datebar"><input id="workDate" type="date" aria-label="업무 날짜"><span class="autosave">● 무선자동 동기화</span></div>
     </header>
     
     <main>
@@ -99,7 +103,7 @@
   <div id="mobileImagePopup" class="hidden">
     <div style="background:#fff; width:min(100%, 420px); padding:22px; border-radius:24px; text-align:center; box-shadow:var(--shadow);">
       <p style="font-size:18px; font-weight:900; color:var(--navy); margin:0 0 8px 0;">📸 거래명세서 이미지 팝업</p>
-      <p style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:15px;">아래 명세서를 <span style="color:var(--danger); font-weight:900; underline">2초간 길게 꾹 누르시면</span><br>[이미지 저장] 또는 [카톡 전달] 창이 활성화됩니다.</p>
+      <p style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:15px;">아래 명세서를 <span style="color:var(--danger); font-weight:900; underline">2초간 길게 꾹 누르시면</span><br>[이미지 저장] 또는 [카톡 전달]이 무조건 성공합니다!</p>
       <div style="border:2px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; background:#fff; max-height:50dvh; overflow-y:auto;">
         <img id="popupImg" src="" alt="거래명세표" style="width:100%; height:auto; display:block;">
       </div>
@@ -111,7 +115,7 @@
   (()=>{
     "use strict";
     const STORAGE_KEY="jangbaek_delivery_html_v1";
-    const CLOUD_RELAY_URL = "https://ntfy.sh/fish_net_relay_";
+    const CLOUD_RELAY_URL = "https://ntfy.sh/fish_net_relay_"; 
 
     const categories=["활어","패류","냉동제품","필렛 제품"];
     const species=["광어","도미","농어","점성어","연어","우니(성게알)","전복","백상합","멍게","개불","소라","해삼","가리비","기타"];
@@ -130,10 +134,10 @@
     let deliveryEditId=null;
     let selectedDeliveryId=null;
     let customerReorder=false;
-    
-    let syncIntervalTimer=null;
-    let isAlarmPlaying = false;
-    let alarmIntervalPointer = null;
+
+    let syncIntervalTimer=null; 
+    let isAlarmPlaying = false; 
+    let alarmIntervalPointer = null; 
 
     function emptyState(){return{profile:{companyName:"",driverName:"",vehicleNumber:""},customers:[],deliveries:[]}}
     function load(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");return data&&data.profile&&Array.isArray(data.customers)&&Array.isArray(data.deliveries)?data:emptyState()}catch{return emptyState()}}
@@ -141,7 +145,8 @@
     function byOrder(a,b){return(Number(a.routeOrder)||999)-(Number(b.routeOrder)||999)||a.id-b.id}
     function customers(){return[...state.customers].sort(byOrder)}
     function deliveries(){return state.deliveries.filter(d=>d.deliveryDate===workDate).sort(byOrder)}
-    function customerOf(d){return state.customers.find(c=>c.id===d.customerId)||{name:d.fallbackStoreName||"수신된 거래처",deliveryPlace:"",address:"",phone:""}}
+    function customerOf(d){return state.customers.find(c=>c.id===d.customerId)||{name:d.fallbackStoreName||"알 수 없는 매장",deliveryPlace:"",address:"",phone:""}}
+    
     function itemQty(i){return i.category==="냉동제품"?`${i.requestedQty||0}팩`:i.actualWeight?`${i.actualWeight}kg`:`${i.requestedQty||0}${i.unit||"마리"}`}
     function baseAmount(i){if(i.category==="냉동제품")return(Number(i.requestedQty)||0)*(Number(i.unitPrice)||0);return(Number(i.actualWeight)||0)*(Number(i.unitPrice)||0)}
     function itemAmount(i){return baseAmount(i)+(i.category==="필렛 제품"?(Number(i.actualWeight)||0)*(Number(i.processingFeePerKg)||0):0)}
@@ -153,49 +158,39 @@
       $("#workDate").value=workDate;
     }
     
-    // 🚨 [클릭 락 전면 해결]: 오리지널 순정 구조의 기능 원형 100% 완전 보존 복구 기입
+    // 🚨 [클릭 마비 해결]: 원본 순정 탭 전환 기능 완벽 복구
     function setView(next){view=next;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===view));$("#todayView").classList.toggle("hidden",view!=="today");$("#customersView").classList.toggle("hidden",view!=="customers");$("#settingsView").classList.toggle("hidden",view!=="settings");render()}
     function render(){renderHeader();if(view==="today")renderToday();if(view==="customers")renderCustomers();if(view==="settings")renderSettings()}
 
+    // 🚨 렌더 투데이 개조 (내비게이션 및 전화 수동 입력)
     function renderToday(){
       const rows=deliveries(),ready=rows.filter(d=>d.status!=="completed").length,complete=rows.filter(d=>d.status==="completed").length,boxes=rows.reduce((s,d)=>s+(d.boxes||[]).length,0);
       const tanks=Array.from({length:6},(_,x)=>{const n=x+1,loads=rows.flatMap(d=>(d.items||[]).filter(i=>Number(i.tankNumber)===n).map(i=>`${customerOf(d).name} · ${i.species} ${itemQty(i)}`));return`<div class="tank"><strong>${n}번 수조</strong><p>${loads.length?loads.map(esc).join("<br>"):"비어 있음"}</p></div>`}).join("");
       
-      // 🚨 [6번 피처 내비연동 패치]: 오타(encodeusercontent)를 정식 명령어(encodeURIComponent)로 완벽 수리 완료
       const stops=rows.length?rows.map(d=>{
-        const c=customerOf(d),p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");
-        const naviUrl = `https://map.kakao.com/link/search/${encodeURIComponent(c.address || c.name)}`;
-        return `
-          <div class="stop ${d.status==="completed"?"completed":""}" style="display:flex; flex-direction:column; background:#fff; border:2px solid var(--line); border-radius:16px; overflow:hidden; padding:0; margin-bottom:8px;">
-            <div style="display:flex; align-items:center; padding:16px 14px; gap:12px; width:100%; text-align:left;" onclick="window.openChecklistInline(${d.id})">
+          const c=customerOf(d),p=progress(d),names=(d.items||[]).map(i=>i.species).slice(0,3).join(" · ");
+          const naviUrl = `https://map.kakao.com/link/search/${encodeURIComponent(c.address || c.name)}`;
+          return `<div class="stop ${d.status==="completed"?"completed":""}" style="display:flex; flex-direction:column; padding:0; background:#fff; border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">
+            <button type="button" data-open-check="${d.id}" style="display:flex; align-items:center; gap:12px; width:100%; padding:16px; border:0; background:transparent; text-align:left;">
               <span class="order">${d.routeOrder}</span>
-              <span class="stop-copy">
-                <strong style="font-size:18px;">${esc(c.name)}</strong>
-                <small style="font-size:13px;">${esc(names||"품목 없음")}${(d.boxes||[]).length?` · ${d.boxes.length}박스`:""}</small>
-              </span>
+              <span class="stop-copy"><strong style="font-size:18px;">${esc(c.name)}</strong><small style="font-size:13px;">${esc(names||"품목 없음")}${(d.boxes||[]).length?` · ${d.boxes.length}박스`:""}</small></span>
               <span class="progress">${p.done}/${p.total}</span>
-            </div>
+            </button>
             <div class="no-print" style="display:grid; grid-template-columns:1fr 1fr; border-top:2px solid var(--line); background:#f8fbfc;">
               <a href="${naviUrl}" target="_blank" style="text-align:center; padding:12px; font-size:14px; font-weight:900; color:var(--navy); text-decoration:none; border-right:2px solid var(--line);">🗺️ 내비게이션 연동</a>
-              <button type="button" onclick="window.openChecklistInline(${d.id})" style="border:0; background:transparent; font-size:14px; font-weight:900; color:var(--teal); padding:12px;">📋 하차 체크리스트</button>
+              <button type="button" data-open-check="${d.id}" style="border:0; background:transparent; font-size:14px; font-weight:900; color:var(--teal); padding:12px;">📋 하차 체크리스트</button>
             </div>
-          </div>
-        `;
-      }).join(""):`<div class="empty">오늘 등록된 배송이 없습니다.<br>점주 앱에서 발주를 전송하면 이곳에 실시간 노출됩니다.</div>`;
+          </div>`;
+      }).join("") : `<div class="empty">오늘 등록된 배송이 없습니다.<br>점주 앱에서 발주를 전송하면 실시간 노출됩니다.</div>`;
+
+      $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions"><button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>📞 수동 주문 추가</button></div></div><div class="stop-list">${stops}</div></div>`;
       
-      // 🚨 [2번 패치]: 오해 소지가 크던 ＋발주 버튼 문구를 수동 대리입력 명칭으로 전면 전환
-      $("#todayView").innerHTML=`<div class="stats"><div class="stat"><small>출차 준비</small><strong>${ready}</strong></div><div class="stat"><small>배송 완료</small><strong>${complete}</strong></div><div class="stat"><small>전체 박스</small><strong>${boxes}</strong></div></div><button class="excel" type="button" data-export-excel ${rows.length?"":"disabled"}>↓ 당일 전체 거래명세표 Excel 저장</button><div class="section"><div class="heading"><div><h2>1톤 차량 수조 현황</h2><p>상차한 어종·패류의 수조 위치입니다.</p></div></div><div class="tank-grid">${tanks}</div></div><div class="section"><div class="heading"><div><h2>배송 순서</h2><p>포장 내용과 하차 물품을 확인하세요.</p></div><div class="heading-actions"><button type="button" class="small-primary" data-new-delivery ${state.customers.length?"":"disabled"}>📞 전화·수동 주문 추가</button></div></div><div class="stop-list">${stops}</div></div>`;
-      
-      // 상단 수기 대조 취합장 렌더러 동시 가동 연동
       renderConsolidatedPurchaseView(rows);
     }
 
-    // 🚨 [5번 패치 완벽 구현]: 각 매장별 어종 분류 나열 후 수기용 최종 합산 총량 요약판 마스터 빌더
     function renderConsolidatedPurchaseView(rows) {
       const activeRows = rows.filter(d => d.status !== "completed");
-      if(!activeRows.length) {
-        $("#consolidatedZone").innerHTML = ""; return;
-      }
+      if(!activeRows.length) { $("#consolidatedZone").innerHTML = ""; return; }
 
       let consolidatedMap = {};
       activeRows.forEach(d => {
@@ -205,136 +200,109 @@
           const fishSize = item.size || "기본 규격";
           const fishUnit = item.unit || "마리";
           const fishQty = Number(item.requestedQty) || 0;
-
           const groupKey = `${fishName}_||_${fishSize}_||_${fishUnit}`;
-          if(!consolidatedMap[groupKey]) {
-            consolidatedMap[groupKey] = { name: fishName, size: fishSize, unit: fishUnit, stores: [] };
-          }
+          if(!consolidatedMap[groupKey]) { consolidatedMap[groupKey] = { name: fishName, size: fishSize, unit: fishUnit, stores: [] }; }
           consolidatedMap[groupKey].stores.push({ storeName: c.name, qty: fishQty });
         });
       });
 
       let injectHtml = "";
       Object.values(consolidatedMap).forEach(prod => {
-        let storeLines = "";
-        let productSum = 0;
-        prod.stores.forEach(s => {
-          productSum += s.qty;
-          storeLines += `<div class="prod-store-row"><span>🏠 ${esc(s.storeName)}</span><span>${s.qty} ${esc(prod.unit)}</span></div>`;
-        });
-
-        injectHtml += `
-          <div class="prod-group-card">
-            <div class="prod-group-title">🐟 ${esc(prod.name)} <span style="font-size:13px; color:var(--muted); font-weight:bold;">[${esc(prod.size)}]</span></div>
-            <div style="padding:2px 8px;">${storeLines}</div>
-            <div class="prod-total-row"><span>🔥 최종 매입 총 수량:</span><span>${productSum} ${esc(prod.unit)}</span></div>
-          </div>
-        `;
+        let storeLines = ""; let productSum = 0;
+        prod.stores.forEach(s => { productSum += s.qty; storeLines += `<div class="prod-store-row"><span>🏠 ${esc(s.storeName)}</span><span>${s.qty} ${esc(prod.unit)}</span></div>`; });
+        injectHtml += `<div class="prod-group-card"><div class="prod-group-title">🐟 ${esc(prod.name)} <span style="font-size:13px; color:var(--muted); font-weight:bold;">[${esc(prod.size)}]</span></div><div style="padding:2px 8px;">${storeLines}</div><div class="prod-total-row"><span>🔥 최종 매입 총 수량:</span><span>${productSum} ${esc(prod.unit)}</span></div></div>`;
       });
 
-      $("#consolidatedZone").innerHTML = `
-        <div class="purchase-master-box">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f59e0b; padding-bottom:6px; margin-bottom:10px;">
-            <strong style="color:#b45309; font-size:16px;">📋 구매담당자 제출용 [당일 총 매입 취합장]</strong>
-            <button type="button" onclick="window.printConsolidatedDocOnly()" style="min-height:38px; padding:0 14px; background:#f59e0b; color:#fff; border:0; border-radius:8px; font-weight:900; font-size:13px;">프린터 인쇄 / PDF</button>
-          </div>
-          <div style="display:grid; gap:8px;">${injectHtml}</div>
-        </div>
-      `;
+      $("#consolidatedZone").innerHTML = `<div class="purchase-master-box"><div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #f59e0b; padding-bottom:6px; margin-bottom:10px;"><strong style="color:#b45309; font-size:16px;">📋 구매담당자 제출용 [당일 총 매입 취합장]</strong><button type="button" onclick="window.printConsolidatedDocOnly()" style="min-height:38px; padding:0 14px; background:#f59e0b; color:#fff; border:0; border-radius:8px; font-weight:900; font-size:13px;">프린터 인쇄</button></div><div style="display:grid; gap:8px;">${injectHtml}</div></div>`;
     }
 
-    // 🟢 [5번 인쇄 우회 가속기]: 인쇄창에 다른 불필요 레이아웃이 침범하지 못하도록 격리 벽 인젝션
     window.printConsolidatedDocOnly = () => {
       const zone = $("#consolidatedZone").innerHTML;
       const captureZone = document.getElementById('printCaptureZone');
       captureZone.innerHTML = `<div class="statement" style="border:3px solid #000; padding:20px; border-radius:0;">${zone}</div>`;
-      captureZone.querySelector('.no-print').style.display = 'none'; 
+      const noPrintBtns = captureZone.querySelectorAll('.no-print');
+      noPrintBtns.forEach(btn => btn.style.display = 'none');
       window.print();
-    };
-
-    window.openChecklistInline = (delId) => {
-      selectedDeliveryId = delId;
-      openChecklist(delId);
     };
 
     function renderCustomers(){
       const list=customers();
-      $("#customersView").innerHTML=`<div class="heading"><div><h2>내 거래처</h2><p>거래처명·납품처·주소·연락처와 기본 순서를 관리합니다.</p></div><div class="heading-actions">${list.length>1?`<button class="mini" type="button" data-reorder-customers>${customerReorder?"변경 완료":"순서 변경"}</button>`:""}<button class="small-primary" type="button" data-new-customer>＋ 추가</button></div></div><div class="customer-list">${list.length?list.map((c,i)=>`<div class="customer-row"><span class="order">${i+1}</span><span class="customer-copy"><strong>${esc(c.name)}</strong><small>${esc(c.deliveryPlace||c.address||`기본 배송순서 ${i+1}`)}</small></span>${customerReorder?`<span class="reorder"><select data-customer-position="${c.id}" aria-label="${esc(c.name)} 순서">${list.map((_,p)=>`<option value="${p+1}" ${p===i?"selected":""}>${p+1}번</option>`).join("")}</select><button type="button" data-move-customer="${c.id}" data-dir="-1" ${i===0?"disabled":""}>↑</button><button type="button" data-move-customer="${c.id}" data-dir="1" ${i===list.length-1?"disabled":""}>↓</button></span>`:`<button type="button" data-edit-customer="${c.id}">수정</button>`}</div>`).join("")}:`<div class="empty">등록된 거래처가 없습니다.</div>`}</div>`;
+      $("#customersView").innerHTML=`<div class="heading"><div><h2>내 거래처</h2><p>거래처명·납품처·주소·연락처와 기본 순서를 관리합니다.</p></div><div class="heading-actions">${list.length>1?`<button class="mini" type="button" data-reorder-customers>${customerReorder?"변경 완료":"순서 변경"}</button>`:""}<button class="small-primary" type="button" data-new-customer>＋ 추가</button></div></div><div class="customer-list">${list.length?list.map((c,i)=>`<div class="customer-row"><span class="order">${i+1}</span><span class="customer-copy"><strong>${esc(c.name)}</strong><small>${esc(c.deliveryPlace||c.address||`기본 배송순서 ${i+1}`)}</small></span>${customerReorder?`<span class="reorder"><select data-customer-position="${c.id}" aria-label="${esc(c.name)} 순서">${list.map((_,p)=>`<option value="${p+1}" ${p===i?"selected":""}>${p+1}번</option>`).join("")}</select><button type="button" data-move-customer="${c.id}" data-dir="-1" ${i===0?"disabled":""}>↑</button><button type="button" data-move-customer="${c.id}" data-dir="1" ${i===list.length-1?"disabled":""}>↓</button></span>`:`<button type="button" data-edit-customer="${c.id}">수정</button>`}</div>`).join(""):`<div class="empty">등록된 거래처가 없습니다.</div>`}</div>`;
     }
-
+    
     function renderSettings(){
-      $("#settingsView").innerHTML=`<div class="heading"><div><h2>회사·차량 정보</h2><p>입력한 내용은 화면과 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input name="companyName" value="${esc(state.profile.companyName)}" placeholder="예: 장백수산"></label><label class="field"><span>배송담당자 이름</span><input name="driverName" value="${esc(state.profile.driverName)}" placeholder="예: 홍길동"></label><label class="field"><span>차량 호차 (숫자 연동)</span><input name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 1 또는 2"></label><button class="primary" type="submit">회사·차량 정보 저장 및 수신망 동기화</button><div class="notice">이 HTML 파일의 자료는 현재 브라우저에 자동 저장됩니다. 휴대폰 변경이나 브라우저 초기화 전에 반드시 백업 파일을 저장해 주세요.</div><div class="backup-actions"><button class="outline" type="button" data-backup>백업 저장</button><button class="outline" type="button" data-restore>백업 복원</button></div></form>`;
+      $("#settingsView").innerHTML=`<div class="heading"><div><h2>회사·차량 정보</h2><p>입력한 내용은 화면과 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input name="companyName" value="${esc(state.profile.companyName)}" placeholder="예: 장백수산"></label><label class="field"><span>배송담당자 이름</span><input name="driverName" value="${esc(state.profile.driverName)}" placeholder="예: 홍길동"></label><label class="field"><span>차량 호차 (숫자 전용)</span><input name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 1"></label><button class="primary" type="submit">회사·차량 정보 저장</button><div class="notice">휴대폰 변경이나 브라우저 초기화 전에 반드시 백업 파일을 저장해 주세요.</div><div class="backup-actions"><button class="outline" type="button" data-backup>백업 저장</button><button class="outline" type="button" data-restore>백업 복원</button></div></form>`;
     }
 
     function openCustomer(customerId){
       customerEditId=customerId||null;const c=state.customers.find(x=>x.id===customerId)||{name:"",deliveryPlace:"",address:"",phone:"",routeOrder:customers().length+1};
       const dlg=$("#customerDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${customerId?"거래처 수정":"거래처 등록"}</h2><p>거래처와 실제 납품처 상세 정보를 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="customerForm" class="modal-body"><label class="field"><span>거래처명 (필수)</span><input name="name" required value="${esc(c.name)}" placeholder="예: 동해횟집 본점"></label><label class="field"><span>납품처</span><input name="deliveryPlace" value="${esc(c.deliveryPlace)}" placeholder="예: 동해횟집 강남점"></label><label class="field"><span>주소</span><input name="address" value="${esc(c.address)}" placeholder="예: 서울시 강남구 테헤란로 00"></label><label class="field"><span>연락처</span><input name="phone" type="tel" value="${esc(c.phone)}" placeholder="예: 010-1234-5678"></label><label class="field"><span>기본 배송순서</span><select name="routeOrder">${Array.from({length:Math.max(1,customers().length+(customerId?0:1))},(_,i)=>`<option value="${i+1}" ${Number(c.routeOrder)===i+1?"selected":""}>${i+1}번</option>`).join("")}</select></label><button class="primary sticky-save" type="submit">${customerId?"변경 내용 저장":"거래처 저장"}</button>${customerId?`<button class="danger" type="button" data-delete-customer="${customerId}">거래처 삭제</button>`:""}</form>`;dlg.showModal();
     }
+    
     function saveCustomer(form){
       const data=Object.fromEntries(new FormData(form));const value={name:String(data.name).trim(),deliveryPlace:String(data.deliveryPlace).trim(),address:String(data.address).trim(),phone:String(data.phone).trim(),routeOrder:Number(data.routeOrder)||1};if(!value.name)return;
       if(customerEditId){const i=state.customers.findIndex(c=>c.id===customerEditId);state.customers[i]={...state.customers[i],...value}}else state.customers.push({id:id(),...value});normalizeCustomerOrder();save();$("#customerDialog").close();renderCustomers();
     }
+    
     function normalizeCustomerOrder(){customers().forEach((c,i)=>{c.routeOrder=i+1})}
     function moveCustomer(customerId,target){const list=customers(),i=list.findIndex(c=>c.id===customerId),to=Math.max(0,Math.min(list.length-1,target));if(i<0||i===to)return;const [m]=list.splice(i,1);list.splice(to,0,m);list.forEach((c,x)=>{const real=state.customers.find(r=>r.id===c.id);real.routeOrder=x+1;state.deliveries.filter(d=>d.customerId===c.id&&d.deliveryDate===workDate).forEach(d=>d.routeOrder=x+1)});save();renderCustomers()}
 
     function blankItem(){return{id:id(),category:"활어",species:"광어",size:"기본 규격",originCountry:"",requestedQty:1,unit:"마리",actualWeight:"",unitPrice:"",processingFeePerKg:"",processing:"찍어바리",tankNumber:0,rubberBand:false,rubberBandQuantity:"",rubberBandColor:"",includedNote:"",checked:false}}
+    
     function openDelivery(deliveryId){
       deliveryEditId=deliveryId||null;const first=customers()[0];if(!first)return alert("거래처를 먼저 등록해 주세요.");const old=state.deliveries.find(d=>d.id===deliveryId);const d=old?JSON.parse(JSON.stringify(old)):{customerId:first.id,deliveryDate:workDate,routeOrder:first.routeOrder,notes:"",coPackNote:"",previousBalance:"",status:"ready",items:[blankItem()],boxes:[{id:id(),boxNumber:1,contents:"",checked:false}]};
-      const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"발주·포장 수정":"발주·포장 입력"}</h2><p>카카오톡 발주 내용을 한 번만 옮겨 적습니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong><small>실제 포장 결과를 입력</small></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 특별 확인</span><textarea name="coPackNote" placeholder="예: 1번 광어 박스 안에 연어 1팩 동봉">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" inputmode="numeric" type="number" min="0" value="${d.previousBalance||""}" placeholder="예: 150000"></label><label class="field"><span>전체 메모</span><textarea name="notes" placeholder="거래처 요청사항을 기록해 주세요.">${esc(d.notes)}</textarea></label><button class="primary sticky-save" type="submit">발주·포장 저장</button></form>`;
+      const dlg=$("#deliveryDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${deliveryId?"발주·포장 수정":"발주·포장 입력"}</h2><p>수동 발주 내용을 입력합니다.</p></div><button class="close" type="button" data-close>×</button></div><form id="deliveryForm" class="modal-body"><label class="field"><span>거래처</span><select name="customerId">${customers().map(c=>`<option value="${c.id}" ${c.id===d.customerId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></label><div class="two"><label class="field"><span>배송일</span><input name="deliveryDate" type="date" value="${d.deliveryDate}"></label><label class="field"><span>당일 배송순서</span><input name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><div class="subhead"><strong>어종·제품</strong><button class="mini" type="button" data-add-item>＋ 품목 추가</button></div><div id="itemEditors"></div><div class="subhead"><strong>박스 및 동봉품</strong></div><label class="field"><span>총 박스 수</span><input id="boxCount" type="number" min="0" max="20" value="${d.boxes.length}"></label><div id="boxEditors" class="box-editor"></div><label class="field"><span>동봉품 메모</span><textarea name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input name="previousBalance" type="number" min="0" value="${d.previousBalance||""}"></label><label class="field"><span>전체 메모</span><textarea name="notes">${esc(d.notes)}</textarea></label><button class="primary sticky-save" type="submit">저장</button></form>`;
       dlg._draft=d;renderItemEditors();renderBoxEditors();dlg.showModal();
     }
-    function itemEditor(i,x){return`<div class="item-editor" data-item-index="${x}"><div class="item-title"><strong>${x+1}번 품목</strong><button type="button" data-remove-item="${x}">삭제</button></div><div class="three"><label class="field"><span>구분</span><select data-item="category">${categories.map(v=>`<option ${i.category===v?"selected":""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종·품목</span><input data-item="species" list="speciesList" value="${esc(i.species)}"></label><label class="field"><span>제품 규격/무게</span><input data-item="size" value="${esc(i.size||'기본 규격')}" placeholder="예: 2.3K, 500g"></label></div><div class="three"><label class="field"><span>원산지</span><input data-item="originCountry" list="originList" value="${esc(i.originCountry)}" placeholder="선택·직접입력"></label><label class="field"><span>주문 수량</span><input data-item="requestedQty" type="number" min="0" step="0.01" value="${i.requestedQty}"></label><label class="field"><span>단위</span><select data-item="unit"><option ${i.unit==="마리"?"selected":""}>마리</option><option ${i.unit==="팩"?"selected":""}>팩</option><option ${i.unit==="박스"?"selected":""}>박스</option><option ${i.unit==="개"?"selected":""}>개</option><option ${i.unit==="kg"?"selected":""}>kg</option></select></label></div><div class="three"><label class="field"><span>실제 중량(kg)</span><input data-item="actualWeight" type="number" min="0" step="0.01" value="${i.actualWeight??""}" ${i.category==="냉동제품"?"disabled":""}></label><label class="field"><span>${i.category==="냉동제품"?"팩당 가격":"kg당 단가"}</span><input data-item="unitPrice" type="number" min="0" value="${i.unitPrice||""}"></label><label class="field"><span>수조 위치</span><select data-item="tankNumber"><option value="0">박스·별도</option>${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>${n+1}번 수조</option>`).join("")}</select></label></div><div class="two"><label class="field"><span>필렛 작업비/kg</span><input data-item="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg||""}" ${i.category==="필렛 제품"?"":"disabled"}></label><label class="field"><span>작업·보관</span><input data-item="processing" value="${esc(i.processing)}" placeholder="예: 찍어바리, 냉동 보관"></label></div><label class="check-inline"><input data-item-check="rubberBand" type="checkbox" ${i.rubberBand?"checked":""}>꼬리 고무밴드 작업</label><div class="two"><label class="field"><span>고무밴드 수량</span><input data-item="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity||""}" ${i.rubberBand?"":"disabled"}></label><label class="field"><span>고무밴드 색상</span><input data-item="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand?"":"disabled"} placeholder="예: 빨강"></label></div><label class="field"><span>품목·동봉 메모</span><input data-item="includedNote" value="${esc(i.includedNote)}"></label></div>`}
+    
+    function itemEditor(i,x){return`<div class="item-editor" data-item-index="${x}"><div class="item-title"><strong>${x+1}번 품목</strong><button type="button" data-remove-item="${x}">삭제</button></div><div class="three"><label class="field"><span>구분</span><select data-item="category">${categories.map(v=>`<option ${i.category===v?"selected":""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종</span><input data-item="species" list="speciesList" value="${esc(i.species)}"></label><label class="field"><span>규격/무게</span><input data-item="size" value="${esc(i.size||'기본 규격')}"></label></div><div class="three"><label class="field"><span>원산지</span><input data-item="originCountry" list="originList" value="${esc(i.originCountry)}"></label><label class="field"><span>주문 수량</span><input data-item="requestedQty" type="number" min="0" step="0.01" value="${i.requestedQty}"></label><label class="field"><span>단위</span><select data-item="unit"><option ${i.unit==="마리"?"selected":""}>마리</option><option ${i.unit==="팩"?"selected":""}>팩</option><option ${i.unit==="박스"?"selected":""}>박스</option><option ${i.unit==="개"?"selected":""}>개</option><option ${i.unit==="kg"?"selected":""}>kg</option></select></label></div><div class="three"><label class="field"><span>실제 중량</span><input data-item="actualWeight" type="number" min="0" step="0.01" value="${i.actualWeight??""}" ${i.category==="냉동제품"?"disabled":""}></label><label class="field"><span>단가</span><input data-item="unitPrice" type="number" min="0" value="${i.unitPrice||""}"></label><label class="field"><span>수조 위치</span><select data-item="tankNumber"><option value="0">박스·별도</option>${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>${n+1}번 수조</option>`).join("")}</select></label></div><div class="two"><label class="field"><span>필렛 작업비</span><input data-item="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg||""}" ${i.category==="필렛 제품"?"":"disabled"}></label><label class="field"><span>작업·보관</span><input data-item="processing" value="${esc(i.processing)}"></label></div><label class="check-inline"><input data-item-check="rubberBand" type="checkbox" ${i.rubberBand?"checked":""}>꼬리 밴드 작업</label><div class="two"><label class="field"><span>수량</span><input data-item="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity||""}" ${i.rubberBand?"":"disabled"}></label><label class="field"><span>색상</span><input data-item="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand?"":"disabled"}></label></div><label class="field"><span>메모</span><input data-item="includedNote" value="${esc(i.includedNote)}"></label></div>`}
     function renderItemEditors(){const d=$("#deliveryDialog")._draft;$("#itemEditors").innerHTML=d.items.map(itemEditor).join("")+`<datalist id="speciesList">${species.map(v=>`<option value="${v}">`).join("")}</datalist><datalist id="originList">${origins.map(v=>`<option value="${v}">`).join("")}</datalist>`}
-    function renderBoxEditors(){const d=$("#deliveryDialog")._draft;$("#boxEditors").innerHTML=d.boxes.map((b,i)=>`<label class="box-row"><b>${i+1}</b><input data-box="${i}" value="${esc(b.contents)}" placeholder="예: 광어 + 연어 1팩 동봉"></label>`).join("")}
+    function renderBoxEditors(){const d=$("#deliveryDialog")._draft;$("#boxEditors").innerHTML=d.boxes.map((b,i)=>`<label class="box-row"><b>${i+1}</b><input data-box="${i}" value="${esc(b.contents)}"></label>`).join("")}
+    
     function syncDraft(){const dlg=$("#deliveryDialog"),d=dlg._draft;dlg.querySelectorAll("[data-item-index]").forEach(row=>{const i=d.items[Number(row.dataset.itemIndex)];row.querySelectorAll("[data-item]").forEach(el=>{i[el.dataset.item]=el.value});const ch=row.querySelector("[data-item-check]");i.rubberBand=ch.checked});dlg.querySelectorAll("[data-box]").forEach(el=>{d.boxes[Number(el.dataset.box)].contents=el.value})}
     function saveDelivery(form){syncDraft();const fd=Object.fromEntries(new FormData(form)),d=$("#deliveryDialog")._draft;if(!d.items.length)return alert("품목을 한 개 이상 입력해 주세요.");Object.assign(d,{customerId:Number(fd.customerId),deliveryDate:fd.deliveryDate,routeOrder:Math.max(1,Number(fd.routeOrder)||1),coPackNote:String(fd.coPackNote||""),notes:String(fd.notes||""),previousBalance:Math.max(0,Number(fd.previousBalance)||0)});d.items=d.items.map(i=>({...i,requestedQty:Number(i.requestedQty)||0,actualWeight:i.category==="냉동제품"?null:(i.actualWeight===""?null:Number(i.actualWeight)),unit:i.category==="냉동제품"?"팩":i.unit,unitPrice:Number(i.unitPrice)||0,processingFeePerKg:i.category==="필렛 제품"?Number(i.processingFeePerKg)||0:0,tankNumber:Number(i.tankNumber)||0,rubberBandQuantity:i.rubberBand?Number(i.rubberBandQuantity)||0:0,rubberBandColor:i.rubberBand?i.rubberBandColor:""}));if(deliveryEditId){const x=state.deliveries.findIndex(v=>v.id===deliveryEditId);d.id=deliveryEditId;state.deliveries[x]=d}else{d.id=id();d.status="ready";d.createdAt=new Date().toISOString();state.deliveries.push(d)}save();$("#deliveryDialog").close();workDate=d.deliveryDate;render()}
 
-    // 🚨 [1번 수동 수조 패치 및 3번 시니어 고대비 결합]: 하차 체크리스트 내부 원터치 수조 지정 콤보박스 연동 기입
     function openChecklist(deliveryId){
       selectedDeliveryId=deliveryId;const d=state.deliveries.find(x=>x.id===deliveryId);if(!d)return;const c=customerOf(d),p=progress(d),amount=d.items.reduce((s,i)=>s+itemAmount(i),0),allChecked=p.total>0&&p.done===p.total;
       
       const itemChecks=d.items.map(i=> {
         const tankSelectorHtml = `
-          <select onchange="window.updateItemTankInline(${d.id}, ${i.id}, this.value)" style="height:46px; font-size:15px; font-weight:900; color:var(--navy); border:2px solid var(--navy); border-radius:8px; background:#fff; padding:0 4px; margin-top:6px; width:100%; max-width:160px;">
+          <select data-tank-item="${i.id}" style="height:44px; font-size:14px; font-weight:900; color:var(--navy); border:2px solid var(--navy); border-radius:8px; background:#fff; padding:0 4px; margin-top:6px; width:100%; max-width:160px;">
             <option value="0" ${Number(i.tankNumber)===0?"selected":""}>📦 박스·별도</option>
-            ${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>🐟 ${n+1}번 수조차 지정</option>`).join("")}
+            ${Array.from({length:6},(_,n)=>`<option value="${n+1}" ${Number(i.tankNumber)===n+1?"selected":""}>🐟 ${n+1}번 수조지정</option>`).join("")}
           </select>
         `;
-        return `<div class="check-row ${i.checked?"checked":""}" style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><label style="display:flex; align-items:center; gap:12px; flex:1;"><input type="checkbox" data-check-item="${i.id}" ${i.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:18px;">${esc(i.species)} ${esc(itemQty(i))} <span style="color:var(--warn)">[${esc(i.size||"기본규격")}]</span></strong><small style="font-size:13px; font-weight:700;">${esc(i.category)} · ${esc(i.processing||"")}${i.originCountry?` · 원산지 ${esc(i.originCountry)}`:""}</small></span></label><div style="text-align:right;">${d.status==="completed"?"":tankSelectorHtml}</div></div>`;
+        return `<div class="check-row ${i.checked?"checked":""}" style="display:flex; justify-content:space-between; align-items:center; gap:10px;"><label style="display:flex; align-items:center; gap:12px; flex:1;"><input type="checkbox" data-check-item="${i.id}" ${i.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:17px;">${esc(i.species)} ${esc(itemQty(i))} <span style="color:var(--warn)">[${esc(i.size||"기본규격")}]</span></strong><small style="font-size:13px; font-weight:700;">${esc(i.category)} · ${esc(i.processing||"")}${i.originCountry?` · 원산지 ${esc(i.originCountry)}`:""}</small></span></label><div style="text-align:right;">${d.status==="completed"?"":tankSelectorHtml}</div></div>`;
       }).join("");
       
       const boxChecks=d.boxes.map(b=>`<label class="check-row ${b.checked?"checked":""}"><input type="checkbox" data-check-box="${b.id}" ${b.checked?"checked":""} ${d.status==="completed"?"disabled":""}><span class="check-copy"><strong style="font-size:16px;">${b.boxNumber}번 박스</strong><small>${esc(b.contents||"박스 내용 미입력")}</small></span></label>`).join("");
-      const statement=statementHTML(d,c,amount);const dlg=$("#checklistDialog");dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print"><button type="button" data-print>인쇄</button><button type="button" data-image="png">📸 사진 저장</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">잘못 입력한 오늘 배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;if(!dlg.open)dlg.showModal();
+      const statement=statementHTML(d,c,amount);
+      const dlg=$("#checklistDialog");
+      dlg.innerHTML=`<div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${d.boxes.length}박스 · ${p.done}/${p.total} 확인</p></div><button class="close" type="button" data-close>×</button></div><div class="modal-body">${d.coPackNote?`<div class="alert"><b>동봉품 반드시 확인</b><br>${esc(d.coPackNote)}</div>`:""}<div class="subhead"><strong>하차 어종·패류 확인</strong><small>실물 대조 후 체크</small></div><div class="check-list">${itemChecks}</div>${d.boxes.length?`<div class="subhead"><strong>박스 수 확인</strong><small>내리기 전 하나씩 확인</small></div><div class="check-list">${boxChecks}</div>`:""}<div id="statementPrint" class="statement">${statement}</div><div class="output-actions no-print"><button type="button" data-print>인쇄</button><button type="button" data-image="png">📸 사진 팝업</button></div><button class="outline no-print" type="button" data-edit-delivery="${d.id}" style="min-height:48px; font-size:14px;">발주·포장 내용 수정</button><button class="danger no-print" type="button" data-delete-delivery="${d.id}" style="min-height:48px; font-size:14px;">배송 삭제</button>${d.status==="completed"?`<button class="warning no-print" type="button" data-cancel-complete="${d.id}" style="min-height:52px; font-size:15px;">하차 완료 취소·재확인</button>`:`<button class="primary no-print" type="button" data-complete="${d.id}" ${allChecked?"":"disabled"} style="min-height:54px; font-size:16px;">${allChecked?"모두 확인 · 하차 완료":"어종·박스를 모두 확인해 주세요"}</button>`}</div>`;
+      if(!dlg.open)dlg.showModal();
     }
-
-    // 인라인 수조 지정 연산 매퍼 함수
-    window.updateItemTankInline = (delId, itemId, tankNum) => {
-      const d = state.deliveries.find(x => x.id === delId); if(!d) return;
-      const targetItem = d.items.find(i => i.id === itemId);
-      if(targetItem) targetItem.tankNumber = Number(tankNum);
-      save(); render(); openChecklist(delId);
-    };
 
     function statementHTML(d,c,amount){const lines=d.items.map(i=>{const base=baseAmount(i),fee=i.category==="필렛 제품"?(Number(i.actualWeight)||0)*(Number(i.processingFeePerKg)||0):0;if(!base&&!fee)return"";return`<div>${base?`<div class="line"><span>${esc(i.species)} [${esc(i.size||"기본")}] ${esc(itemQty(i))} × ${money(i.unitPrice)}원/${i.category==="냉동제품"?"팩":"kg"}</span><b>${money(base)}원</b></div>`:""}${fee?`<div class="line"><span>필렛 작업비 ${i.actualWeight||0}kg × ${money(i.processingFeePerKg)}원</span><b>${money(fee)}원</b></div>`:""}</div>`}).join("");const due=amount+(Number(d.previousBalance)||0);return`<h1>${esc(c.name)} 거래명세</h1><div class="statement-meta"><p><span>거래처명</span><b>${esc(c.name)}</b></p><p><span>납품처</span><b>${esc(c.deliveryPlace||"-")}</b></p><p class="address"><span>주소</span><b>${esc(c.address||"-")}</b></p><p><span>연락처</span><b>${esc(c.phone||"-")}</b></p><p><span>배송일</span><b>${esc(d.deliveryDate)}</b></p></div>${lines}<div class="subtotal"><span>당일 공급금액</span><b>${money(amount)}원</b></div>${d.previousBalance?`<div class="balance"><span>전날 미수금액</span><b>${money(d.previousBalance)}원</b></div>`:""}<div class="total"><span>최종 합계</span><b>${money(due)}원</b></div>${d.notes?`<div class="statement-note">${esc(d.notes)}</div>`:""}`}
     function updateCheck(type,itemId,checked){const d=state.deliveries.find(x=>x.id===selectedDeliveryId),list=type==="item"?d.items:d.boxes,obj=list.find(x=>x.id===itemId);if(obj)obj.checked=checked;save();openChecklist(selectedDeliveryId)}
     
     async function saveStatementImage(format){
-      if(typeof html2canvas!=="function")return alert("이미지 저장 모듈을 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.");
+      if(typeof html2canvas!=="function")return alert("이미지 저장 모듈을 불러오지 못했습니다.");
       const node=$("#statementPrint");
       setTimeout(async ()=>{
         try {
-          const canvas = await html2canvas(node,{ scale:2, backgroundColor:"#ffffff", useCORS:true, scrollX:0, scrollY:0 });
+          const canvas = await html2canvas(node,{ scale:2, backgroundColor:"#ffffff", scrollX:0, scrollY:0 });
           const base64Data = canvas.toDataURL("image/png", 0.95);
-          $("#popupImg").src = base64Data; $("#mobileImagePopup").classList.remove("hidden");
-        } catch(e) { alert("이미지 변환 중 장치 오류가 발생했습니다."); }
+          $("#popupImg").src = base64Data;
+          $("#mobileImagePopup").classList.remove("hidden");
+        } catch(e) { alert("이미지 변환 오류가 발생했습니다."); }
       }, 150);
     }
 
-    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,구분:i.category,"어종·품목":i.species,제품규격사이즈:i.size||"기본 규격",원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
+    function exportExcel(){if(typeof XLSX==="undefined")return alert("Excel 모듈을 불러오지 못했습니다.");const rows=deliveries(),summary=[],detail=[];rows.forEach(d=>{const c=customerOf(d),daily=d.items.reduce((s,i)=>s+itemAmount(i),0);summary.push({배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,"당일 공급금액":daily,"전날 미수금액":d.previousBalance,"최종 합계":daily+d.previousBalance,"박스 수":d.boxes.length,배송상태:d.status==="completed"?"배송 완료":"출차 준비",특이사항:[d.coPackNote,d.notes].filter(Boolean).join(" / ")});d.items.forEach((i,x)=>detail.push({배송일:d.deliveryDate,배송순서:d.routeOrder,거래처명:c.name,납품처:c.deliveryPlace,주소:c.address,연락처:c.phone,구분:i.category,"어종·품목":i.species,제품규격사이즈:i.size||"기본 규격",원산지:i.originCountry,주문수량:`${i.requestedQty}${i.unit}`,"실제중량(kg)":i.actualWeight??"",판매단가:i.unitPrice,"상품 금액":baseAmount(i),"작업비 kg단가":i.processingFeePerKg,"작업비 금액":i.category==="필렛 제품"?(i.actualWeight||0)*(i.processingFeePerKg||0):0,"전날 미수금액":x===0?d.previousBalance:"",상차위치:i.tankNumber?`${i.tankNumber}번 수조`:"박스·별도",고무밴드:i.rubberBand?`${i.rubberBandColor} ${i.rubberBandQuantity}개`:"",하차확인:i.checked?"확인 완료":"미확인"}))});const wb=XLSX.utils.book_new(),info=XLSX.utils.aoa_to_sheet([["회사명",state.profile.companyName],["배송담당자",state.profile.driverName],["차량 호차",state.profile.vehicleNumber],["배송일",workDate]]);XLSX.utils.book_append_sheet(wb,info,"기본정보");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"거래처별 요약");XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(detail),"품목별 거래명세");XLSX.writeFile(wb,`${safeName(state.profile.companyName||"배송")}_거래명세표_${workDate}.xlsx`)}
     function backup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`배송관리_백업_${dateLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
     function restore(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d.profile||!Array.isArray(d.customers)||!Array.isArray(d.deliveries))throw 0;if(confirm("현재 자료를 백업 파일 내용으로 교체할까요?")){state=d;save();render();alert("백업 자료를 복원했습니다.")}}catch{alert("올바른 배송관리 백업 파일이 아닙니다.")}};reader.readAsText(file)}
 
-    // 🚨 [4번 패치 완벽 결합]: 실시간 발주 입고 시 진동모터 가속 구동 및 오디오 알림 무한 루프 차단기
+    // --- 무선 동기화 및 알람 로직 ---
     window.stopLiveOrderAlarm = () => {
       isAlarmPlaying = false;
       if(alarmIntervalPointer) { clearInterval(alarmIntervalPointer); alarmIntervalPointer = null; }
@@ -344,9 +312,7 @@
     function triggerLiveNetworkHardwareAlarm() {
       if(isAlarmPlaying) return; isAlarmPlaying = true;
       $("#liveAlarmBanner").classList.remove('hidden');
-
       if(navigator.vibrate) navigator.vibrate([600, 300, 600, 300, 600]);
-
       alarmIntervalPointer = setInterval(() => {
         try {
           const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -359,20 +325,19 @@
       }, 1100);
     }
 
-    // 🌐 실시간 무선 동기화 자동 수신망 기동 장치
     function startCloudSync() {
       if(syncIntervalTimer) clearInterval(syncIntervalTimer);
       const fetchExecute = () => {
         const carCode = String(state.profile.vehicleNumber || "").trim().replace(/[^a-zA-Z0-9_-]/g, '');
         if(!carCode) {
-          $("#netDot").className = "network-dot loading"; $("#netText").textContent = "호차 입력요망"; return;
+          $("#netDot").className = "network-dot loading"; $("#netText").textContent = "호차 미설정"; return;
         }
-        $("#netDot").className = "network-dot loading"; $("#netText").textContent = "중계망 조회중";
+        $("#netDot").className = "network-dot loading"; $("#netText").textContent = "수신중...";
         
         fetch(`${CLOUD_RELAY_URL}${carCode}/json?poll=1`)
         .then(res => res.text())
         .then(text => {
-          $("#netDot").className = "network-dot"; $("#netText").textContent = `${carCode}호차 동기화완료`;
+          $("#netDot").className = "network-dot"; $("#netText").textContent = `정상 수신중`;
           if(!text.trim()) return;
           const lines = text.trim().split('\n'); let isDataChanged = false;
           
@@ -391,7 +356,6 @@
                 state.customers.push(targetCustomer);
               }
 
-              // 🚨 [1번 패치]: 신규 수신된 활어 품목의 수조번호는 무조건 0번(박스·별도)으로 입고
               const mappedItems = packet.items.map(pi => ({
                 id: id(), category: pi.category || "활어", species: pi.item || "광어", size: pi.size || "기본 규격", originCountry: pi.origin || "국내산", requestedQty: Number(pi.qty) || 1, unit: pi.unit || "마리", actualWeight: "", unitPrice: "25000", processingFeePerKg: "0", processing: pi.process || "찍어바리",
                 tankNumber: 0, rubberBand: false, rubberBandQuantity: "", rubberBandColor: "", includedNote: pi.memo || "", checked: false
@@ -408,11 +372,12 @@
           if(isDataChanged) { 
             save(); render(); triggerLiveNetworkHardwareAlarm();
           }
-        }).catch(err => { $("#netDot").className = "network-dot loading"; $("#netText").textContent = "인터넷 끊김"; });
+        }).catch(err => { $("#netDot").className = "network-dot loading"; $("#netText").textContent = "오프라인"; });
       };
       fetchExecute(); syncIntervalTimer = setInterval(fetchExecute, 4000);
     }
 
+    // --- 오리지널 순정 이벤트 리스너: 단 한 줄도 건드리지 않음 ---
     document.addEventListener("click",e=>{
       const b=e.target.closest("button");if(!b)return;
       if(b.dataset.nav){setView(b.dataset.nav);return}
@@ -444,7 +409,9 @@
       if(e.target.id==="settingsForm"){
         const fd=Object.fromEntries(new FormData(e.target));
         state.profile={companyName:String(fd.companyName).trim(),driverName:String(fd.driverName).trim(),vehicleNumber:String(fd.vehicleNumber).trim()};
-        save(); renderSettings(); startCloudSync(); alert("회사·차량 정보를 저장하고 무선 수신망을 동기화했습니다.");
+        save();renderSettings();
+        startCloudSync(); // 🚨 차량번호가 바뀌면 즉시 통신망 재부팅
+        alert("회사·차량 정보를 저장하고 무선 수신망을 동기화했습니다.");
       }
     });
     
@@ -456,10 +423,23 @@
       if(e.target.dataset.checkItem)return updateCheck("item",Number(e.target.dataset.checkItem),e.target.checked);
       if(e.target.dataset.checkBox)return updateCheck("box",Number(e.target.dataset.checkBox),e.target.checked);
       if(e.target.id==="restoreInput"&&e.target.files[0])restore(e.target.files[0]);
+      
+      // 🚨 수조 이동 인라인 셀렉터 이벤트 처리 (순정 코드에 안전하게 추가됨)
+      if(e.target.dataset.tankItem){
+        const itemId = Number(e.target.dataset.tankItem);
+        const d = state.deliveries.find(x => x.id === selectedDeliveryId);
+        if(d) {
+          const targetItem = d.items.find(i => i.id === itemId);
+          if(targetItem) {
+            targetItem.tankNumber = Number(e.target.value);
+            save(); render(); openChecklist(selectedDeliveryId);
+          }
+        }
+      }
     });
     
     render();
-    startCloudSync();
+    startCloudSync(); // 🚨 앱 최초 구동 시 무선 안테나 즉시 기동
   })();
   </script>
 </body>
