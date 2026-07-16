@@ -1,345 +1,910 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>수산물 물류 시스템 - 발주처</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght=400;700;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.02em; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123c5a">
+  <title>점주 전용 간편 발주</title>
+  <style>
+    :root {
+      --navy: #123c5a;
+      --navy-dark: #0b2b42;
+      --teal: #087f76;
+      --teal-dark: #05675f;
+      --blue-soft: #e9f5f8;
+      --green-soft: #eaf8f1;
+      --amber: #b85f12;
+      --amber-soft: #fff5e7;
+      --red: #b42318;
+      --red-soft: #fff0ef;
+      --ink: #172832;
+      --muted: #4c616d;
+      --line: #bdcbd2;
+      --bg: #edf3f5;
+      --white: #fff;
+      --shadow: 0 10px 30px rgba(18, 60, 90, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Pretendard, "Noto Sans KR", Arial, sans-serif;
+      font-size: 18px;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    input, select, textarea { color: var(--ink); }
+    :focus-visible { outline: 4px solid #f5b942; outline-offset: 2px; }
+    .hidden { display: none !important; }
+
+    .app {
+      width: min(100%, 720px);
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding-bottom: 118px;
+      background: #f8fbfc;
+      box-shadow: var(--shadow);
+    }
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding: 15px 17px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--navy-dark), var(--navy));
+      box-shadow: 0 4px 18px rgba(4, 30, 46, .22);
+    }
+    .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand small { display: block; color: #cbe0ea; font-size: 13px; font-weight: 800; }
+    .brand h1 { margin: 1px 0 0; font-size: 25px; line-height: 1.2; font-weight: 950; letter-spacing: -.04em; }
+    .settings-button {
+      flex: 0 0 auto;
+      min-height: 48px;
+      padding: 0 14px;
+      border: 2px solid rgba(255,255,255,.45);
+      border-radius: 12px;
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.2);
+      color: #d8e9ef;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .status-pill { display: inline-flex; align-items: center; gap: 6px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #43d17a; }
+    .status-dot.offline { background: #f2a23a; }
+
+    main { padding: 16px; }
+    .welcome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border: 2px solid #a9cbd5;
+      border-radius: 17px;
+      background: var(--blue-soft);
+    }
+    .welcome small { display: block; color: var(--muted); font-size: 14px; font-weight: 800; }
+    .welcome strong { display: block; margin-top: 2px; color: var(--navy); font-size: 22px; font-weight: 950; }
+    .channel { flex: 0 0 auto; color: var(--teal-dark); font-size: 14px; font-weight: 900; }
+
+    .step-card {
+      margin-top: 16px;
+      padding: 17px;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 5px 18px rgba(29, 68, 88, .07);
+    }
+    .step-head { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+    .step-number {
+      display: grid;
+      place-items: center;
+      flex: 0 0 39px;
+      height: 39px;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--navy);
+      font-size: 19px;
+      font-weight: 950;
+    }
+    .step-head h2 { margin: 0; font-size: 21px; font-weight: 950; letter-spacing: -.03em; }
+    .step-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 750; }
+    .field { display: grid; gap: 7px; margin-top: 12px; }
+    .field > span, .field > label { color: var(--navy-dark); font-size: 16px; font-weight: 900; }
+    .control {
+      width: 100%;
+      min-height: 56px;
+      padding: 11px 13px;
+      border: 2px solid #9eb2bc;
+      border-radius: 13px;
+      background: #fff;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    textarea.control { min-height: 84px; resize: vertical; }
+    .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 9px; }
+    .quick-date {
+      min-height: 51px;
+      border: 2px solid #99b5bf;
+      border-radius: 12px;
+      color: var(--navy);
+      background: #fff;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .quick-date.active { border-color: var(--teal); color: #fff; background: var(--teal); }
+
+    .repeat-button {
+      width: 100%;
+      min-height: 61px;
+      margin-top: 16px;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 15px;
+      color: #fff;
+      background: #bd650e;
+      box-shadow: 0 5px 12px rgba(184,95,18,.25);
+      font-size: 18px;
+      font-weight: 950;
+    }
+    .repeat-button small { display: block; margin-top: 1px; font-size: 12px; font-weight: 800; opacity: .9; }
+
+    .item-list { display: grid; gap: 13px; }
+    .item-card {
+      padding: 15px;
+      border: 3px solid #b9c8cf;
+      border-radius: 17px;
+      background: #fbfdfe;
+    }
+    .item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 11px; }
+    .item-title { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 950; }
+    .item-badge {
+      display: grid;
+      place-items: center;
+      width: 35px;
+      height: 35px;
+      border-radius: 10px;
+      color: #fff;
+      background: var(--teal);
+      font-weight: 950;
+    }
+    .item-actions { display: flex; gap: 6px; }
+    .mini-button {
+      min-height: 42px;
+      padding: 0 10px;
+      border: 2px solid #afbec5;
+      border-radius: 10px;
+      color: var(--navy);
+      background: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .mini-button.danger { border-color: #e3aba6; color: var(--red); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .quantity-box {
+      display: grid;
+      grid-template-columns: 58px 1fr 58px;
+      gap: 7px;
+      align-items: center;
+    }
+    .quantity-button {
+      height: 58px;
+      border: 0;
+      border-radius: 13px;
+      color: #fff;
+      background: var(--navy);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 950;
+    }
+    .quantity-input { text-align: center; font-size: 22px; }
+    details {
+      margin-top: 13px;
+      border: 2px solid #c9d4d9;
+      border-radius: 13px;
+      background: #fff;
+      overflow: hidden;
+    }
+    summary {
+      min-height: 52px;
+      padding: 13px;
+      color: var(--navy);
+      background: #f1f7f8;
+      font-size: 15px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+    .details-body { padding: 0 13px 14px; }
+    .band-box {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-height: 57px;
+      margin-top: 13px;
+      padding: 10px 13px;
+      border: 2px solid #e8bb83;
+      border-radius: 12px;
+      color: #7d3f0d;
+      background: var(--amber-soft);
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .band-box input { width: 27px; height: 27px; accent-color: var(--amber); }
+    .add-item {
+      width: 100%;
+      min-height: 60px;
+      margin-top: 13px;
+      border: 3px dashed #67a7ad;
+      border-radius: 15px;
+      color: var(--teal-dark);
+      background: #eff9f8;
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .recent-list { display: grid; gap: 10px; }
+    .recent-card {
+      padding: 14px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+    .recent-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .recent-card strong { font-size: 17px; font-weight: 950; }
+    .recent-card small { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; font-weight: 750; }
+    .recent-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 11px; }
+    .recent-actions button { min-height: 45px; border-radius: 10px; background: #fff; font-size: 14px; font-weight: 900; }
+    .reuse { border: 2px solid #8cb9b5; color: var(--teal-dark); }
+    .cancel { border: 2px solid #e2aaa5; color: var(--red); }
+    .cancelled { display: inline-block; padding: 5px 8px; border-radius: 8px; color: var(--red); background: var(--red-soft); font-size: 13px; font-weight: 900; }
+    .empty { padding: 22px 13px; border: 2px dashed #c6d2d7; border-radius: 14px; color: var(--muted); text-align: center; font-size: 15px; font-weight: 800; }
+
+    .send-bar {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 35;
+      display: grid;
+      grid-template-columns: 105px 1fr;
+      gap: 9px;
+      width: min(100%, 720px);
+      margin: 0 auto;
+      padding: 11px 14px calc(11px + env(safe-area-inset-bottom));
+      border-top: 2px solid #b7c6cd;
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 -7px 24px rgba(18,60,90,.14);
+    }
+    .send-summary { display: grid; place-items: center; color: var(--navy); font-size: 14px; font-weight: 850; text-align: center; }
+    .send-summary strong { display: block; font-size: 22px; font-weight: 950; }
+    .send-button {
+      min-height: 63px;
+      border: 0;
+      border-radius: 15px;
+      color: #fff;
+      background: var(--teal);
+      box-shadow: 0 5px 12px rgba(8,127,118,.26);
+      font-size: 21px;
+      font-weight: 950;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      background: rgba(4, 25, 38, .82);
+    }
+    .modal-card {
+      width: min(100%, 560px);
+      max-height: 92dvh;
+      overflow-y: auto;
+      padding: 19px;
+      border-radius: 21px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .modal-card h2 { margin: 0; color: var(--navy); font-size: 25px; font-weight: 950; }
+    .modal-card > p { margin: 6px 0 15px; color: var(--muted); font-size: 15px; font-weight: 750; }
+    .preview-box { display: grid; gap: 9px; padding: 13px; border: 2px solid #b9c9d0; border-radius: 14px; background: #f4f8fa; }
+    .preview-store { padding-bottom: 9px; border-bottom: 2px solid #c8d4da; color: var(--navy); font-size: 19px; font-weight: 950; }
+    .preview-item { padding: 10px; border-radius: 11px; background: #fff; font-size: 16px; font-weight: 850; }
+    .preview-item small { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 15px; }
+    .modal-actions button, .full-button { min-height: 58px; border-radius: 13px; font-size: 17px; font-weight: 950; }
+    .secondary { border: 2px solid #aebdc4; color: var(--navy); background: #fff; }
+    .primary { border: 0; color: #fff; background: var(--teal); }
+    .full-button { width: 100%; border: 0; color: #fff; background: var(--navy); }
+    .success-icon { text-align: center; font-size: 67px; }
+    .success-copy { padding: 15px; border-radius: 14px; color: #075f3d; background: var(--green-soft); font-size: 17px; font-weight: 900; text-align: center; }
+    .error-box { padding: 13px; border: 2px solid #e0a7a2; border-radius: 12px; color: var(--red); background: var(--red-soft); font-size: 15px; font-weight: 850; }
+    .profile-summary { margin-bottom: 14px; padding: 13px; border-radius: 13px; color: var(--navy); background: var(--blue-soft); font-size: 15px; font-weight: 850; }
+    .setup-help { padding: 12px; border-radius: 12px; color: #75500b; background: #fff5d9; font-size: 14px; font-weight: 800; }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 100px;
+      left: 16px;
+      z-index: 150;
+      width: min(calc(100% - 32px), 520px);
+      margin: auto;
+      padding: 14px;
+      border-radius: 13px;
+      color: #fff;
+      background: #1c3544;
+      box-shadow: var(--shadow);
+      font-size: 15px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      body { font-size: 17px; }
+      .two { grid-template-columns: 1fr; }
+      .brand h1 { font-size: 22px; }
+      .step-card { padding: 15px 13px; }
+      .item-card { padding: 14px 11px; }
+      .item-actions { flex-direction: column; }
+      .mini-button { min-height: 38px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; }
+    }
+  </style>
 </head>
-<body class="bg-[#f3f4f6] text-[#1e293b] antialiased pb-28">
-
-    <header class="bg-[#0f172a] text-white px-6 py-5 shadow-md sticky top-0 z-50 flex justify-between items-center border-b border-slate-800">
-        <div class="flex flex-col">
-            <div class="flex items-center space-x-2">
-                <span id="sync-indicator" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                <h1 id="brand-logo" class="text-lg font-black tracking-wider text-slate-100">FISH-NET LOGISTICS</h1>
-            </div>
-            <span id="sync-code-text" class="text-[11px] text-slate-400 font-bold mt-0.5">🟢 모바일 발주 시스템</span>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="top-row">
+        <div class="brand">
+          <small>수산물 간편 발주</small>
+          <h1>점주 전용 주문서</h1>
         </div>
-        <button onclick="toggleView('settings')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold px-4 py-2.5 rounded-xl transition border border-slate-700/60">⚙️ 채널 설정</button>
+        <button id="openSettings" class="settings-button" type="button">⚙ 설정</button>
+      </div>
+      <div class="status-row">
+        <span class="status-pill"><span id="networkDot" class="status-dot"></span><span id="networkText">인터넷 연결됨</span></span>
+        <span id="saveStatus">● 작성 내용 자동저장</span>
+      </div>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-5">
-        <section id="view-settings" class="hidden bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-5">
-            <div class="border-b border-slate-100 pb-3">
-                <h2 class="text-base font-black text-slate-900">⚙️ 시스템 설정</h2>
-            </div>
-            <div class="space-y-2">
-                <label class="block text-sm font-black text-slate-600">🔗 연동 코드 (배송원과 동일해야 함)</label>
-                <input id="input-sync-code" type="text" value="1" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-            </div>
-            <button onclick="updateSettingsMaster()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-base font-black transition">설정 저장</button>
-        </section>
+    <main>
+      <section class="welcome" aria-label="현재 점포 정보">
+        <div><small>현재 발주 점포</small><strong id="storeNameDisplay">점포 설정 필요</strong></div>
+        <span id="channelDisplay" class="channel">채널 미설정</span>
+      </section>
 
-        <section id="view-owner" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-200/60 space-y-6">
-            <button type="button" onclick="loadLastOrderFromMemory()" class="w-full bg-amber-500 hover:bg-amber-600 text-white py-4 rounded-2xl text-base font-black tracking-wide transition shadow-md flex items-center justify-center gap-2 active:scale-95">
-                ⭐ 직전 주문 품목 그대로 불러오기 (3초 발주)
-            </button>
+      <button id="loadLastOrder" class="repeat-button hidden" type="button">
+        ⭐ 직전 주문 그대로 불러오기
+        <small>품목과 요구사항을 한 번에 불러옵니다</small>
+      </button>
 
-            <div>
-                <h2 class="text-xl font-black text-slate-900 tracking-tight">발주 품목 등록</h2>
-                <p class="text-sm text-slate-400 font-medium mt-0.5">항목을 입력하시면 담당 배송원에게 실시간 전송됩니다.</p>
-            </div>
-            
-            <div class="space-y-5">
-                <div class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-100 space-y-4 shadow-inner">
-                    <p class="text-xs font-black text-blue-600 tracking-wider uppercase">📍 1. 기본 배송지 및 납품 정보</p>
-                    
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-700">📅 납품 요청 날짜</label>
-                        <input id="order-date" type="date" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none text-center">
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-700">점포 상호 이름</label>
-                        <select id="sel-store" onchange="handleSelectChange(this, 'input-store')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="자갈치상회">자갈치상회</option>
-                            <option value="영도수산">영도수산</option>
-                            <option value="해운대대게">해운대대게</option>
-                            <option value="custom">✍️ 직접 입력</option>
-                        </select>
-                        <input id="input-store" type="text" placeholder="상호명을 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-blue-50/20 outline-none mt-2 font-bold">
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-700">연락처</label>
-                        <select id="sel-phone" onchange="handleSelectChange(this, 'input-phone')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="010-1234-5678">010-1234-5678</option>
-                            <option value="010-9876-5432">010-9876-5432</option>
-                            <option value="custom">✍️ 직접 입력</option>
-                        </select>
-                        <input id="input-phone" type="text" placeholder="연락처를 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-blue-50/20 outline-none mt-2 font-bold">
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-700">배송 주소</label>
-                        <select id="sel-address" onchange="handleSelectChange(this, 'input-address')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="부산 중구 구덕로 10">부산 중구 구덕로 10</option>
-                            <option value="부산 영도구 대교로 20">부산 영도구 대교로 20</option>
-                            <option value="custom">✍️ 직접 입력</option>
-                        </select>
-                        <input id="input-address" type="text" placeholder="주소를 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-blue-50/20 outline-none mt-2 font-bold">
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <p class="text-xs font-black text-emerald-600 tracking-wider uppercase pl-1">🐟 2. 상세 발주 품목 목록</p>
-                    <div id="dynamic-form-container" class="space-y-5"></div>
-                </div>
-
-                <button type="button" onclick="addFormRow()" class="w-full bg-white hover:bg-slate-50 text-blue-600 border-3 border-dashed border-blue-300 py-4 rounded-2xl text-base font-black tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
-                    ➕ 새 발주 품목 추가하기
-                </button>
-            </div>
-            
-            <button onclick="submitOrderToLiveNetwork()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-lg font-black tracking-wide transition shadow-lg active:scale-[0.98]">
-                🚀 실시간 발주 전송하기
-            </button>
-
-            <div class="pt-4 border-t border-slate-100 space-y-2">
-                <p class="text-xs font-black text-slate-400 tracking-wider uppercase pl-1">📦 최근 보낸 발주 관리 (취소 가능)</p>
-                <div id="owner-sent-log-container" class="space-y-2"></div>
-            </div>
-        </section>
-    </header>
-
-    <div id="order-preview-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-blue-600 animate-in zoom-in duration-150">
-            <div class="flex items-center space-x-2 text-blue-600 border-b pb-2">
-                <span class="text-3xl">⚠️</span>
-                <h3 class="text-xl font-black text-slate-900">발주 내역 최종 검증</h3>
-            </div>
-            <p class="text-sm font-black text-slate-500 leading-snug">기사님 차에 실리기 전 오더입니다. 아래 내역이 틀림없는지 마지막으로 눈으로 한 번만 확인해 주세요.</p>
-            
-            <div class="bg-slate-100 p-4 rounded-2xl space-y-3 text-slate-800 border-2 border-slate-200 font-bold max-h-60 overflow-y-auto">
-                <div class="text-sm text-slate-500 border-b pb-1.5 flex justify-between"><span>🏪 발주점포:</span><span id="prev-modal-store" class="text-slate-900 font-black text-base"></span></div>
-                <div id="prev-modal-items-list" class="space-y-2 pt-1 text-base text-slate-900 font-black"></div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="closePreviewLargeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 py-5 rounded-2xl text-base font-black transition border-2 border-slate-300">틀림 (수정)</button>
-                <button onclick="executeActualOrderSubmission()" class="bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl text-base font-black transition shadow-xl border-b-4 border-blue-800 active:scale-95">정확함 (전송)</button>
-            </div>
+      <section class="step-card">
+        <div class="step-head">
+          <span class="step-number">1</span>
+          <div><h2>납품 날짜 확인</h2><p>기본값은 내일입니다.</p></div>
         </div>
-    </div>
-
-    <div id="success-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-emerald-500 animate-in zoom-in duration-200">
-            <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-inner"><span class="text-5xl animate-bounce">✅</span></div>
-            <div class="space-y-3">
-                <h3 id="success-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">점포명</h3>
-                <p class="text-xl font-extrabold text-emerald-600 tracking-wide">발주서 전송 성공!</p>
-                <hr class="border-slate-200">
-                <p class="text-base font-bold text-slate-500 leading-relaxed">배송 기사 단말기로<br><span class="text-slate-900 underline decoration-blue-500 decoration-3">실시간 정상 전송</span> 되었습니다.</p>
-            </div>
-            <button onclick="closeSuccessLargeModal()" class="w-full bg-[#0f172a] text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg">👍 확인했습니다</button>
+        <label class="field"><span>납품 요청 날짜</span><input id="orderDate" class="control" type="date"></label>
+        <div class="date-grid">
+          <button class="quick-date" type="button" data-date-offset="1">내일</button>
+          <button class="quick-date" type="button" data-date-offset="2">모레</button>
         </div>
-    </div>
+      </section>
 
-    <div id="cancel-large-modal" class="hidden fixed inset-0 bg-[#0f172a]/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl space-y-6 text-center border-4 border-rose-500 animate-in zoom-in duration-200">
-            <div class="w-24 h-24 bg-rose-100 rounded-full flex items-center justify-center mx-auto shadow-inner"><span class="text-5xl animate-pulse">🚨</span></div>
-            <div class="space-y-3">
-                <h3 id="cancel-modal-title" class="text-2xl font-black text-slate-900 tracking-tight leading-snug">점포명</h3>
-                <p class="text-xl font-extrabold text-rose-600 tracking-wide">발주 취소 완료!</p>
-                <hr class="border-slate-200">
-                <p class="text-base font-bold text-slate-500 leading-relaxed">해당 발주서가 배송망에서<br><span class="text-slate-900 underline decoration-rose-500 decoration-3">정상적으로 [취소]</span> 되었습니다.</p>
-            </div>
-            <button onclick="closeCancelLargeModal()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-5 rounded-2xl text-lg font-black tracking-widest transition shadow-lg">확인완료</button>
+      <section class="step-card">
+        <div class="step-head">
+          <span class="step-number">2</span>
+          <div><h2>발주 품목 입력</h2><p>수량은 − / ＋ 큰 버튼으로 조절하세요.</p></div>
         </div>
-    </div>
+        <div id="itemList" class="item-list"></div>
+        <button id="addItem" class="add-item" type="button">＋ 품목 한 줄 추가</button>
+      </section>
 
-    <script>
-        let rowIdx = 0;
-        let activeRows = []; let currentPendingPacket = null;
-        const cloudRelayUrl = "https://ntfy.sh/fish_net_relay_";
-        
-        // 🚨 3. 도미 전용 규격/사이즈 데이터 정밀 이식 완료
-        const itemSizesDatabase = {
-            "광어": ["500 ~ 700", "800 ~ 900", "K ~ K300", "K400 ~ K600", "K700 ~ K900", "2K ~ 2.1K", "2.3K", "2.5K", "3K"], 
-            "우럭": ["400", "450", "500", "550", "600", "700", "800"], 
-            "연어": ["노르웨이 6~7K", "연어필렛 2~ 2.5K"], 
-            "연어알": ["500g"], 
-            "농어": ["小 1.5K 전후", "中 2K 전후", "大 2.5K 전후"], 
-            "도미": ["일본산 小 1.5K 전후", "일본산 中 2K 전후", "일본산 大 3K 전후"], 
-            "잿방어": ["4K 전후"], "화동아지": ["2K 전후"], "점성어": ["4K 전후"], "개숭어": ["기본 / 규격없음"], "참숭어": ["기본 / 규격없음"], "이백이": ["기본 / 규격없음"], "중방어": ["기본 / 규격없음"], "소방어": ["기본 / 규격없음"], "히라스": ["기본 / 규격없음"], "활새우": ["기본 / 규격없음"], "산오징어": ["기본 / 규격없음"], "고등어": ["기본 / 규격없음"], "우니(성게알)": ["기본 / 규격없음"], "전복": ["기본 / 규격없음"], "멍게": ["기본 / 규격없음"], "백상합": ["기본 / 규격없음"], "개불": ["기본 / 규격없음"], "소라": ["기본 / 규격없음"], "해삼": ["기본 / 규격없음"], "가리비": ["기본 / 규격없음"]
+      <section class="step-card">
+        <div class="step-head">
+          <span class="step-number">3</span>
+          <div><h2>최근 발주 확인</h2><p>같은 내용 재주문 또는 발주 취소가 가능합니다.</p></div>
+        </div>
+        <div id="recentOrders" class="recent-list"></div>
+      </section>
+    </main>
+
+    <div class="send-bar">
+      <div class="send-summary"><span><strong id="itemCount">1</strong>개 품목</span></div>
+      <button id="previewOrder" class="send-button" type="button">내용 확인 후 발주</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-card">
+      <h2 id="settingsTitle">점포 정보 설정</h2>
+      <p>처음 한 번만 저장하면 다음 주문부터 다시 입력하지 않습니다.</p>
+      <div class="setup-help">점포명·전화번호·주소가 잘못되면 다른 곳으로 배송될 수 있으니 정확히 확인해 주세요.</div>
+      <label class="field"><span>점포 상호명</span><input id="profileStore" class="control" autocomplete="organization" placeholder="예: 자갈치상회"></label>
+      <label class="field"><span>연락처</span><input id="profilePhone" class="control" type="tel" autocomplete="tel" placeholder="예: 010-1234-5678"></label>
+      <label class="field"><span>배송 주소</span><textarea id="profileAddress" class="control" autocomplete="street-address" placeholder="도로명 주소를 입력하세요"></textarea></label>
+      <label class="field"><span>배송 차량 연동 코드</span><input id="profileSyncCode" class="control" inputmode="text" placeholder="예: 1"></label>
+      <div id="settingsError" class="error-box hidden" role="alert"></div>
+      <div class="modal-actions">
+        <button id="closeSettings" class="secondary" type="button">취소</button>
+        <button id="saveSettings" class="primary" type="button">정보 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="previewModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-card">
+      <h2 id="previewTitle">발주 내용 최종 확인</h2>
+      <p>전송하기 전에 점포·날짜·품목·수량을 한 번만 확인해 주세요.</p>
+      <div id="previewContent" class="preview-box"></div>
+      <div id="sendError" class="error-box hidden" role="alert"></div>
+      <div class="modal-actions">
+        <button id="closePreview" class="secondary" type="button">돌아가서 수정</button>
+        <button id="sendOrder" class="primary" type="button">정확함 · 발주 전송</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+    <div class="modal-card">
+      <div class="success-icon">✅</div>
+      <h2 id="successTitle" style="text-align:center">발주가 접수되었습니다</h2>
+      <p id="successStore" style="text-align:center; font-size:20px; color:var(--navy); font-weight:950"></p>
+      <div class="success-copy">발주 서버에 정상 접수했습니다.<br>최근 발주 목록에서 취소할 수 있습니다.</div>
+      <button id="closeSuccess" class="full-button" type="button" style="margin-top:15px">확인</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const CLOUD_RELAY_URL = "https://ntfy.sh/fish_net_relay_";
+      const PROFILE_KEY = "fish_owner_profile_v2";
+      const DRAFT_KEY = "fish_owner_draft_v2";
+      const LAST_ORDER_KEY = "last_submitted_items";
+      const SENT_KEY = "my_sent_orders";
+      const LEGACY_SYNC_KEY = "sync_code";
+
+      const categories = ["활어", "패류", "냉동제품", "필렛 제품"];
+      const products = ["광어", "우럭", "연어", "연어알", "농어", "도미", "잿방어", "시아아지", "점성어", "개숭어", "참숭어", "이백이", "중방어", "소방어", "히라스", "활새우", "산오징어", "고등어", "우니(성게알)", "전복", "멍게", "백상합", "개불", "소라", "해삼", "가리비"];
+      const origins = ["국내산", "일본", "노르웨이", "중국", "러시아", "칠레", "캐나다", "미국", "기타"];
+      const processes = ["찍어바리", "활어", "해수 보관", "합포장", "개별포장", "필렛 작업", "냉동 보관", "일반 포장"];
+      const units = ["마리", "팩", "박스", "망", "봉지", "kg", "개"];
+      const bandColors = ["빨강", "파랑", "노랑", "초록", "흰색", "검정", "기타"];
+      const itemSizes = {
+        "광어": ["500 ~ 700", "800 ~ 900", "K ~ K300", "K400 ~ K600", "K700 ~ K900", "2K ~ 2.1K", "2.3K", "2.5K", "3K"],
+        "우럭": ["400", "450", "500", "550", "600", "700", "800"],
+        "연어": ["노르웨이 6~7K", "연어필렛 2~2.5K"],
+        "연어알": ["500g"],
+        "농어": ["소 1.5K 전후", "중 2K 전후", "대 2.5K 전후"],
+        "도미": ["일본산 소 1.5K 전후", "일본산 중 2K 전후", "일본산 대 3K 전후"],
+        "잿방어": ["4K 전후"],
+        "시아아지": ["2K 전후"],
+        "점성어": ["4K 전후"]
+      };
+      const productDefaults = {
+        "연어": { category: "필렛 제품", origin: "노르웨이", process: "필렛 작업", unit: "개" },
+        "연어알": { category: "냉동제품", origin: "기타", process: "냉동 보관", unit: "팩" },
+        "우니(성게알)": { category: "냉동제품", origin: "일본", process: "냉동 보관", unit: "팩" },
+        "전복": { category: "패류", origin: "국내산", process: "해수 보관", unit: "박스" },
+        "멍게": { category: "패류", origin: "국내산", process: "해수 보관", unit: "박스" },
+        "백상합": { category: "패류", origin: "국내산", process: "해수 보관", unit: "박스" },
+        "개불": { category: "패류", origin: "국내산", process: "해수 보관", unit: "개" },
+        "소라": { category: "패류", origin: "국내산", process: "해수 보관", unit: "kg" },
+        "해삼": { category: "패류", origin: "국내산", process: "해수 보관", unit: "kg" },
+        "가리비": { category: "패류", origin: "국내산", process: "해수 보관", unit: "박스" }
+      };
+
+      const $ = (selector) => document.querySelector(selector);
+      const esc = (value) => String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+      const readJSON = (key, fallback) => { try { const value = JSON.parse(localStorage.getItem(key) || "null"); return value ?? fallback; } catch { return fallback; } };
+      const localDate = (offset = 0) => { const date = new Date(); date.setDate(date.getDate() + offset); const timezone = date.getTimezoneOffset() * 60000; return new Date(date.getTime() - timezone).toISOString().slice(0, 10); };
+      const newId = () => Date.now() + Math.floor(Math.random() * 100000);
+
+      let profile = readJSON(PROFILE_KEY, { store: "", phone: "", address: "", syncCode: localStorage.getItem(LEGACY_SYNC_KEY) || "1" });
+      let draft = readJSON(DRAFT_KEY, null);
+      let rows = Array.isArray(draft?.rows) && draft.rows.length ? draft.rows.map(normalizeRow) : [blankRow()];
+      let orderDate = draft?.orderDate || localDate(1);
+      let pendingPacket = null;
+      let saveTimer = null;
+      let toastTimer = null;
+
+      function blankRow() {
+        return { id: newId(), category: "활어", item: "광어", customItem: "", size: "500 ~ 700", customSize: "", origin: "국내산", process: "찍어바리", qty: 1, unit: "마리", memo: "", bandEnabled: false, bandColor: "빨강", bandQty: 1 };
+      }
+
+      function normalizeRow(source = {}) {
+        const rawItem = String(source.item || "광어");
+        const isKnownItem = products.includes(rawItem);
+        const item = source.item === "__custom__" ? "__custom__" : (isKnownItem ? rawItem : "__custom__");
+        const customItem = item === "__custom__" ? String(source.customItem || (isKnownItem ? "" : rawItem)) : "";
+        const resolvedName = item === "__custom__" ? customItem : item;
+        const sizes = itemSizes[resolvedName] || ["기본 / 규격없음"];
+        const rawSize = String(source.size || sizes[0]);
+        const isKnownSize = sizes.includes(rawSize);
+        return {
+          id: Number(source.id) || newId(),
+          category: categories.includes(source.category) ? source.category : ({ "필렛제품": "필렛 제품", "패류.해산물": "패류" }[source.category] || "활어"),
+          item,
+          customItem,
+          size: source.size === "__custom__" ? "__custom__" : (isKnownSize ? rawSize : "__custom__"),
+          customSize: source.size === "__custom__" ? String(source.customSize || "") : (isKnownSize ? "" : rawSize),
+          origin: String(source.origin || "국내산"),
+          process: String(source.process || "찍어바리"),
+          qty: Math.max(0.01, Number(source.qty) || 1),
+          unit: String(source.unit || "마리"),
+          memo: source.memo === "없음" ? "" : String(source.memo || ""),
+          bandEnabled: Boolean(source.bandEnabled || source.rubberBand),
+          bandColor: String(source.bandColor || source.rubberBandColor || "빨강"),
+          bandQty: Math.max(1, Number(source.bandQty || source.rubberBandQuantity) || 1)
         };
-        if(!localStorage.getItem('sync_code')) localStorage.setItem('sync_code', '1');
-        document.getElementById('input-sync-code').value = localStorage.getItem('sync_code');
-        document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${localStorage.getItem('sync_code')}호차`;
+      }
 
-        const today = new Date();
-        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('order-date').value = tomorrow.toISOString().split('T')[0];
+      function resolvedItem(row) { return row.item === "__custom__" ? row.customItem.trim() : row.item; }
+      function resolvedSize(row) { return row.size === "__custom__" ? row.customSize.trim() : row.size; }
+      function rowToPacket(row) {
+        return {
+          category: row.category,
+          item: resolvedItem(row),
+          size: resolvedSize(row) || "기본 / 규격없음",
+          origin: row.origin,
+          process: row.process,
+          qty: Number(row.qty),
+          unit: row.unit,
+          memo: row.memo.trim() || "없음",
+          rubberBand: row.bandEnabled,
+          rubberBandColor: row.bandEnabled ? row.bandColor : "",
+          rubberBandQuantity: row.bandEnabled ? Number(row.bandQty) : 0
+        };
+      }
 
-        function handleRowSelectChange(selectEl, id, fieldName) { const inputEl = document.getElementById(`input-${fieldName}-${id}`); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
-        function handleSelectChange(selectEl, inputId) { const inputEl = document.getElementById(inputId); if (selectEl.value === 'custom') { inputEl.classList.remove('hidden'); inputEl.focus(); } else { inputEl.classList.add('hidden'); inputEl.value = ''; } }
-        function getRowResolvedValue(id, fieldName) { const selectEl = document.getElementById(`sel-${fieldName}-${id}`); const inputEl = document.getElementById(`input-${fieldName}-${id}`); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
-        function getResolvedValue(selectId, inputId) { const selectEl = document.getElementById(selectId); const inputEl = document.getElementById(inputId); return selectEl.value === 'custom' ? inputEl.value : selectEl.value; }
+      function options(values, selected, customLabel = "직접 입력") {
+        const content = values.map((value) => `<option value="${esc(value)}" ${value === selected ? "selected" : ""}>${esc(value)}</option>`).join("");
+        return content + `<option value="__custom__" ${selected === "__custom__" ? "selected" : ""}>✍ ${customLabel}</option>`;
+      }
 
-        function updateItemSizeOptions(id) {
-            const itemSel = document.getElementById(`sel-item-${id}`); const itemInput = document.getElementById(`input-item-${id}`); const sizeSel = document.getElementById(`sel-size-${id}`); const sizeInput = document.getElementById(`input-size-${id}`);
-            if (itemSel.value === 'custom') { itemInput.classList.remove('hidden'); itemInput.focus(); sizeSel.innerHTML = `<option value="custom">✍️ 직접 입력</option>`; sizeSel.value = 'custom'; sizeInput.classList.remove('hidden'); sizeInput.value = ''; } 
-            else { itemInput.classList.add('hidden'); itemInput.value = ''; const selectedItem = itemSel.value; const sizes = itemSizesDatabase[selectedItem] || ["기본 / 규격없음"]; let optionsHtml = sizes.map(s => `<option value="${s}">${s}</option>`).join(''); optionsHtml += `<option value="custom">✍️ 직접 입력</option>`; sizeSel.innerHTML = optionsHtml; sizeSel.value = sizes[0]; sizeInput.classList.add('hidden'); sizeInput.value = ''; }
-        }
-
-        function addFormRow() {
-            const id = rowIdx++; activeRows.push(id);
-            const rowHtml = `
-                <div id="form-row-${id}" class="bg-slate-50 p-5 rounded-2xl border-2 border-slate-200 relative space-y-4 shadow-sm">
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-2">
-                        <span class="text-base font-black text-slate-700">📋 발주 품목 정보</span>
-                        <button type="button" onclick="removeFormRow(${id})" class="text-sm text-rose-600 font-bold bg-white border-2 border-rose-100 px-3 py-1.5 rounded-xl">❌ 품목 취소</button>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-600">발주 품목 선택 (카테고리)</label>
-                        <select id="sel-category-${id}" onchange="handleRowSelectChange(this, ${id}, 'category')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="활어">활어</option><option value="필렛제품">필렛제품</option><option value="냉동제품">냉동제품</option><option value="패류.해산물">패류.해산물</option><option value="연어.포장품">연어.포장품</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
-                        </select>
-                        <input id="input-category-${id}" type="text" placeholder="직접 입력하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-600">어종 / 품목명</label>
-                        <select id="sel-item-${id}" onchange="updateItemSizeOptions(${id})" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                            <option value="광어">광어</option><option value="우럭">우럭</option><option value="연어">연어</option><option value="연어알">연어알</option><option value="농어">농어</option><option value="도미">도미</option><option value="잿방어">잿방어</option><option value="시아아지">시아아지</option><option value="점성어">점성어</option><option value="개숭어">개숭어</option><option value="참숭어">참숭어</option><option value="이백이">이백이</option><option value="중방어">중방어</option><option value="소방어">소방어</option><option value="히라스">히라스</option><option value="활새우">활새우</option><option value="산오징어">산오징어</option><option value="고등어">고등어</option><option value="우니(성게알)">우니(성게알)</option><option value="전복">전복</option><option value="멍게">멍게</option><option value="백상합">백상합</option><option value="개불">개불</option><option value="소라">소라</option><option value="해삼">해삼</option><option value="가리비">가리비</option><option value="custom">기타 (✍️ 미취급 품목 직접 입력)</option>
-                        </select>
-                        <input id="input-item-${id}" type="text" placeholder="어종명을 직접 기입하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-600">제품 규격 / 사이즈 / 무게 선택</label>
-                        <select id="sel-size-${id}" onchange="handleRowSelectChange(this, ${id}, 'size')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none"></select>
-                        <input id="input-size-${id}" type="text" placeholder="사이즈 또는 중량을 직접 기입하세요" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1.5">
-                            <label class="block text-base font-black text-slate-600">원산지 선택</label>
-                            <select id="sel-origin-${id}" onchange="handleRowSelectChange(this, ${id}, 'origin')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="국내산">국내산</option><option value="노르웨이">노르웨이</option><option value="일본">일본</option><option value="중국">중국</option><option value="러시아">러시아</option><option value="칠레">칠레</option><option value="캐나다">캐나다</option><option value="미국">미국</option><option value="기타">기타</option><option value="custom">✍️ 직접 입력</option>
-                            </select>
-                            <input id="input-origin-${id}" type="text" placeholder="원산지 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-base font-black text-slate-600">작업 및 보관 방식</label>
-                            <select id="sel-process-${id}" onchange="handleRowSelectChange(this, ${id}, 'process')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="찍어바리">찍어바리</option><option value="합포장">합포장</option><option value="개별포장">개별포장</option><option value="필렛 작업">필렛 작업</option><option value="냉동 보관">냉동 보관</option><option value="활어">활어</option><option value="해수 보관">해수 보관</option><option value="일반 포장">일반 포장</option><option value="custom">✍️ 직접 입력</option>
-                            </select>
-                            <input id="input-process-${id}" type="text" placeholder="작업 방식 입력" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1.5">
-                            <label class="block text-base font-black text-slate-600">주문 수량</label>
-                            <select id="sel-qty-${id}" onchange="handleRowSelectChange(this, ${id}, 'qty')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option><option value="10">10</option>
-                                <option value="custom">✍️ 직접 입력</option>
-                            </select>
-                            <input id="input-qty-${id}" type="number" placeholder="수량" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-base font-black text-slate-700">단위</label>
-                            <select id="sel-unit-${id}" onchange="handleSelectChange(this, 'input-unit-${id}')" class="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-base font-bold outline-none">
-                                <option value="박스">박스</option><option value="마리">마리</option><option value="팩">팩</option><option value="망">망</option><option value="봉지">봉지</option><option value="kg">kg</option><option value="custom">✍️ 직접 입력</option>
-                            </select>
-                            <input id="input-unit-${id}" type="text" placeholder="단위명" class="hidden w-full p-4 border-2 border-blue-200 rounded-xl text-base bg-white outline-none mt-2 font-bold">
-                        </div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-base font-black text-slate-600">📝 품목별 요구 메모란</label>
-                        <input id="input-memo-${id}" type="text" placeholder="특이사항이 있을 경우 작성해 주세요" class="w-full p-4 border-2 border-slate-200 rounded-xl text-base font-bold outline-none bg-white">
-                    </div>
+      function renderRows() {
+        $("#itemList").innerHTML = rows.map((row, index) => {
+          const name = resolvedItem(row) || "직접 입력 품목";
+          const sizeOptions = itemSizes[name] || ["기본 / 규격없음"];
+          return `
+            <article class="item-card" data-row-id="${row.id}">
+              <div class="item-top">
+                <div class="item-title"><span class="item-badge">${index + 1}</span><span>${esc(name)}</span></div>
+                <div class="item-actions">
+                  <button class="mini-button" type="button" data-action="duplicate">복사</button>
+                  <button class="mini-button danger" type="button" data-action="delete" ${rows.length === 1 ? "disabled" : ""}>삭제</button>
                 </div>
-            `;
-            document.getElementById('dynamic-form-container').insertAdjacentHTML('beforeend', rowHtml); updateItemSizeOptions(id);
+              </div>
+              <div class="two">
+                <label class="field"><span>품목 분류</span><select class="control" data-field="category">${categories.map((value) => `<option ${value === row.category ? "selected" : ""}>${value}</option>`).join("")}</select></label>
+                <label class="field"><span>어종·품목</span><select class="control" data-field="item">${options(products, row.item, "다른 품목 입력")}</select></label>
+              </div>
+              <label class="field ${row.item === "__custom__" ? "" : "hidden"}" data-custom-field="item"><span>어종·품목 직접 입력</span><input class="control" data-field="customItem" value="${esc(row.customItem)}" placeholder="품목명을 입력하세요"></label>
+              <label class="field"><span>규격·사이즈</span><select class="control" data-field="size">${options(sizeOptions, row.size, "사이즈 직접 입력")}</select></label>
+              <label class="field ${row.size === "__custom__" ? "" : "hidden"}" data-custom-field="size"><span>규격·사이즈 직접 입력</span><input class="control" data-field="customSize" value="${esc(row.customSize)}" placeholder="예: 2K 전후"></label>
+              <div class="two">
+                <div class="field"><span>주문 수량</span><div class="quantity-box"><button class="quantity-button" type="button" data-action="decrease" aria-label="수량 줄이기">−</button><input class="control quantity-input" data-field="qty" type="number" min="0.01" step="0.01" inputmode="decimal" value="${esc(row.qty)}"><button class="quantity-button" type="button" data-action="increase" aria-label="수량 늘리기">＋</button></div></div>
+                <label class="field"><span>단위</span><select class="control" data-field="unit">${units.map((value) => `<option ${value === row.unit ? "selected" : ""}>${value}</option>`).join("")}</select></label>
+              </div>
+              <details ${row.memo || row.bandEnabled ? "open" : ""}>
+                <summary>원산지·작업·밴드·메모 입력</summary>
+                <div class="details-body">
+                  <div class="two">
+                    <label class="field"><span>원산지</span><select class="control" data-field="origin">${origins.map((value) => `<option ${value === row.origin ? "selected" : ""}>${value}</option>`).join("")}</select></label>
+                    <label class="field"><span>작업·포장 방식</span><select class="control" data-field="process">${processes.map((value) => `<option ${value === row.process ? "selected" : ""}>${value}</option>`).join("")}</select></label>
+                  </div>
+                  <label class="band-box"><input data-field="bandEnabled" type="checkbox" ${row.bandEnabled ? "checked" : ""}>꼬리 고무밴드 작업 필요</label>
+                  <div class="two ${row.bandEnabled ? "" : "hidden"}" data-band-options>
+                    <label class="field"><span>밴드 색상</span><select class="control" data-field="bandColor">${bandColors.map((value) => `<option ${value === row.bandColor ? "selected" : ""}>${value}</option>`).join("")}</select></label>
+                    <label class="field"><span>밴드 수량</span><input class="control" data-field="bandQty" type="number" min="1" inputmode="numeric" value="${esc(row.bandQty)}"></label>
+                  </div>
+                  <label class="field"><span>품목별 요청 메모</span><textarea class="control" data-field="memo" placeholder="예: 큰 것부터, 연어와 합포장">${esc(row.memo)}</textarea></label>
+                </div>
+              </details>
+            </article>`;
+        }).join("");
+        $("#itemCount").textContent = String(rows.length);
+      }
+
+      function renderProfile() {
+        $("#storeNameDisplay").textContent = profile.store || "점포 설정 필요";
+        $("#channelDisplay").textContent = profile.syncCode ? `${profile.syncCode}호차 연동` : "채널 미설정";
+        $("#profileStore").value = profile.store || "";
+        $("#profilePhone").value = profile.phone || "";
+        $("#profileAddress").value = profile.address || "";
+        $("#profileSyncCode").value = profile.syncCode || "1";
+      }
+
+      function renderRecentOrders() {
+        const orders = readJSON(SENT_KEY, []);
+        const container = $("#recentOrders");
+        if (!Array.isArray(orders) || !orders.length) {
+          container.innerHTML = `<div class="empty">최근 발주 내역이 없습니다.</div>`;
+          return;
         }
+        container.innerHTML = orders.slice(0, 10).map((order) => {
+          const itemSummary = Array.isArray(order.items) ? order.items.slice(0, 3).map((item) => `${item.item} ${item.qty}${item.unit}`).join(" · ") : "발주 품목";
+          return `<article class="recent-card" data-order-id="${esc(order.orderId)}">
+            <div class="recent-top"><div><strong>${esc(order.orderDate || "날짜 미지정")} 납품</strong><small>${esc(itemSummary)}</small></div>${order.status === "cancelled" ? `<span class="cancelled">취소 완료</span>` : ""}</div>
+            <div class="recent-actions">
+              <button class="reuse" type="button" data-recent-action="reuse" ${Array.isArray(order.items) ? "" : "disabled"}>같은 내용 불러오기</button>
+              <button class="cancel" type="button" data-recent-action="cancel" ${order.status === "cancelled" ? "disabled" : ""}>발주 취소</button>
+            </div>
+          </article>`;
+        }).join("");
+      }
 
-        function removeFormRow(id) { const el = document.getElementById(`form-row-${id}`); if (el) el.remove(); activeRows = activeRows.filter(item => item !== id); if(activeRows.length === 0) addFormRow(); }
-        function updateSettingsMaster() { const code = document.getElementById('input-sync-code').value.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if(!code) return; localStorage.setItem('sync_code', code); document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${code}호차`; toggleView('owner'); }
+      function scheduleSave() {
+        clearTimeout(saveTimer);
+        $("#saveStatus").textContent = "● 저장 중...";
+        saveTimer = setTimeout(() => {
+          try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify({ orderDate, rows, savedAt: Date.now() }));
+            $("#saveStatus").textContent = "● 작성 내용 자동저장";
+          } catch {
+            $("#saveStatus").textContent = "⚠ 저장 공간 확인 필요";
+          }
+        }, 180);
+      }
 
-        function submitOrderToLiveNetwork() {
-            if(activeRows.length === 0) return;
-            const orderDate = document.getElementById('order-date').value;
-            const store = getResolvedValue('sel-store', 'input-store');
-            const phone = getResolvedValue('sel-phone', 'input-phone');
-            const address = getResolvedValue('sel-address', 'input-address');
-            if(!store) return;
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        $("#toast").textContent = message;
+        $("#toast").classList.remove("hidden");
+        toastTimer = setTimeout(() => $("#toast").classList.add("hidden"), 2200);
+      }
 
-            let items = [];
-            let previewRowsHtml = '';
-            for (let id of activeRows) {
-                const category = getRowResolvedValue(id, 'category');
-                const item = getRowResolvedValue(id, 'item'); const size = getRowResolvedValue(id, 'size'); const origin = getRowResolvedValue(id, 'origin'); const process = getRowResolvedValue(id, 'process');
-                const qty = getRowResolvedValue(id, 'qty'); const unit = getRowResolvedValue(id, 'unit'); const memo = document.getElementById(`input-memo-${id}`).value || "없음";
-                if(!item || !qty) return;
-                items.push({ category, item, size, origin, process, qty, unit, memo });
-                previewRowsHtml += `
-                    <div class="border-b pb-1.5 text-slate-900 font-black text-base">
-                        🐟 <span class="text-blue-700">[${item}]</span> / 크기: <span class="text-amber-700">${size}</span> <br>
-                        ➡️ 수량: <span class="underline">${qty}${unit}</span> (${process})
-                    </div>
-                `;
-            }
+      function setNetworkStatus() {
+        const online = navigator.onLine;
+        $("#networkDot").classList.toggle("offline", !online);
+        $("#networkText").textContent = online ? "인터넷 연결됨" : "인터넷 끊김 · 작성 내용은 보존됨";
+      }
 
-            const currentStamp = Date.now();
-            const uniqueOrderId = `${store.replace(/\s+/g, '')}_${currentStamp}`;
-            currentPendingPacket = { syncCode: localStorage.getItem('sync_code'), uniqueOrderId, store, orderPacket: { orderId: uniqueOrderId, status: "ordered", orderDate, store, phone, address, items, alarmActive: true, serverTimestamp: currentStamp }, rawItems: items };
-            document.getElementById('prev-modal-store').innerText = store;
-            document.getElementById('prev-modal-items-list').innerHTML = previewRowsHtml;
-            document.getElementById('order-preview-modal').classList.remove('hidden');
+      function setQuickDateState() {
+        document.querySelectorAll("[data-date-offset]").forEach((button) => button.classList.toggle("active", orderDate === localDate(Number(button.dataset.dateOffset))));
+      }
+
+      function updateRowFromControl(control) {
+        const card = control.closest("[data-row-id]");
+        if (!card) return;
+        const row = rows.find((item) => item.id === Number(card.dataset.rowId));
+        if (!row) return;
+        const field = control.dataset.field;
+        if (!field) return;
+        row[field] = control.type === "checkbox" ? control.checked : (field === "qty" || field === "bandQty" ? Math.max(field === "qty" ? .01 : 1, Number(control.value) || 1) : control.value);
+
+        if (field === "item") {
+          if (row.item !== "__custom__") {
+            row.customItem = "";
+            const sizes = itemSizes[row.item] || ["기본 / 규격없음"];
+            row.size = sizes[0]; row.customSize = "";
+            const defaults = productDefaults[row.item] || { category: "활어", origin: "국내산", process: "찍어바리", unit: "마리" };
+            Object.assign(row, defaults);
+          } else {
+            row.customItem = ""; row.size = "__custom__"; row.customSize = "";
+          }
+          renderRows();
+        } else if (field === "size") {
+          if (row.size !== "__custom__") row.customSize = "";
+          renderRows();
+        } else if (field === "bandEnabled") {
+          renderRows();
+        } else {
+          const title = card.querySelector(".item-title span:last-child");
+          if (field === "customItem" && title) title.textContent = control.value || "직접 입력 품목";
         }
+        scheduleSave();
+      }
 
-        function closePreviewLargeModal() { document.getElementById('order-preview-modal').classList.add('hidden'); currentPendingPacket = null; }
-
-        function executeActualOrderSubmission() {
-            if(!currentPendingPacket) return;
-            const p = currentPendingPacket; document.getElementById('order-preview-modal').classList.add('hidden');
-            fetch(`${cloudRelayUrl}${p.syncCode}`, { method: 'POST', body: JSON.stringify(p.orderPacket) })
-            .then(res => {
-                localStorage.setItem('last_submitted_items', JSON.stringify(p.rawItems));
-                document.getElementById('success-modal-title').innerText = p.store; document.getElementById('success-large-modal').classList.remove('hidden');
-                let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); mySentLog.unshift({ orderId: p.uniqueOrderId, store: p.store, orderDate: p.orderPacket.orderDate, status: 'ordered' }); localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog)); renderSentOrdersLog();
-                document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = []; addFormRow(); currentPendingPacket = null;
-            });
+      function validateOrder() {
+        if (!profile.store || !profile.phone || !profile.address || !profile.syncCode) return "설정에서 점포 정보를 먼저 저장해 주세요.";
+        if (!orderDate) return "납품 날짜를 선택해 주세요.";
+        if (!rows.length) return "발주 품목을 한 개 이상 입력해 주세요.";
+        for (let index = 0; index < rows.length; index += 1) {
+          if (!resolvedItem(rows[index])) return `${index + 1}번 품목명을 입력해 주세요.`;
+          if (!(Number(rows[index].qty) > 0)) return `${index + 1}번 수량을 확인해 주세요.`;
         }
+        return "";
+      }
 
-        function loadLastOrderFromMemory() {
-            const savedData = localStorage.getItem('last_submitted_items');
-            if(!savedData) { alert("💡 직전에 보냈던 발주 데이터가 없습니다."); return; }
-            const items = JSON.parse(savedData);
-            document.getElementById('dynamic-form-container').innerHTML = ""; activeRows = [];
-            items.forEach((item) => {
-                addFormRow(); const id = activeRows[activeRows.length - 1];
-                setDropdownOrCustom(`sel-category-${id}`, `input-category-${id}`, item.category);
-                setDropdownOrCustom(`sel-item-${id}`, `input-item-${id}`, item.item);
-                updateItemSizeOptions(id);
-                setDropdownOrCustom(`sel-size-${id}`, `input-size-${id}`, item.size);
-                setDropdownOrCustom(`sel-origin-${id}`, `input-origin-${id}`, item.origin);
-                setDropdownOrCustom(`sel-process-${id}`, `input-process-${id}`, item.process);
-                setDropdownOrCustom(`sel-qty-${id}`, `input-qty-${id}`, item.qty);
-                setDropdownOrCustom(`sel-unit-${id}`, `input-unit-${id}`, item.unit);
-                document.getElementById(`input-memo-${id}`).value = item.memo;
-            });
-            alert("⭐ 직전 발주 품목들과 사이즈를 그대로 불러왔습니다!");
+      function buildPendingPacket() {
+        const items = rows.map(rowToPacket);
+        const stamp = Date.now();
+        const orderId = `${profile.store.replace(/\s+/g, "")}_${stamp}`;
+        pendingPacket = {
+          syncCode: profile.syncCode,
+          orderId,
+          store: profile.store,
+          items,
+          packet: { orderId, status: "ordered", orderDate, store: profile.store, phone: profile.phone, address: profile.address, items, alarmActive: true, serverTimestamp: stamp, clientVersion: "owner-senior-v2" }
+        };
+        return pendingPacket;
+      }
+
+      function showPreview() {
+        const error = validateOrder();
+        if (error) { showToast(error); if (!profile.store) openSettings(); return; }
+        const pending = buildPendingPacket();
+        $("#previewContent").innerHTML = `<div class="preview-store">🏪 ${esc(profile.store)}<br><small>📅 ${esc(orderDate)} 납품</small></div>` + pending.items.map((item, index) => `<div class="preview-item">${index + 1}. ${esc(item.item)} · ${esc(item.size)}<br><strong>${esc(item.qty)}${esc(item.unit)}</strong> / ${esc(item.origin)} / ${esc(item.process)}${item.rubberBand ? `<small>고무밴드 ${esc(item.rubberBandColor)} ${esc(item.rubberBandQuantity)}개</small>` : ""}${item.memo !== "없음" ? `<small>메모: ${esc(item.memo)}</small>` : ""}</div>`).join("");
+        $("#sendError").classList.add("hidden");
+        $("#previewModal").classList.remove("hidden");
+      }
+
+      async function postPacket(syncCode, packet) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        try {
+          const response = await fetch(`${CLOUD_RELAY_URL}${encodeURIComponent(syncCode)}`, { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" }, body: JSON.stringify(packet), signal: controller.signal });
+          if (!response.ok) throw new Error(`서버 응답 오류 (${response.status})`);
+          return true;
+        } finally { clearTimeout(timeout); }
+      }
+
+      async function sendPendingOrder() {
+        if (!pendingPacket) return;
+        const button = $("#sendOrder");
+        const errorBox = $("#sendError");
+        button.disabled = true; button.textContent = "전송 중입니다..."; errorBox.classList.add("hidden");
+        try {
+          await postPacket(pendingPacket.syncCode, pendingPacket.packet);
+          const logs = readJSON(SENT_KEY, []);
+          const nextLogs = [{ orderId: pendingPacket.orderId, store: profile.store, orderDate, status: "ordered", items: pendingPacket.items, sentAt: Date.now() }, ...(Array.isArray(logs) ? logs : [])].slice(0, 30);
+          localStorage.setItem(SENT_KEY, JSON.stringify(nextLogs));
+          localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(pendingPacket.items));
+          $("#previewModal").classList.add("hidden");
+          $("#successStore").textContent = profile.store;
+          $("#successModal").classList.remove("hidden");
+          rows = [blankRow()]; orderDate = localDate(1); pendingPacket = null;
+          $("#orderDate").value = orderDate;
+          renderRows(); renderRecentOrders(); setQuickDateState(); scheduleSave(); updateLastOrderButton();
+        } catch (error) {
+          errorBox.textContent = navigator.onLine ? `전송하지 못했습니다. 잠시 후 다시 눌러 주세요. ${error?.message || ""}` : "인터넷 연결이 끊겼습니다. 작성 내용은 보존되어 있습니다.";
+          errorBox.classList.remove("hidden");
+        } finally { button.disabled = false; button.textContent = "정확함 · 발주 전송"; }
+      }
+
+      function loadItems(items, message) {
+        if (!Array.isArray(items) || !items.length) { showToast("불러올 품목이 없습니다."); return; }
+        rows = items.map(normalizeRow);
+        renderRows(); scheduleSave();
+        window.scrollTo({ top: 300, behavior: "smooth" });
+        showToast(message);
+      }
+
+      function updateLastOrderButton() {
+        const saved = readJSON(LAST_ORDER_KEY, []);
+        $("#loadLastOrder").classList.toggle("hidden", !Array.isArray(saved) || !saved.length);
+      }
+
+      function openSettings() {
+        renderProfile();
+        $("#settingsError").classList.add("hidden");
+        $("#closeSettings").disabled = !profile.store;
+        $("#settingsModal").classList.remove("hidden");
+        setTimeout(() => $("#profileStore").focus(), 50);
+      }
+
+      function saveProfile() {
+        const next = {
+          store: $("#profileStore").value.trim(),
+          phone: $("#profilePhone").value.trim(),
+          address: $("#profileAddress").value.trim(),
+          syncCode: $("#profileSyncCode").value.trim().replace(/[^a-zA-Z0-9_-]/g, "")
+        };
+        if (!next.store || !next.phone || !next.address || !next.syncCode) {
+          $("#settingsError").textContent = "점포명·연락처·주소·연동 코드를 모두 입력해 주세요.";
+          $("#settingsError").classList.remove("hidden");
+          return;
         }
+        profile = next;
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+        localStorage.setItem(LEGACY_SYNC_KEY, profile.syncCode);
+        renderProfile();
+        $("#settingsModal").classList.add("hidden");
+        showToast("점포 정보를 저장했습니다.");
+      }
 
-        function setDropdownOrCustom(selectId, inputId, value) {
-            const sel = document.getElementById(selectId);
-            const inp = document.getElementById(inputId); if(!sel) return;
-            let found = false;
-            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value == value) { sel.value = value; found = true; break; } }
-            if(!found) { sel.value = 'custom'; if(inp) { inp.classList.remove('hidden'); inp.value = value; } } else { if(inp) { inp.classList.add('hidden'); inp.value = ''; } }
+      async function cancelOrder(orderId) {
+        const logs = readJSON(SENT_KEY, []);
+        const order = Array.isArray(logs) ? logs.find((item) => item.orderId === orderId) : null;
+        if (!order || order.status === "cancelled") return;
+        if (!confirm(`[${order.orderDate} 납품] 발주를 정말 취소할까요?\n배송 준비가 시작됐을 수 있으니 취소 후 담당자에게도 확인해 주세요.`)) return;
+        try {
+          await postPacket(profile.syncCode, { orderId, status: "cancelled", store: profile.store, serverTimestamp: Date.now(), clientVersion: "owner-senior-v2" });
+          const updated = logs.map((item) => item.orderId === orderId ? { ...item, status: "cancelled", cancelledAt: Date.now() } : item);
+          localStorage.setItem(SENT_KEY, JSON.stringify(updated));
+          renderRecentOrders(); showToast("발주 취소를 전송했습니다.");
+        } catch {
+          showToast("취소 전송에 실패했습니다. 인터넷 연결을 확인해 주세요.");
         }
+      }
 
-        function closeSuccessLargeModal() { document.getElementById('success-large-modal').classList.add('hidden'); }
-        function cancelOrderFromOwner(orderId, store) { if(!confirm(`⚠️ [${store}] 발주를 정말 취소하시겠습니까?`)) return; const syncCode = localStorage.getItem('sync_code'); const cancelPacket = { orderId: orderId, status: "cancelled", store: store, serverTimestamp: Date.now() }; fetch(`${cloudRelayUrl}${syncCode}`, { method: 'POST', body: JSON.stringify(cancelPacket) }).then(() => { let mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); mySentLog = mySentLog.map(o => { if(o.orderId === orderId) o.status = 'cancelled'; return o; }); localStorage.setItem('my_sent_orders', JSON.stringify(mySentLog)); renderSentOrdersLog(); document.getElementById('cancel-modal-title').innerText = store; document.getElementById('cancel-large-modal').classList.remove('hidden'); }); }
-        function closeCancelLargeModal() { document.getElementById('cancel-large-modal').classList.add('hidden'); }
-        function renderSentOrdersLog() { const mySentLog = JSON.parse(localStorage.getItem('my_sent_orders') || '[]'); const container = document.getElementById('owner-sent-log-container'); if(mySentLog.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 italic pl-1">최근 보낸 발주 내역이 없습니다.</p>`; return; } container.innerHTML = mySentLog.slice(0, 5).map(o => ` <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"> <div><span class="text-slate-900">${o.store}</span><span class="text-slate-400 block mt-0.5">요청일: ${o.orderDate}</span></div> <div>${o.status === 'cancelled' ? `<span class="text-rose-500 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200">❌ 취소완료</span>` : `<button onclick=\"cancelOrderFromOwner('${o.orderId}', '${o.store}')\" class=\"bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg transition shadow-sm\">❌ 발주취소</button>`}</div> </div> `).join(''); }
-        function checkUrlParameters() { const urlParams = new URLSearchParams(window.location.search); const urlStore = urlParams.get('store'); const urlCar = urlParams.get('car'); if (urlCar) { const cleanedCar = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, ''); if (cleanedCar) { localStorage.setItem('sync_code', cleanedCar); document.getElementById('input-sync-code').value = cleanedCar; document.getElementById('sync-code-text').innerText = `🟢 배송 채널: ${cleanedCar}호차`; } } if (urlStore) { const selStore = document.getElementById('sel-store'); let isExistOption = false; for(let i=0; i<selStore.options.length; i++) { if(selStore.options[i].value === urlStore) { selStore.value = urlStore; isExistOption = true; break; } } if(!isExistOption) { selStore.value = 'custom'; const inputStore = document.getElementById('input-store'); inputStore.classList.remove('hidden'); inputStore.value = urlStore; } } }
-        function toggleView(viewName) { if(viewName==='settings') document.getElementById('view-settings').classList.toggle('hidden'); else document.getElementById('view-settings').classList.add('hidden'); }
-        addFormRow(); checkUrlParameters(); renderSentOrdersLog();
-    </script>
+      function applyUrlParameters() {
+        const params = new URLSearchParams(location.search);
+        const urlStore = params.get("store");
+        const urlCar = params.get("car");
+        if (urlStore) profile.store = urlStore.trim();
+        if (urlCar) profile.syncCode = urlCar.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+        if (urlStore || urlCar) {
+          localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+          if (profile.syncCode) localStorage.setItem(LEGACY_SYNC_KEY, profile.syncCode);
+        }
+      }
+
+      $("#itemList").addEventListener("input", (event) => updateRowFromControl(event.target));
+      $("#itemList").addEventListener("change", (event) => updateRowFromControl(event.target));
+      $("#itemList").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const card = button.closest("[data-row-id]");
+        const index = rows.findIndex((row) => row.id === Number(card.dataset.rowId));
+        if (index < 0) return;
+        if (button.dataset.action === "delete" && rows.length > 1) rows.splice(index, 1);
+        if (button.dataset.action === "duplicate") rows.splice(index + 1, 0, { ...rows[index], id: newId() });
+        if (button.dataset.action === "increase") rows[index].qty = Number(rows[index].qty) + 1;
+        if (button.dataset.action === "decrease") rows[index].qty = Math.max(1, Number(rows[index].qty) - 1);
+        renderRows(); scheduleSave();
+      });
+
+      $("#recentOrders").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-recent-action]");
+        if (!button) return;
+        const card = button.closest("[data-order-id]");
+        const order = readJSON(SENT_KEY, []).find((item) => item.orderId === card.dataset.orderId);
+        if (!order) return;
+        if (button.dataset.recentAction === "reuse") loadItems(order.items, "선택한 발주 내용을 불러왔습니다.");
+        if (button.dataset.recentAction === "cancel") cancelOrder(order.orderId);
+      });
+
+      $("#addItem").addEventListener("click", () => { rows.push(blankRow()); renderRows(); scheduleSave(); setTimeout(() => document.querySelector("[data-row-id]:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 30); });
+      $("#loadLastOrder").addEventListener("click", () => loadItems(readJSON(LAST_ORDER_KEY, []), "직전 주문을 불러왔습니다."));
+      $("#orderDate").addEventListener("change", (event) => { orderDate = event.target.value; setQuickDateState(); scheduleSave(); });
+      document.querySelectorAll("[data-date-offset]").forEach((button) => button.addEventListener("click", () => { orderDate = localDate(Number(button.dataset.dateOffset)); $("#orderDate").value = orderDate; setQuickDateState(); scheduleSave(); }));
+      $("#previewOrder").addEventListener("click", showPreview);
+      $("#closePreview").addEventListener("click", () => { $("#previewModal").classList.add("hidden"); pendingPacket = null; });
+      $("#sendOrder").addEventListener("click", sendPendingOrder);
+      $("#closeSuccess").addEventListener("click", () => $("#successModal").classList.add("hidden"));
+      $("#openSettings").addEventListener("click", openSettings);
+      $("#closeSettings").addEventListener("click", () => $("#settingsModal").classList.add("hidden"));
+      $("#saveSettings").addEventListener("click", saveProfile);
+      addEventListener("online", setNetworkStatus);
+      addEventListener("offline", setNetworkStatus);
+
+      applyUrlParameters();
+      renderProfile();
+      renderRows();
+      renderRecentOrders();
+      updateLastOrderButton();
+      $("#orderDate").value = orderDate;
+      setQuickDateState();
+      setNetworkStatus();
+      if (!profile.store || !profile.phone || !profile.address || !profile.syncCode) openSettings();
+    })();
+  </script>
 </body>
 </html>
