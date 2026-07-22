@@ -1,13 +1,43 @@
 import { createClient } from "@supabase/supabase-js";
 
-export function serverClient() {
+function readEnvironment() {
   const url = process.env.SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
+
+  if (!url || !anonKey || !serviceKey) {
     throw new Error("서버의 Supabase 환경변수가 설정되지 않았습니다.");
   }
+
+  return { url, anonKey, serviceKey };
+}
+
+export function serverClient() {
+  const { url, serviceKey } = readEnvironment();
+
   return createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+function signedInClient(token) {
+  const { url, anonKey } = readEnvironment();
+
+  return createClient(url, anonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
   });
 }
 
@@ -16,28 +46,45 @@ export async function requireAdmin(request, response) {
     /^Bearer\s+/i,
     "",
   );
+
   if (!token) {
     response.status(401).json({ error: "관리자 로그인이 필요합니다." });
     return null;
   }
 
-  const client = serverClient();
-  const { data, error } = await client.auth.getUser(token);
-  if (error || !data?.user) {
+  const userClient = signedInClient(token);
+  const { data: userData, error: userError } =
+    await userClient.auth.getUser(token);
+
+  if (userError || !userData?.user) {
     response.status(401).json({ error: "로그인 시간이 만료되었습니다." });
     return null;
   }
 
-  const { data: profile, error: profileError } = await client
+  const { data: profile, error: profileError } = await userClient
     .from("profiles")
     .select("id, role, active, full_name")
-    .eq("id", data.user.id)
+    .eq("id", userData.user.id)
     .maybeSingle();
-  if (profileError || profile?.role !== "admin" || !profile.active) {
+
+  if (profileError) {
+    console.error("Admin profile lookup failed:", profileError.message);
+    response.status(500).json({
+      error: "관리자 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    });
+    return null;
+  }
+
+  if (profile?.role !== "admin" || profile.active !== true) {
     response.status(403).json({ error: "관리자 권한이 없습니다." });
     return null;
   }
-  return { client, user: data.user, profile };
+
+  return {
+    client: serverClient(),
+    user: userData.user,
+    profile,
+  };
 }
 
 export function normalizeEmployeeCode(value) {
