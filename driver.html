@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- DRIVER V7 SCROLL FIX · vertical scroll + iPhone long-press tank move -->
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -413,7 +414,8 @@
         color: #173d50;
         background: #fff;
         text-align: left;
-        touch-action: none;
+        /* 세로 스크롤은 즉시 허용하고, 수조 이동은 길게 누른 뒤 시작합니다. */
+        touch-action: pan-y pinch-zoom;
         user-select: none;
         -webkit-user-select: none;
         box-shadow: 0 2px 5px rgba(18, 60, 90, 0.08);
@@ -3100,6 +3102,7 @@
         width: 100%;
         min-width: 320px;
         overflow-x: hidden;
+        overflow-y: auto;
         background: #dfe9ee;
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
@@ -3109,6 +3112,7 @@
         min-width: 320px;
         min-height: 100%;
         overflow-x: hidden;
+        overflow-y: auto;
         color: var(--ink);
         background:
           radial-gradient(
@@ -3125,7 +3129,9 @@
         letter-spacing: -0.012em;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        overscroll-behavior-y: none;
+        overscroll-behavior-y: auto;
+        touch-action: pan-y pinch-zoom;
+        -webkit-overflow-scrolling: touch;
       }
       body,
       button,
@@ -3171,7 +3177,7 @@
         margin: 0 auto;
         padding-bottom: calc(84px + constant(safe-area-inset-bottom));
         padding-bottom: calc(84px + env(safe-area-inset-bottom));
-        overflow: clip;
+        overflow: visible;
         border-right: 1px solid rgba(122, 150, 164, 0.22);
         border-left: 1px solid rgba(122, 150, 164, 0.22);
         background: rgba(248, 251, 252, 0.96);
@@ -3321,6 +3327,9 @@
         padding: 16px max(14px, constant(safe-area-inset-left));
         padding-right: max(14px, env(safe-area-inset-right));
         padding-left: max(14px, env(safe-area-inset-left));
+        overflow: visible;
+        touch-action: pan-y pinch-zoom;
+        -webkit-overflow-scrolling: touch;
       }
       main > section,
       .section,
@@ -7719,10 +7728,18 @@
             timer: null,
             ghost: null,
           };
-          try {
-            item.setPointerCapture(e.pointerId);
-          } catch {}
-          tankDrag.timer = setTimeout(startTankDrag, 280);
+          /*
+           * 일반 세로 스크롤과 수조 끌기를 분리합니다.
+           * 손가락을 움직이면 스크롤로 판단하고, 같은 위치에서 0.45초간
+           * 누른 경우에만 포인터를 잡아 수조 이동을 시작합니다.
+           */
+          tankDrag.timer = setTimeout(() => {
+            if (!tankDrag || tankDrag.pointerId !== e.pointerId) return;
+            try {
+              tankDrag.element.setPointerCapture(tankDrag.pointerId);
+            } catch {}
+            startTankDrag();
+          }, 450);
         });
         document.addEventListener(
           "pointermove",
@@ -7734,9 +7751,12 @@
               e.clientX - tankDrag.startX,
               e.clientY - tankDrag.startY,
             );
-            if (!tankDrag.active && distance > 8) startTankDrag();
+            if (!tankDrag.active && distance > 10) {
+              cancelTankDrag();
+              return;
+            }
             if (tankDrag?.active) {
-              e.preventDefault();
+              if (e.cancelable) e.preventDefault();
               updateTankDrag(e.clientX, e.clientY);
             }
           },
