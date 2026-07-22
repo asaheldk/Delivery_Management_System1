@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- DRIVER V7 SCROLL FIX · vertical scroll + iPhone long-press tank move -->
+<!-- DRIVER V8 CENTRAL · Supabase login + admin assignment + central sync -->
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -32,6 +32,7 @@
       defer
       src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       :root {
         --navy: #123c5a;
@@ -3945,6 +3946,80 @@
           transition-duration: 0.01ms !important;
         }
       }
+      .driver-auth {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: grid;
+        place-items: center;
+        padding: max(20px, env(safe-area-inset-top)) 15px
+          max(20px, env(safe-area-inset-bottom));
+        overflow-y: auto;
+        background:
+          radial-gradient(
+            circle at 82% 0%,
+            rgba(20, 171, 154, 0.2),
+            transparent 35%
+          ),
+          linear-gradient(145deg, #061826, #0a3552 62%, #075e61);
+        -webkit-overflow-scrolling: touch;
+      }
+      .driver-auth-card {
+        width: min(100%, 430px);
+        padding: 25px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+      }
+      .driver-auth-logo {
+        width: 55px;
+        height: 55px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        color: #fff;
+        background: linear-gradient(145deg, #0a4968, #079181);
+        box-shadow: 0 12px 28px rgba(7, 145, 129, 0.24);
+        font-size: 25px;
+      }
+      .driver-auth-card h1 {
+        margin: 18px 0 5px;
+        color: #102a39;
+        font-size: 27px;
+        letter-spacing: -0.05em;
+      }
+      .driver-auth-card > p {
+        margin: 0 0 19px;
+        color: #617681;
+        line-height: 1.6;
+      }
+      .driver-auth-card .primary-button {
+        margin-top: 19px;
+      }
+      .driver-auth-message {
+        min-height: 23px;
+        margin-top: 10px;
+        color: var(--red);
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .assigned-profile {
+        margin-bottom: 12px;
+        padding: 14px;
+        border: 1px solid #bfe2dc;
+        border-radius: 15px;
+        color: #0b5e58;
+        background: #ebf8f5;
+      }
+      .assigned-profile strong,
+      .assigned-profile small {
+        display: block;
+      }
+      .assigned-profile small {
+        margin-top: 4px;
+        color: #52726f;
+      }
       @media print {
         html,
         body {
@@ -3959,6 +4034,34 @@
     </style>
   </head>
   <body>
+    <section id="driverAuth" class="driver-auth">
+      <div class="driver-auth-card">
+        <div class="driver-auth-logo">🚚</div>
+        <h1>배송원 로그인</h1>
+        <p>관리자가 전달한 배송원 아이디와 비밀번호를 입력하세요.</p>
+        <label class="field"
+          ><span>배송원 아이디</span
+          ><input
+            id="driverLoginId"
+            class="control"
+            autocomplete="username"
+            autocapitalize="none"
+            placeholder="예: driver01"
+        /></label>
+        <label class="field"
+          ><span>비밀번호</span
+          ><input
+            id="driverLoginPassword"
+            class="control"
+            type="password"
+            autocomplete="current-password"
+        /></label>
+        <button id="driverLoginButton" class="full-button primary-button" type="button">
+          로그인하고 업무 시작
+        </button>
+        <div id="driverAuthMessage" class="driver-auth-message"></div>
+      </div>
+    </section>
     <div id="liveAlarm" class="alarm-banner hidden">
       <span>🚨 새 발주가 도착했습니다!</span
       ><button type="button" data-action="stop-alarm">알림 끄기</button>
@@ -3969,7 +4072,7 @@
       role="status"
       aria-live="polite"
     ></div>
-    <div class="app">
+    <div id="driverApp" class="app hidden">
       <header class="top">
         <div class="top-row">
           <div class="brand">
@@ -4072,6 +4175,14 @@
         const AUTO_BACKUP_KEY = "jangbaek_delivery_auto_backups_v1";
         const LAST_SAVED_KEY = "jangbaek_delivery_last_saved_v1";
         const CLOUD_RELAY_URL = "https://ntfy.sh/fish_net_relay_";
+        const DRIVER_AUTH_ID_KEY = "jangbaek_driver_login_id_v1";
+        let supabaseClient = null;
+        let supabaseSession = null;
+        let assignedDriverProfile = null;
+        let driverConfig = null;
+        let centralSyncTimer = null;
+        let centralSyncDebounce = null;
+        let centralSyncBusy = false;
         const categories = ["활어", "패류", "냉동제품", "필렛 제품"];
         const DEFAULT_WEIGHT_RULES = {
           광어: { min: 0.3, max: 8 },
@@ -4177,6 +4288,143 @@
             return fallback;
           }
         };
+        const driverEmail = (employeeCode) =>
+          `${String(employeeCode || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]/g, "")}@${driverConfig?.driverEmailDomain || "drivers.invalid"}`;
+
+        async function loadDriverConfig() {
+          try {
+            const response = await fetch("/api/config", { cache: "no-store" });
+            if (!response.ok) throw new Error("환경설정을 확인할 수 없습니다.");
+            return await response.json();
+          } catch {
+            return { configured: false };
+          }
+        }
+        function setDriverAuthMessage(message, good = false) {
+          const el = $("#driverAuthMessage");
+          if (!el) return;
+          el.textContent = message || "";
+          el.style.color = good ? "var(--green)" : "var(--red)";
+        }
+        function showDriverAuth(message = "") {
+          $("#driverApp")?.classList.add("hidden");
+          $("#driverAuth")?.classList.remove("hidden");
+          setDriverAuthMessage(message);
+          const remembered = localStorage.getItem(DRIVER_AUTH_ID_KEY) || "";
+          if ($("#driverLoginId")) $("#driverLoginId").value = remembered;
+        }
+        function showDriverApp() {
+          $("#driverAuth")?.classList.add("hidden");
+          $("#driverApp")?.classList.remove("hidden");
+        }
+        async function fetchAssignedProfile(userId) {
+          const { data, error } = await supabaseClient
+            .from("profiles")
+            .select("id, role, employee_code, full_name, vehicle_number, active")
+            .eq("id", userId)
+            .maybeSingle();
+          if (error) throw error;
+          if (!data || data.role !== "driver")
+            throw new Error("배송원으로 등록되지 않은 계정입니다.");
+          if (!data.active) throw new Error("관리자가 사용 정지한 계정입니다.");
+          if (!data.vehicle_number)
+            throw new Error("관리자가 아직 호차를 배정하지 않았습니다.");
+          return data;
+        }
+        async function applyAuthenticatedDriver(session) {
+          const profile = await fetchAssignedProfile(session.user.id);
+          supabaseSession = session;
+          assignedDriverProfile = profile;
+          state.profile = {
+            companyName: "장백수산",
+            driverName: profile.full_name,
+            vehicleNumber: String(profile.vehicle_number),
+          };
+          localStorage.setItem(DRIVER_AUTH_ID_KEY, profile.employee_code);
+          await restoreNewerCentralSnapshot();
+          state.profile = {
+            companyName: "장백수산",
+            driverName: profile.full_name,
+            vehicleNumber: String(profile.vehicle_number),
+          };
+          saveState("로그인·관리자 호차 배정 적용");
+          showDriverApp();
+          render();
+          startCloudSync();
+          scheduleCentralSync("로그인");
+          clearInterval(centralSyncTimer);
+          centralSyncTimer = setInterval(
+            () => syncCentralStatus("1분 접속 확인"),
+            60000,
+          );
+        }
+        async function driverLogin() {
+          if (!supabaseClient) return;
+          const code = String($("#driverLoginId")?.value || "")
+              .trim()
+              .toLowerCase(),
+            password = String($("#driverLoginPassword")?.value || "");
+          if (code.length < 3 || !password)
+            return setDriverAuthMessage("아이디와 비밀번호를 입력해 주세요.");
+          setDriverAuthMessage("로그인 확인 중입니다.", true);
+          $("#driverLoginButton").disabled = true;
+          try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword(
+              { email: driverEmail(code), password },
+            );
+            if (error || !data.session)
+              throw new Error("아이디 또는 비밀번호가 맞지 않습니다.");
+            await applyAuthenticatedDriver(data.session);
+            $("#driverLoginPassword").value = "";
+          } catch (error) {
+            await supabaseClient.auth.signOut();
+            showDriverAuth(error?.message || "로그인하지 못했습니다.");
+          } finally {
+            $("#driverLoginButton").disabled = false;
+          }
+        }
+        async function driverLogout() {
+          clearInterval(centralSyncTimer);
+          clearTimeout(centralSyncDebounce);
+          stopQrScanner();
+          if (supabaseClient) await supabaseClient.auth.signOut();
+          supabaseSession = null;
+          assignedDriverProfile = null;
+          showDriverAuth("안전하게 로그아웃했습니다.");
+        }
+        async function initDriverAuth() {
+          driverConfig = await loadDriverConfig();
+          if (
+            !driverConfig.configured ||
+            !window.supabase?.createClient
+          ) {
+            showDriverAuth(
+              "관리자 시스템 연결 설정이 필요합니다. 관리자에게 알려 주세요.",
+            );
+            $("#driverLoginButton").disabled = true;
+            return;
+          }
+          supabaseClient = window.supabase.createClient(
+            driverConfig.supabaseUrl,
+            driverConfig.supabaseAnonKey,
+            { auth: { persistSession: true, autoRefreshToken: true } },
+          );
+          $("#driverLoginButton").addEventListener("click", driverLogin);
+          $("#driverLoginPassword").addEventListener("keydown", (event) => {
+            if (event.key === "Enter") driverLogin();
+          });
+          const { data } = await supabaseClient.auth.getSession();
+          if (!data.session) return showDriverAuth();
+          try {
+            await applyAuthenticatedDriver(data.session);
+          } catch (error) {
+            await supabaseClient.auth.signOut();
+            showDriverAuth(error?.message || "다시 로그인해 주세요.");
+          }
+        }
         const normalizeCategory = (value) =>
           ({
             필렛제품: "필렛 제품",
@@ -4496,11 +4744,136 @@
             localStorage.setItem(STORAGE_KEY, next);
             localStorage.setItem(LAST_SAVED_KEY, new Date().toISOString());
             renderHeader();
+            scheduleCentralSync(reason);
           } catch {
             alert(
               "저장 공간이 부족합니다. 자동 백업을 정리하거나 브라우저 저장 공간을 확인해 주세요.",
             );
           }
+        }
+        function centralStatusPayload() {
+          const rows = deliveries(),
+            active = rows.filter((d) => d.status !== "cancelled"),
+            done = active.filter((d) => d.status === "completed").length,
+            tanks = tankLoadRows(),
+            boxes = boxCompareRows(),
+            urgent = urgentRows(),
+            issues = departureIssues(),
+            errors = errorStats(),
+            closed = isWorkClosed();
+          let workState = "not_started";
+          if (active.length) workState = "working";
+          if (departureReady()) workState = "departure_ready";
+          if (active.length && done > 0 && done < active.length)
+            workState = "delivering";
+          if (closed || (active.length && done === active.length))
+            workState = "completed";
+          return {
+            driver_id: assignedDriverProfile.id,
+            work_date: workDate,
+            work_state: workState,
+            delivery_total: active.length,
+            delivery_completed: done,
+            tank_total: tanks.length,
+            tank_loaded: tanks.filter(({ i }) => i.tankLoaded).length,
+            box_total: boxes.length,
+            box_checked: boxes.filter(
+              (d) =>
+                d.boxCountConfirmed && d.loadedBoxCount === d.boxes.length,
+            ).length,
+            urgent_pending: urgent.length,
+            issue_count: issues.length,
+            prevented_errors: errors.prevented || 0,
+            last_sync_at: new Date().toISOString(),
+          };
+        }
+        function scheduleCentralSync(reason = "자료 변경") {
+          if (!supabaseClient || !supabaseSession || !assignedDriverProfile)
+            return;
+          clearTimeout(centralSyncDebounce);
+          centralSyncDebounce = setTimeout(
+            () => syncCentralStatus(reason),
+            900,
+          );
+        }
+        async function syncCentralStatus(reason = "상태 갱신") {
+          if (
+            centralSyncBusy ||
+            !supabaseClient ||
+            !supabaseSession ||
+            !assignedDriverProfile
+          )
+            return;
+          centralSyncBusy = true;
+          try {
+            const profile = await fetchAssignedProfile(
+              supabaseSession.user.id,
+            );
+            if (
+              profile.vehicle_number !== assignedDriverProfile.vehicle_number ||
+              profile.full_name !== assignedDriverProfile.full_name
+            ) {
+              assignedDriverProfile = profile;
+              state.profile = {
+                companyName: "장백수산",
+                driverName: profile.full_name,
+                vehicleNumber: String(profile.vehicle_number),
+              };
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              render();
+            }
+            const status = centralStatusPayload();
+            const [{ error: statusError }, { error: snapshotError }] =
+              await Promise.all([
+                supabaseClient
+                  .from("driver_daily_status")
+                  .upsert(status, { onConflict: "driver_id,work_date" }),
+                supabaseClient.from("driver_state_snapshots").upsert(
+                  {
+                    driver_id: assignedDriverProfile.id,
+                    work_date: workDate,
+                    payload: state,
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "driver_id,work_date" },
+                ),
+              ]);
+            if (statusError) throw statusError;
+            if (snapshotError) throw snapshotError;
+            await supabaseClient.rpc("touch_driver_presence");
+            const network = $("#networkText");
+            if (network)
+              network.textContent = `${assignedDriverProfile.vehicle_number}호차 중앙 저장 완료`;
+            if (reason === "로그인") renderHeader();
+          } catch (error) {
+            const network = $("#networkText");
+            if (network) network.textContent = "중앙 저장 재시도 중";
+            if (/정지|active driver/i.test(error?.message || "")) {
+              await driverLogout();
+              showDriverAuth("관리자가 사용 정지한 계정입니다.");
+            }
+          } finally {
+            centralSyncBusy = false;
+          }
+        }
+        async function restoreNewerCentralSnapshot() {
+          if (!supabaseClient || !supabaseSession) return;
+          const { data, error } = await supabaseClient
+            .from("driver_state_snapshots")
+            .select("payload, updated_at")
+            .eq("driver_id", supabaseSession.user.id)
+            .eq("work_date", workDate)
+            .maybeSingle();
+          if (error || !data?.payload) return;
+          const localSaved = localStorage.getItem(LAST_SAVED_KEY),
+            localTime = localSaved ? new Date(localSaved).getTime() : 0,
+            remoteTime = new Date(data.updated_at || 0).getTime();
+          if (remoteTime <= localTime) return;
+          const before = localStorage.getItem(STORAGE_KEY);
+          if (before) saveAutoSnapshot(before, "중앙 자료 복구 전");
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.payload));
+          state = loadState();
+          localStorage.setItem(LAST_SAVED_KEY, data.updated_at);
         }
         function byOrder(a, b) {
           return (
@@ -5307,7 +5680,7 @@
         function renderSettings() {
           const saved = localStorage.getItem(LAST_SAVED_KEY);
           $("#settingsView").innerHTML =
-            `<div class="heading"><div><h2>회사·차량 설정</h2><p>정보는 거래명세서와 Excel에 표시됩니다.</p></div></div><form id="settingsForm" class="settings-card"><label class="field"><span>회사명</span><input class="control" name="companyName" value="${esc(state.profile.companyName)}" required></label><label class="field"><span>배송담당자 이름</span><input class="control" name="driverName" value="${esc(state.profile.driverName)}" required></label><label class="field"><span>차량 호차·연동 코드</span><input class="control" name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" placeholder="예: 1" required></label><label class="setting-toggle"><input name="autoNextLoading" type="checkbox" ${state.preferences?.autoNextLoading !== false ? "checked" : ""}><span>상차 완료 후 다음 미완료 활어를 자동으로 열기</span></label><button class="full-button primary-button" type="submit">설정 저장</button><button class="full-button outline-button" type="button" data-action="open-weight-rules">⚖️ 어종별 정상 중량 기준 설정</button><button class="full-button outline-button" type="button" data-action="open-qr-labels">🏷️ 내 호차 1~6번 수조 QR 라벨</button><div class="notice">입력·수정 전 자료를 자동으로 최대 8개 보관합니다.<br>최근 저장: ${saved ? esc(new Date(saved).toLocaleString("ko-KR")) : "저장 기록 없음"}</div><button class="full-button warning-button" type="button" data-action="open-backups">🛟 자동 백업 확인·복구</button><div class="backup-grid"><button class="full-button outline-button" type="button" data-action="backup">백업 파일 저장</button><button class="full-button outline-button" type="button" data-action="restore">백업 파일 복원</button></div></form>`;
+            `<div class="heading"><div><h2>내 계정·업무 설정</h2><p>이름과 호차는 관리자가 배정하며 배송원이 변경할 수 없습니다.</p></div></div><form id="settingsForm" class="settings-card"><div class="assigned-profile"><strong>✓ 관리자 배정 정보</strong><small>${esc(assignedDriverProfile?.employee_code || "-")} · ${esc(state.profile.driverName)} · ${esc(state.profile.vehicleNumber)}호차</small></div><label class="field"><span>회사명</span><input class="control" name="companyName" value="${esc(state.profile.companyName)}" readonly required></label><label class="field"><span>배송담당자 이름</span><input class="control" name="driverName" value="${esc(state.profile.driverName)}" readonly required></label><label class="field"><span>관리자 배정 호차</span><input class="control" name="vehicleNumber" value="${esc(state.profile.vehicleNumber)}" readonly required></label><label class="setting-toggle"><input name="autoNextLoading" type="checkbox" ${state.preferences?.autoNextLoading !== false ? "checked" : ""}><span>상차 완료 후 다음 미완료 활어를 자동으로 열기</span></label><button class="full-button primary-button" type="submit">개인 업무 설정 저장</button><button class="full-button outline-button" type="button" data-action="open-weight-rules">⚖️ 어종별 정상 중량 기준 설정</button><button class="full-button outline-button" type="button" data-action="open-qr-labels">🏷️ 내 호차 1~6번 수조 QR 라벨</button><div class="notice">휴대폰과 중앙 서버에 업무 자료를 함께 저장합니다.<br>최근 저장: ${saved ? esc(new Date(saved).toLocaleString("ko-KR")) : "저장 기록 없음"}</div><button class="full-button warning-button" type="button" data-action="open-backups">🛟 자동 백업 확인·복구</button><div class="backup-grid"><button class="full-button outline-button" type="button" data-action="backup">백업 파일 저장</button><button class="full-button outline-button" type="button" data-action="restore">백업 파일 복원</button></div><button class="full-button danger-button" type="button" data-action="driver-logout">배송원 로그아웃</button></form>`;
         }
 
         function openBandSummary() {
@@ -7781,6 +8154,10 @@
           if (!b) return;
           const action = b.dataset.action;
           if (b.dataset.nav) return setView(b.dataset.nav);
+          if (action === "driver-logout") {
+            if (confirm("이 휴대폰에서 로그아웃할까요?")) driverLogout();
+            return;
+          }
           if (action && LOCKED_DAY_ACTIONS.has(action) && !ensureWorkOpen())
             return;
           if (action === "stop-alarm") return stopAlarm();
@@ -8141,11 +8518,19 @@
             return;
           if (e.target.id === "setupForm" || e.target.id === "settingsForm") {
             const fd = Object.fromEntries(new FormData(e.target));
-            state.profile = {
-              companyName: String(fd.companyName).trim(),
-              driverName: String(fd.driverName).trim(),
-              vehicleNumber: String(fd.vehicleNumber).trim(),
-            };
+            state.profile = assignedDriverProfile
+              ? {
+                  companyName: "장백수산",
+                  driverName: assignedDriverProfile.full_name,
+                  vehicleNumber: String(
+                    assignedDriverProfile.vehicle_number,
+                  ),
+                }
+              : {
+                  companyName: String(fd.companyName).trim(),
+                  driverName: String(fd.driverName).trim(),
+                  vehicleNumber: String(fd.vehicleNumber).trim(),
+                };
             if (e.target.id === "settingsForm") {
               state.preferences = state.preferences || {};
               state.preferences.autoNextLoading = fd.autoNextLoading === "on";
@@ -8158,7 +8543,7 @@
             render();
             startCloudSync();
             if (e.target.id === "settingsForm")
-              alert("회사·차량 정보를 저장했습니다.");
+              alert("개인 업무 설정을 저장했습니다.");
           }
           if (e.target.id === "customerForm") saveCustomer(e.target);
           if (e.target.id === "deliveryForm") saveDelivery();
@@ -8171,6 +8556,7 @@
             workDate = e.target.value || localDate(1);
             reorderMode = false;
             render();
+            scheduleCentralSync("업무 날짜 변경");
           }
           if (
             isWorkClosed() &&
@@ -8283,14 +8669,7 @@
           }
         });
         window.addEventListener("pagehide", stopQrScanner);
-        render();
-        startCloudSync();
-        if (
-          !state.profile.companyName ||
-          !state.profile.driverName ||
-          !state.profile.vehicleNumber
-        )
-          openSetup();
+        initDriverAuth();
       })();
     </script>
   </body>
