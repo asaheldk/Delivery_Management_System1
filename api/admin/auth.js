@@ -16,12 +16,63 @@ export function serverClient() {
   const { url, serviceKey } = readEnvironment();
 
   return createClient(url, serviceKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+      },
+    },
     auth: {
       autoRefreshToken: false,
       persistSession: false,
       detectSessionInUrl: false,
     },
   });
+}
+
+export const ADMIN_ROLES = [
+  "admin",
+  "super_admin",
+  "dispatch_manager",
+  "accounting_manager",
+  "field_manager",
+  "viewer",
+];
+
+const ROLE_PERMISSIONS = {
+  admin: ["*"],
+  super_admin: ["*"],
+  dispatch_manager: [
+    "admin_access",
+    "driver_write",
+    "account_manage",
+    "store_secret",
+    "dispatch_write",
+    "store_write",
+    "urgent_write",
+    "incident_write",
+    "departure_write",
+    "report_read",
+  ],
+  accounting_manager: [
+    "admin_access",
+    "product_write",
+    "accounting_write",
+    "report_read",
+  ],
+  field_manager: [
+    "admin_access",
+    "store_write",
+    "urgent_write",
+    "incident_write",
+    "departure_write",
+    "report_read",
+  ],
+  viewer: ["admin_access", "report_read"],
+};
+
+export function roleCan(role, permission = "admin_access") {
+  const permissions = ROLE_PERMISSIONS[role] || [];
+  return permissions.includes("*") || permissions.includes(permission);
 }
 
 function signedInClient(token) {
@@ -41,7 +92,11 @@ function signedInClient(token) {
   });
 }
 
-export async function requireAdmin(request, response) {
+export async function requireAdmin(
+  request,
+  response,
+  permission = "admin_access",
+) {
   const token = String(request.headers.authorization || "").replace(
     /^Bearer\s+/i,
     "",
@@ -75,7 +130,11 @@ export async function requireAdmin(request, response) {
     return null;
   }
 
-  if (profile?.role !== "admin" || profile.active !== true) {
+  if (
+    !ADMIN_ROLES.includes(profile?.role) ||
+    profile.active !== true ||
+    !roleCan(profile.role, permission)
+  ) {
     response.status(403).json({ error: "관리자 권한이 없습니다." });
     return null;
   }

@@ -7,7 +7,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    const auth = await requireAdmin(request, response);
+    const auth = await requireAdmin(request, response, "account_manage");
     if (!auth) return;
 
     const driverId = String(request.body?.driverId || "");
