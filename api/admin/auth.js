@@ -38,6 +38,56 @@ export const ADMIN_ROLES = [
   "viewer",
 ];
 
+export const MENU_IDS = [
+  "dashboard",
+  "shipments",
+  "purchases",
+  "drivers",
+  "stores",
+  "urgent",
+  "products",
+  "accounting",
+  "access",
+];
+
+const ROLE_MENU_DEFAULTS = {
+  admin: MENU_IDS,
+  super_admin: MENU_IDS,
+  dispatch_manager: [
+    "dashboard",
+    "shipments",
+    "purchases",
+    "drivers",
+    "stores",
+    "urgent",
+  ],
+  accounting_manager: [
+    "dashboard",
+    "shipments",
+    "purchases",
+    "products",
+    "accounting",
+  ],
+  field_manager: [
+    "dashboard",
+    "shipments",
+    "purchases",
+    "drivers",
+    "stores",
+    "urgent",
+  ],
+  viewer: [
+    "dashboard",
+    "shipments",
+    "purchases",
+    "drivers",
+    "stores",
+    "urgent",
+    "products",
+    "accounting",
+  ],
+};
+
 const ROLE_PERMISSIONS = {
   admin: ["*"],
   super_admin: ["*"],
@@ -73,6 +123,21 @@ const ROLE_PERMISSIONS = {
 export function roleCan(role, permission = "admin_access") {
   const permissions = ROLE_PERMISSIONS[role] || [];
   return permissions.includes("*") || permissions.includes(permission);
+}
+
+export function defaultMenuPermissions(role) {
+  return [...(ROLE_MENU_DEFAULTS[role] || ["dashboard"])];
+}
+
+export function normalizeMenuPermissions(value, role) {
+  const source = Array.isArray(value) ? value : defaultMenuPermissions(role);
+  const normalized = [
+    ...new Set(source.map((item) => String(item || "").trim())),
+  ].filter((item) => MENU_IDS.includes(item));
+
+  return roleCan(role, "role_manage")
+    ? normalized
+    : normalized.filter((item) => item !== "access");
 }
 
 function signedInClient(token) {
