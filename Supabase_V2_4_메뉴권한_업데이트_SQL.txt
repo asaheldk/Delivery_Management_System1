@@ -1,0 +1,19 @@
+-- 장백수산 관리자 V2.4 · 관리자별 메뉴 권한 추가
+-- Supabase → SQL Editor → New query → 이 파일 전체 붙여넣기 → Run
+-- 여러 번 실행해도 안전합니다.
+
+alter table public.profiles
+  add column if not exists menu_permissions text[];
+
+comment on column public.profiles.menu_permissions is
+  '관리자 화면에 표시할 메뉴 ID 배열. NULL이면 역할별 추천 기본값 사용';
+
+select
+  id,
+  employee_code,
+  full_name,
+  role,
+  menu_permissions
+from public.profiles
+where role <> 'driver'
+order by created_at;
