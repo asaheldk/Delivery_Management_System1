@@ -1,5 +1,11 @@
--- 장백수산 관리자 V2.4.1 · 관리자 역할 오류 수정 + 메뉴 권한 추가
--- Supabase → SQL Editor → New query → 이 파일 전체 붙여넣기 → Run
+-- 장백수산 관리자 V2.4.1
+-- profiles_role_check 오류를 없애는 긴급 수정 SQL
+--
+-- 실행 위치:
+-- Supabase → SQL Editor → New query
+--
+-- 사용 방법:
+-- 이 파일의 내용을 처음부터 끝까지 전부 복사 → 붙여넣기 → Run
 -- 여러 번 실행해도 안전합니다.
 
 begin;
@@ -7,9 +13,7 @@ begin;
 alter table public.profiles
   add column if not exists menu_permissions text[];
 
--- 예전 버전에 남아 있는 admin/driver 전용 역할 제한을 찾아 제거합니다.
--- 오류 문구:
--- new row for relation "profiles" violates check constraint "profiles_role_check"
+-- 과거 버전의 역할 제한과 이전 V2 역할 제한을 모두 찾아 제거합니다.
 do $$
 declare constraint_row record;
 begin
@@ -30,6 +34,7 @@ begin
   end loop;
 end $$;
 
+-- 현재 프로그램이 사용하는 역할 7종을 허용합니다.
 alter table public.profiles
   add constraint profiles_role_v2_check
   check (
@@ -52,7 +57,8 @@ comment on column public.profiles.menu_permissions is
 
 commit;
 
--- 아래 결과에 profiles_role_v2_check가 보이면 역할 오류 수정이 완료된 것입니다.
+-- 확인 결과
+-- constraint_name 칸에 profiles_role_v2_check가 나오면 성공입니다.
 select
   conname as constraint_name,
   pg_get_constraintdef(oid) as allowed_roles
@@ -62,12 +68,14 @@ where conrelid = 'public.profiles'::regclass
   and pg_get_constraintdef(oid) ilike '%role%'
 order by conname;
 
+-- 기존 관리자 계정도 함께 확인합니다.
 select
   id,
   employee_code,
   full_name,
   role,
-  menu_permissions
+  menu_permissions,
+  active
 from public.profiles
 where role <> 'driver'
 order by created_at;
