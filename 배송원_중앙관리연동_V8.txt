@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- DRIVER V9.4 CENTRAL · whole-day delivery completion without per-store timestamps -->
+<!-- DRIVER V8 CENTRAL · Supabase login + admin assignment + central sync -->
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -4031,12 +4031,6 @@
           max-width: none;
         }
       }
-      .central-hub{margin-bottom:13px;padding:14px;border:1px solid #bcded8;border-radius:18px;background:linear-gradient(135deg,#f3fbf9,#fff);box-shadow:0 8px 24px rgba(5,91,83,.07)}
-      .central-hub-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.central-hub-head h2{margin:0;font-size:18px}.central-hub-head small{display:block;margin-top:4px;color:var(--muted)}
-      .central-state{display:inline-flex;align-items:center;min-height:29px;padding:0 9px;border-radius:99px;color:#775108;background:#fff1cc;font-size:12px;font-weight:900}.central-state.ok{color:#14663e;background:#dcf5e8}.central-state.bad{color:#a62832;background:#ffe8ea}
-      .central-alert-list{display:grid;gap:8px;margin-top:10px}.central-alert{padding:11px;border-left:5px solid var(--red);border-radius:12px;background:#fff4f4}.central-alert strong,.central-alert small{display:block}.central-alert small{margin-top:4px;color:#745c5e}.central-alert-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:9px}.central-alert-actions button,.central-tools button{min-height:42px;border:1px solid #cddde1;border-radius:11px;color:#244957;background:#fff;font-weight:850}.central-alert-actions button.primary{border:0;color:#fff;background:var(--red)}
-      .central-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.central-closed{margin-top:9px;padding:10px;border-radius:11px;color:#8e252f;background:#fff0f1;font-weight:850}.central-store-row{padding:12px;border:1px solid var(--line);border-radius:13px}.central-store-row strong,.central-store-row small{display:block}.central-store-row small{margin-top:4px;color:var(--muted);line-height:1.5}
-      @media(max-width:520px){.central-hub-head{align-items:flex-start;flex-direction:column}.central-tools{grid-template-columns:1fr}.central-alert-actions{grid-template-columns:1fr 1fr}}
     </style>
   </head>
   <body>
@@ -4131,7 +4125,6 @@
     <div id="tankModal" class="modal hidden"></div>
     <div id="departureModal" class="modal hidden"></div>
     <div id="urgentModal" class="modal hidden"></div>
-    <div id="centralModal" class="modal hidden"></div>
     <div id="boxModal" class="modal hidden"></div>
     <div id="backupModal" class="modal hidden"></div>
     <div id="storeGuideModal" class="modal hidden"></div>
@@ -4190,12 +4183,6 @@
         let centralSyncTimer = null;
         let centralSyncDebounce = null;
         let centralSyncBusy = false;
-        let centralTaskTimer = null;
-        let centralUrgentOrders = [];
-        let centralStores = [];
-        let centralIncidents = [];
-        let centralDeparture = null;
-        let centralWorkday = null;
         const categories = ["활어", "패류", "냉동제품", "필렛 제품"];
         const DEFAULT_WEIGHT_RULES = {
           광어: { min: 0.3, max: 8 },
@@ -4246,6 +4233,8 @@
           "edit-delivery",
           "add-check-box",
           "delete-check-box",
+          "complete-delivery",
+          "undo-complete",
         ]);
         const origins = [
           "국내산",
@@ -4363,7 +4352,6 @@
           };
           saveState("로그인·관리자 호차 배정 적용");
           showDriverApp();
-          await loadCentralWork();
           render();
           startCloudSync();
           scheduleCentralSync("로그인");
@@ -4372,8 +4360,6 @@
             () => syncCentralStatus("1분 접속 확인"),
             60000,
           );
-          clearInterval(centralTaskTimer);
-          centralTaskTimer = setInterval(loadCentralWork, 20000);
         }
         async function driverLogin() {
           if (!supabaseClient) return;
@@ -4402,17 +4388,11 @@
         }
         async function driverLogout() {
           clearInterval(centralSyncTimer);
-          clearInterval(centralTaskTimer);
           clearTimeout(centralSyncDebounce);
           stopQrScanner();
           if (supabaseClient) await supabaseClient.auth.signOut();
           supabaseSession = null;
           assignedDriverProfile = null;
-          centralUrgentOrders = [];
-          centralStores = [];
-          centralIncidents = [];
-          centralDeparture = null;
-          centralWorkday = null;
           showDriverAuth("안전하게 로그아웃했습니다.");
         }
         async function initDriverAuth() {
@@ -4487,12 +4467,10 @@
 
         function emptyState() {
           return {
-            version: 6,
+            version: 5,
             profile: { companyName: "", driverName: "", vehicleNumber: "" },
             customers: [],
             deliveries: [],
-            purchaseSubmissions: {},
-            purchaseCurrentFingerprints: {},
             departureChecks: {},
             preferences: {
               autoNextLoading: true,
@@ -4669,13 +4647,11 @@
             customerId: Number(delivery.customerId) || 0,
             deliveryDate: delivery.deliveryDate || localDate(1),
             routeOrder: Math.max(1, Number(delivery.routeOrder) || 1),
-            status:
-              delivery.status === "cancelled"
-                ? "cancelled"
-                : delivery.status === "new"
-                  ? "new"
-                  : "ready",
-            completedAt: null,
+            status: ["new", "ready", "completed", "cancelled"].includes(
+              delivery.status,
+            )
+              ? delivery.status
+              : "ready",
             previousBalance: Number(delivery.previousBalance) || 0,
             notes: delivery.notes || "",
             coPackNote: delivery.coPackNote || "",
@@ -4714,7 +4690,7 @@
           )
             return emptyState();
           return {
-            version: 6,
+            version: 5,
             profile: {
               companyName: raw.profile.companyName || "",
               driverName: raw.profile.driverName || "",
@@ -4722,16 +4698,6 @@
             },
             customers: raw.customers.map(normalizeCustomer),
             deliveries: raw.deliveries.map(normalizeDelivery),
-            purchaseSubmissions:
-              raw.purchaseSubmissions &&
-              typeof raw.purchaseSubmissions === "object"
-                ? raw.purchaseSubmissions
-                : {},
-            purchaseCurrentFingerprints:
-              raw.purchaseCurrentFingerprints &&
-              typeof raw.purchaseCurrentFingerprints === "object"
-                ? raw.purchaseCurrentFingerprints
-                : {},
             departureChecks:
               raw.departureChecks && typeof raw.departureChecks === "object"
                 ? raw.departureChecks
@@ -4772,10 +4738,6 @@
         }
         function saveState(reason = "자동 저장") {
           try {
-            state.purchaseCurrentFingerprints =
-              state.purchaseCurrentFingerprints || {};
-            state.purchaseCurrentFingerprints[workDate] =
-              purchaseFingerprint();
             const before = localStorage.getItem(STORAGE_KEY),
               next = JSON.stringify(state);
             if (before && before !== next) saveAutoSnapshot(before, reason);
@@ -4792,19 +4754,20 @@
         function centralStatusPayload() {
           const rows = deliveries(),
             active = rows.filter((d) => d.status !== "cancelled"),
+            done = active.filter((d) => d.status === "completed").length,
             tanks = tankLoadRows(),
             boxes = boxCompareRows(),
             urgent = urgentRows(),
             issues = departureIssues(),
             errors = errorStats(),
             closed = isWorkClosed();
-          const done = closed ? active.length : 0;
           let workState = "not_started";
           if (active.length) workState = "working";
           if (departureReady()) workState = "departure_ready";
-          if (centralDeparture?.approved && active.length)
+          if (active.length && done > 0 && done < active.length)
             workState = "delivering";
-          if (closed) workState = "completed";
+          if (closed || (active.length && done === active.length))
+            workState = "completed";
           return {
             driver_id: assignedDriverProfile.id,
             work_date: workDate,
@@ -4818,11 +4781,7 @@
               (d) =>
                 d.boxCountConfirmed && d.loadedBoxCount === d.boxes.length,
             ).length,
-            urgent_pending:
-              urgent.length +
-              centralUrgentOrders.filter((x) =>
-                ["new", "acknowledged", "loaded"].includes(x.status),
-              ).length,
+            urgent_pending: urgent.length,
             issue_count: issues.length,
             prevented_errors: errors.prevented || 0,
             last_sync_at: new Date().toISOString(),
@@ -4863,39 +4822,8 @@
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
               render();
             }
-            if (centralWorkday?.is_closed) {
-              const network = $("#networkText");
-              if (network) network.textContent = "관리자 업무 마감·자료 잠금";
-              await supabaseClient.rpc("touch_driver_presence");
-              return;
-            }
             const status = centralStatusPayload();
-            const departurePayload = {
-              driver_id: assignedDriverProfile.id,
-              work_date: workDate,
-              vehicle_number: assignedDriverProfile.vehicle_number,
-              orders_checked: activeDeliveries().every(
-                (d) => d.status !== "new",
-              ),
-              tanks_checked:
-                status.tank_total === 0 ||
-                status.tank_total === status.tank_loaded,
-              boxes_checked:
-                status.box_total === 0 ||
-                status.box_total === status.box_checked,
-              urgent_checked: status.urgent_pending === 0,
-              handover_checked: activeDeliveries().every((d) => {
-                const c = customerOf(d);
-                return !hasHandover(c) || handoverAcknowledged(d, c);
-              }),
-              driver_ready: departureReady(),
-              updated_at: new Date().toISOString(),
-            };
-            const [
-              { error: statusError },
-              { error: snapshotError },
-              { error: departureError },
-            ] =
+            const [{ error: statusError }, { error: snapshotError }] =
               await Promise.all([
                 supabaseClient
                   .from("driver_daily_status")
@@ -4909,17 +4837,9 @@
                   },
                   { onConflict: "driver_id,work_date" },
                 ),
-                centralDeparture?.approved
-                  ? Promise.resolve({ error: null })
-                  : supabaseClient
-                      .from("departure_checks")
-                      .upsert(departurePayload, {
-                        onConflict: "driver_id,work_date",
-                      }),
               ]);
             if (statusError) throw statusError;
             if (snapshotError) throw snapshotError;
-            if (departureError) throw departureError;
             await supabaseClient.rpc("touch_driver_presence");
             const network = $("#networkText");
             if (network)
@@ -4954,123 +4874,6 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data.payload));
           state = loadState();
           localStorage.setItem(LAST_SAVED_KEY, data.updated_at);
-        }
-        async function loadCentralWork() {
-          if (!supabaseClient || !assignedDriverProfile) return;
-          try {
-            const [urgent, stores, incidents, departure, workday] =
-              await Promise.all([
-                supabaseClient
-                  .from("urgent_orders")
-                  .select("*")
-                  .eq("work_date", workDate)
-                  .order("created_at", { ascending: false }),
-                supabaseClient
-                  .from("stores")
-                  .select(
-                    "id,store_code,name,address,phone,contact_name,assigned_driver_id,assigned_vehicle,delivery_order,preferred_time,entry_method,placement,prohibited,parking_note,handover_note,photo_urls,active,updated_at",
-                  )
-                  .eq("active", true)
-                  .order("delivery_order"),
-                supabaseClient
-                  .from("incident_reports")
-                  .select("*")
-                  .eq("work_date", workDate)
-                  .order("created_at", { ascending: false }),
-                supabaseClient
-                  .from("departure_checks")
-                  .select("*")
-                  .eq("driver_id", assignedDriverProfile.id)
-                  .eq("work_date", workDate)
-                  .maybeSingle(),
-                supabaseClient
-                  .from("workday_controls")
-                  .select("*")
-                  .eq("work_date", workDate)
-                  .maybeSingle(),
-              ]);
-            if (!urgent.error) centralUrgentOrders = urgent.data || [];
-            if (!stores.error) centralStores = stores.data || [];
-            if (!incidents.error) centralIncidents = incidents.data || [];
-            if (!departure.error) centralDeparture = departure.data || null;
-            if (!workday.error) centralWorkday = workday.data || null;
-            if (view === "today" && !$("#driverApp")?.classList.contains("hidden"))
-              renderToday();
-          } catch {
-            /* 다음 자동 확인에서 재시도합니다. */
-          }
-        }
-        function centralUrgentLabel(status) {
-          return (
-            {
-              new: "새 긴급 발주",
-              acknowledged: "확인 완료",
-              loaded: "상차 완료",
-              delivered: "납품 완료",
-              impossible: "처리 불가",
-              cancelled: "취소",
-            }[status] || status
-          );
-        }
-        function centralPanelHTML() {
-          const pending = centralUrgentOrders.filter((x) =>
-              ["new", "acknowledged", "loaded"].includes(x.status),
-            ),
-            approval = centralDeparture?.approved,
-            guideCount = centralStores.filter(
-              (s) =>
-                s.entry_method ||
-                s.placement ||
-                s.prohibited ||
-                s.preferred_time ||
-                s.handover_note,
-            ).length;
-          const alerts = pending
-            .map((x) => {
-              const next =
-                x.status === "new"
-                  ? ["central-urgent-ack", "긴급 발주 확인"]
-                  : x.status === "acknowledged"
-                    ? ["central-urgent-loaded", "상차 완료"]
-                    : ["central-urgent-delivered", "납품 완료"];
-              return `<article class="central-alert"><strong>🚨 ${esc(x.store_name || "거래처")} · ${esc(x.item_summary)}</strong><small>${esc(x.quantity_summary || "")} · ${esc(x.note || "추가 메모 없음")} · ${centralUrgentLabel(x.status)}</small><div class="central-alert-actions"><button class="primary" type="button" data-action="${next[0]}" data-id="${x.id}">${next[1]}</button><button type="button" data-action="central-urgent-impossible" data-id="${x.id}">처리 불가 보고</button></div></article>`;
-            })
-            .join("");
-          return `<section class="central-hub"><div class="central-hub-head"><div><h2>🏢 중앙 관리자 연결</h2><small>긴급 발주·점포 인수인계·출차 승인 상태가 20초마다 갱신됩니다.</small></div><span class="central-state ${approval ? "ok" : centralWorkday?.is_closed ? "bad" : ""}">${approval ? "✓ 관리자 출차 승인" : centralWorkday?.is_closed ? "업무 마감 잠금" : "승인 대기"}</span></div>${centralWorkday?.is_closed ? `<div class="central-closed">관리자가 ${esc(workDate)} 업무를 마감했습니다. 변경이 잠겼습니다.</div>` : ""}<div class="central-alert-list">${alerts}</div><div class="central-tools"><button type="button" data-action="central-store-guides">📝 중앙 인수인계 ${guideCount}곳</button><button type="button" data-action="central-incident-new">⚠️ 오배송·오류 보고</button><button type="button" data-action="central-refresh">↻ 관리자 자료 새로고침</button></div></section>`;
-        }
-        async function updateCentralUrgent(id, status, extra = {}) {
-          const changes = {
-            status,
-            updated_at: new Date().toISOString(),
-            ...extra,
-          };
-          if (status === "acknowledged")
-            changes.acknowledged_at = new Date().toISOString();
-          if (status === "loaded")
-            changes.loaded_at = new Date().toISOString();
-          if (status === "delivered")
-            changes.delivered_at = new Date().toISOString();
-          const { error } = await supabaseClient
-            .from("urgent_orders")
-            .update(changes)
-            .eq("id", id);
-          if (error) throw error;
-          await loadCentralWork();
-          scheduleCentralSync("중앙 긴급 발주 상태 변경");
-        }
-        function openCentralStores() {
-          const rows = centralStores
-            .map(
-              (s) =>
-                `<article class="central-store-row"><strong>${s.delivery_order || "-"}번 · ${esc(s.name)}</strong><small>${esc(s.preferred_time || "입고 시간 미입력")} · ${esc(s.address || "주소 미입력")}</small><small><b>진입:</b> ${esc(s.entry_method || "미입력")}<br><b>놓는 곳:</b> ${esc(s.placement || "미입력")}<br><b>금지사항:</b> ${esc(s.prohibited || "없음")}<br><b>기타:</b> ${esc(s.handover_note || "없음")}</small></article>`,
-            )
-            .join("");
-          $("#centralModal").innerHTML = `<div class="modal-card"><div class="modal-head"><div><h2>중앙 점포 인수인계</h2><p>${assignedDriverProfile.vehicle_number}호차 담당 점포 정보입니다.</p></div><button class="close-button" type="button" data-action="central-modal-close">×</button></div><div class="modal-body"><div style="display:grid;gap:8px">${rows || `<div class="empty">관리자가 등록한 점포 정보가 없습니다.</div>`}</div><div class="notice">출입 비밀번호는 보안을 위해 배차 관리자에게 확인하세요.</div></div></div>`;
-          $("#centralModal").classList.remove("hidden");
-        }
-        function openCentralIncident() {
-          $("#centralModal").innerHTML = `<div class="modal-card"><div class="modal-head"><div><h2>오배송·현장 오류 보고</h2><p>관리자에게 즉시 전달되고 조치 이력이 남습니다.</p></div><button class="close-button" type="button" data-action="central-modal-close">×</button></div><form id="centralIncidentForm" class="modal-body"><label class="field"><span>오류 종류</span><select class="control" name="incidentType"><option value="wrong_delivery">오배송</option><option value="shortage">수량 부족</option><option value="excess">수량 초과</option><option value="damage">파손</option><option value="band_mismatch">밴드 색상 오류</option><option value="tank_mismatch">수조 오류</option><option value="delay">배송 지연</option><option value="other">기타</option></select></label><label class="field"><span>중요도</span><select class="control" name="severity"><option value="normal">일반</option><option value="important">중요</option><option value="critical">긴급</option></select></label><label class="field"><span>거래처</span><select class="control" name="storeId"><option value="">거래처 미지정</option>${centralStores.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select></label><label class="field"><span>상세 내용</span><textarea class="control" name="description" rows="5" required placeholder="어떤 문제가 있었는지 구체적으로 입력하세요."></textarea></label><div id="centralIncidentMessage" class="message"></div><button class="full-button danger-button" type="submit">관리자에게 오류 보고</button></form></div>`;
-          $("#centralModal").classList.remove("hidden");
         }
         function byOrder(a, b) {
           return (
@@ -5207,11 +5010,7 @@
             )
             .sort(byOrder)
             .flatMap((d) =>
-              (d.items || [])
-                .filter(
-                  (i) => isWeighable(i) && Number(i.tankNumber) > 0,
-                )
-                .flatMap((i) =>
+              (d.items || []).filter(isWeighable).flatMap((i) =>
                 (i.weighings || []).map((w) => ({
                   d,
                   i,
@@ -5236,18 +5035,10 @@
         }
         function nextTaskNumber(date = workDate) {
           return (
-            state.deliveries
-              .filter(
-                (d) => d.deliveryDate === date && d.status !== "cancelled",
-              )
-              .flatMap((d) =>
-                (d.items || []).flatMap((i) => i.weighings || []),
-              )
-              .reduce(
-                (maximum, weighing) =>
-                  Math.max(maximum, Number(weighing.taskNumber) || 0),
-                0,
-              ) + 1
+            loadingTaskRows(date).reduce(
+              (m, { w }) => Math.max(m, Number(w.taskNumber) || 0),
+              0,
+            ) + 1
           );
         }
         function taskCode(w) {
@@ -5512,7 +5303,7 @@
         function ensureWorkOpen() {
           if (!isWorkClosed()) return true;
           alert(
-            `${workDate} 배송은 전체 완료되어 수정할 수 없습니다.\n‘오늘 전체 배송 완료’에서 완료 취소 사유를 입력하면 다시 수정할 수 있습니다.`,
+            `${workDate} 업무는 마감·보관되어 수정할 수 없습니다.\n‘업무 마감 기록’에서 마감 취소 사유를 입력하면 다시 수정할 수 있습니다.`,
           );
           return false;
         }
@@ -5610,11 +5401,24 @@
               const tasks = i.weighings || [],
                 workflowIncomplete =
                   isWeighable(i) &&
-                  Number(i.tankNumber) > 0 &&
                   tasks.length &&
                   tasks.some((w) => !w.loadedAt);
-              // 활어 계근은 선택 기능입니다. 미입력·미확정 상태여도
-              // 출차 점검과 거래명세서 사용을 막지 않습니다.
+              if (isWeighable(i) && !i.weighingConfirmed)
+                issues.push({
+                  type: "weigh",
+                  d,
+                  i,
+                  title: `${c.name} ${i.species} 계근 미확정`,
+                  detail: "개별 계근값과 합계를 확정해 주세요.",
+                });
+              if (isWeighable(i) && !i.tankNumber)
+                issues.push({
+                  type: "tank",
+                  d,
+                  i,
+                  title: `${c.name} ${i.species} 수조 미지정`,
+                  detail: "1~6번 수조를 지정해 주세요.",
+                });
               if (
                 i.rubberBand &&
                 (!String(i.rubberBandColor || "").trim() ||
@@ -5749,7 +5553,7 @@
             {
               new: "신규 발주",
               ready: "배송 준비",
-              completed: "배송 준비",
+              completed: "배송 완료",
               cancelled: "발주 취소",
             }[status] || status
           );
@@ -5783,9 +5587,10 @@
         function renderToday() {
           const rows = deliveries(),
             active = rows.filter((d) => d.status !== "cancelled"),
-            unfinished = active,
+            unfinished = active.filter((d) => d.status !== "completed"),
             newCount = active.filter((d) => d.status === "new").length,
-            ready = active.filter((d) => d.status !== "new").length,
+            ready = active.filter((d) => d.status === "ready").length,
+            done = active.filter((d) => d.status === "completed").length,
             ws = weighingStats(),
             ls = loadingStats(),
             urgent = urgentRows(),
@@ -5832,11 +5637,7 @@
                 .join("")
             : `<div class="empty">등록된 배송이 없습니다.<br>점주 앱에서 발주하면 자동으로 표시됩니다.</div>`;
           $("#todayView").innerHTML =
-            `${centralPanelHTML()}<div class="stats"><div class="stat new"><small>신규 발주</small><strong>${newCount}</strong></div><div class="stat"><small>배송 대상</small><strong>${active.length}</strong></div><div class="stat done"><small>전체 배송</small><strong>${closed ? "완료" : "진행 중"}</strong></div></div><div class="departure-hero ${closed ? "ready" : ""}"><div><h2>${closed ? "✓ 오늘 전체 배송 완료" : "🏁 오늘 배송을 모두 마쳤습니까?"}</h2><p>${closed ? `${closure?.at ? new Date(closure.at).toLocaleString("ko-KR") : ""} · ${closure?.result === "issue" ? "관리자 확인 필요" : "문제 없이 완료"}` : "마지막 배송까지 끝난 뒤 한 번만 완료해 주세요. 점포별 하차 시간은 기록하지 않습니다."}</p></div><button type="button" data-action="open-work-close">${closed ? "완료 내용 보기·취소" : "전체 배송 완료"}</button></div>${urgent.length ? `<div class="urgent-hero"><div><h2>🚨 긴급 추가 발주 ${urgent.length}건</h2><p>추가 품목·수조·배송 순서를 먼저 확인하세요.</p></div><button type="button" data-action="open-urgent">긴급 발주 확인</button></div>` : ""}<div class="departure-hero ${departOk ? "ready" : ""}"><div><h2>${departOk ? "✓ 출차 준비 완료" : "🚚 출차 전 최종 점검"}</h2><p>${departOk ? `${departureRecord?.at ? new Date(departureRecord.at).toLocaleString("ko-KR") : ""} 점검 완료` : `미확인·불일치 ${issues.length}건을 확인해야 출차 준비가 완료됩니다.`}</p></div><button type="button" data-action="open-departure">${departOk ? "점검 결과 보기" : "최종 점검 시작"}</button></div><div class="quick-actions"><button class="excel" type="button" data-action="export-excel" ${active.length ? "" : "disabled"}>📊 당일 Excel 저장</button><button class="purchase" type="button" data-action="open-purchase" ${unfinished.length ? "" : "disabled"}>📋 당일 매입발주서</button><button class="excel" type="button" data-action="open-tank-manager" ${tankRows().length ? "" : "disabled"}>💧 수조 상차 ${loadedCount}/${loads.length}</button><button class="purchase" type="button" data-action="open-box-compare" ${boxRows.length ? "" : "disabled"}>📦 박스 대조 ${boxOkCount}/${boxRows.length}</button></div><div class="weigh-hero ${ws.allDone ? "complete" : ""}"><div><h2>⚖️ 호차 활어 계근</h2><p>${ws.totalItems ? `활어 ${ws.entered}/${ws.target || "-"}마리 입력 · ${ws.confirmed}/${ws.totalItems}품목 확정` : `오늘 계근할 활어가 없습니다.`}</p></div><button type="button" data-action="open-weigh-list" ${ws.totalItems ? "" : "disabled"}>${ws.allDone ? "계근 완료 확인" : "계근 시작"}</button></div><div class="loading-hero ${ls.allDone ? "ready" : ""}"><div><h2>${ls.allDone ? "✓ 개체별 상차 관제 완료" : "📣 실시간 상차 오류 방지"}</h2><p>${ls.total ? `콜 ${ls.called}/${ls.total} · 복창 ${ls.repeated}/${ls.total} · 수조 상차 ${ls.loaded}/${ls.total}` : "계근값이 입력되면 활어 한 마리별 작업번호가 생성됩니다."}</p></div><button type="button" data-action="open-loading-control" ${ls.total ? "" : "disabled"}>${ls.allDone ? "완료 내역" : "상차 관제 시작"}</button></div><div class="dashboard-tools"><button type="button" data-action="open-band-summary">🎨 밴드 현황 · 남음 ${bandRemaining}개</button><button type="button" data-action="open-error-stats">📈 오류 방지 ${errors.prevented}건</button><button type="button" data-action="open-weight-rules">⚖️ 비정상 계근 기준</button><button class="close-day ${closed ? "closed" : ""}" type="button" data-action="open-work-close">${closed ? "✓ 전체 배송 완료 기록" : "🏁 오늘 전체 배송 완료"}</button></div><section class="section"><div class="heading"><div><h2>1~6번 수조 현황</h2><p>품목 카드는 길게 눌러 원하는 수조로 끌어 놓으세요. 수조 제목을 누르면 상세 정보가 열립니다.</p></div><button class="mini tank-change-button" type="button" data-action="open-tank-manager" ${tankRows().length ? "" : "disabled"}>전체 상차 관리</button></div><div class="tank-grid">${tankHtml}</div></section><section class="section"><div class="heading"><div><h2>배송 순서</h2><p>거래처를 눌러 물품과 거래명세서를 확인하세요. 점포별 완료 버튼은 없습니다.</p></div><div class="heading-actions">${rows.length ? `<button class="mini" type="button" data-action="toggle-reorder">${reorderMode ? "순서 저장 완료" : "순서·삭제"}</button>` : ""}<button class="mini primary" type="button" data-action="new-delivery" ${state.customers.length ? "" : "disabled"}>＋ 수동 추가</button></div></div><div class="stop-list">${stops}</div></section>`;
-          $("#todayView").innerHTML = $("#todayView").innerHTML.replaceAll(
-            "📦 하차 확인",
-            "📦 물품·명세 확인",
-          );
+            `<div class="stats"><div class="stat new"><small>신규 발주</small><strong>${newCount}</strong></div><div class="stat"><small>배송 준비</small><strong>${ready}</strong></div><div class="stat done"><small>배송 완료</small><strong>${done}</strong></div></div>${closed ? `<div class="closed-day-banner"><div><strong>✓ ${esc(workDate)} 업무 마감·보관 완료</strong><small>${closure?.at ? new Date(closure.at).toLocaleString("ko-KR") : ""} · ${esc(closure?.by || "담당자 미설정")}</small></div><button type="button" data-action="open-work-close">마감 기록</button></div>` : ""}${urgent.length ? `<div class="urgent-hero"><div><h2>🚨 긴급 추가 발주 ${urgent.length}건</h2><p>추가 품목·수조·배송 순서를 먼저 확인하세요.</p></div><button type="button" data-action="open-urgent">긴급 발주 확인</button></div>` : ""}<div class="departure-hero ${departOk ? "ready" : ""}"><div><h2>${departOk ? "✓ 출차 준비 완료" : "🚚 출차 전 최종 점검"}</h2><p>${departOk ? `${departureRecord?.at ? new Date(departureRecord.at).toLocaleString("ko-KR") : ""} 점검 완료` : `미확인·불일치 ${issues.length}건을 확인해야 출차 준비가 완료됩니다.`}</p></div><button type="button" data-action="open-departure">${departOk ? "점검 결과 보기" : "최종 점검 시작"}</button></div><div class="quick-actions"><button class="excel" type="button" data-action="export-excel" ${active.length ? "" : "disabled"}>📊 당일 Excel 저장</button><button class="purchase" type="button" data-action="open-purchase" ${unfinished.length ? "" : "disabled"}>📋 당일 매입발주서</button><button class="excel" type="button" data-action="open-tank-manager" ${tankRows().length ? "" : "disabled"}>💧 수조 상차 ${loadedCount}/${loads.length}</button><button class="purchase" type="button" data-action="open-box-compare" ${boxRows.length ? "" : "disabled"}>📦 박스 대조 ${boxOkCount}/${boxRows.length}</button></div><div class="weigh-hero ${ws.allDone ? "complete" : ""}"><div><h2>⚖️ 호차 활어 계근</h2><p>${ws.totalItems ? `활어 ${ws.entered}/${ws.target || "-"}마리 입력 · ${ws.confirmed}/${ws.totalItems}품목 확정` : `오늘 계근할 활어가 없습니다.`}</p></div><button type="button" data-action="open-weigh-list" ${ws.totalItems ? "" : "disabled"}>${ws.allDone ? "계근 완료 확인" : "계근 시작"}</button></div><div class="loading-hero ${ls.allDone ? "ready" : ""}"><div><h2>${ls.allDone ? "✓ 개체별 상차 관제 완료" : "📣 실시간 상차 오류 방지"}</h2><p>${ls.total ? `콜 ${ls.called}/${ls.total} · 복창 ${ls.repeated}/${ls.total} · 수조 상차 ${ls.loaded}/${ls.total}` : "계근값이 입력되면 활어 한 마리별 작업번호가 생성됩니다."}</p></div><button type="button" data-action="open-loading-control" ${ls.total ? "" : "disabled"}>${ls.allDone ? "완료 내역" : "상차 관제 시작"}</button></div><div class="dashboard-tools"><button type="button" data-action="open-band-summary">🎨 밴드 현황 · 남음 ${bandRemaining}개</button><button type="button" data-action="open-error-stats">📈 오류 방지 ${errors.prevented}건</button><button type="button" data-action="open-weight-rules">⚖️ 비정상 계근 기준</button><button class="close-day ${closed ? "closed" : ""}" type="button" data-action="open-work-close">${closed ? "✓ 업무 마감 기록" : "📁 오늘 업무 마감·보관"}</button></div><section class="section"><div class="heading"><div><h2>1~6번 수조 현황</h2><p>품목 카드는 길게 눌러 원하는 수조로 끌어 놓으세요. 수조 제목을 누르면 상세 정보가 열립니다.</p></div><button class="mini tank-change-button" type="button" data-action="open-tank-manager" ${tankRows().length ? "" : "disabled"}>전체 상차 관리</button></div><div class="tank-grid">${tankHtml}</div></section><section class="section"><div class="heading"><div><h2>배송 순서</h2><p>거래처를 눌러 하차 물품을 확인하세요.</p></div><div class="heading-actions">${rows.length ? `<button class="mini" type="button" data-action="toggle-reorder">${reorderMode ? "순서 저장 완료" : "순서·삭제"}</button>` : ""}<button class="mini primary" type="button" data-action="new-delivery" ${state.customers.length ? "" : "disabled"}>＋ 수동 추가</button></div></div><div class="stop-list">${stops}</div></section>`;
         }
         function renderStop(d, index, rows) {
           const c = customerOf(d),
@@ -5859,7 +5660,7 @@
               (d.boxCountConfirmed && d.loadedBoxCount === d.boxes.length),
             guideExists = hasHandover(c),
             guideOk = handoverAcknowledged(d, c);
-          return `<article class="stop ${d.status === "new" ? "new-order" : ""} ${d.status === "completed" ? "completed" : ""}"><button class="stop-main" type="button" data-action="open-check" data-id="${d.id}"><span class="order-badge">${d.routeOrder}</span><span class="stop-copy">${d.isUrgentAdditional ? `<span class="status-tag" style="background:${d.urgentAcknowledged ? "var(--green)" : "var(--red)"}">긴급 추가 발주 · ${d.urgentAcknowledged ? "확인 완료" : "확인 필요"}</span>` : d.status === "new" ? `<span class="status-tag">새 발주 · 확인 필요</span>` : ""}${guideExists ? `<span class="status-tag" style="background:${guideOk ? "var(--green)" : "#7650a8"}">점포 인계 ${guideOk ? "확인 완료" : "확인 필요"}</span>` : ""}${hasLive ? `<span class="status-tag" style="background:${weighReady ? "var(--green)" : "#71818a"}">계근 ${weighReady ? "입력완료" : "선택"}</span>` : ""}${tankItems.length ? `<span class="status-tag" style="background:${tankReady ? "var(--green)" : "#1976a3"}">수조 ${tankReady ? "상차완료" : "상차확인"}</span>` : ""}${d.boxes.length ? `<span class="status-tag" style="background:${boxReady ? "var(--green)" : "#8c5a12"}">박스 ${boxReady ? "일치" : "대조필요"}</span>` : ""}<strong>${esc(c.name)}</strong><small>${esc(names || "품목 없음")} · ${d.boxes.length}박스</small></span><span class="progress">${p.done}/${p.total}</span></button><div class="stop-actions"><a href="${mapUrl}" target="_blank" rel="noopener">🗺️ 길찾기</a><button type="button" data-action="open-check" data-id="${d.id}">📦 하차 확인</button>${guideExists ? `<button class="handover-stop-button" type="button" data-action="open-store-guide" data-id="${d.id}" data-source="today">📝 점포 특이사항 ${guideOk ? "보기" : "확인 필요"}</button>` : ""}${d.status === "new" || (d.isUrgentAdditional && !d.urgentAcknowledged) ? `<button class="ack-button" style="background:${d.isUrgentAdditional ? "var(--red)" : "var(--amber)"}!important" type="button" data-action="${d.isUrgentAdditional ? "ack-urgent-order" : "ack-order"}" data-id="${d.id}">${d.isUrgentAdditional ? "🚨 긴급 추가 발주·순서 확인 완료" : "✓ 신규 발주 접수 확인"}</button>` : ""}</div></article>`;
+          return `<article class="stop ${d.status === "new" ? "new-order" : ""} ${d.status === "completed" ? "completed" : ""}"><button class="stop-main" type="button" data-action="open-check" data-id="${d.id}"><span class="order-badge">${d.routeOrder}</span><span class="stop-copy">${d.isUrgentAdditional ? `<span class="status-tag" style="background:${d.urgentAcknowledged ? "var(--green)" : "var(--red)"}">긴급 추가 발주 · ${d.urgentAcknowledged ? "확인 완료" : "확인 필요"}</span>` : d.status === "new" ? `<span class="status-tag">새 발주 · 확인 필요</span>` : ""}${guideExists ? `<span class="status-tag" style="background:${guideOk ? "var(--green)" : "#7650a8"}">점포 인계 ${guideOk ? "확인 완료" : "확인 필요"}</span>` : ""}${hasLive ? `<span class="status-tag" style="background:${weighReady ? "var(--green)" : "#1976a3"}">계근 ${weighReady ? "확정" : "필요"}</span>` : ""}${tankItems.length ? `<span class="status-tag" style="background:${tankReady ? "var(--green)" : "#1976a3"}">수조 ${tankReady ? "상차완료" : "상차확인"}</span>` : ""}${d.boxes.length ? `<span class="status-tag" style="background:${boxReady ? "var(--green)" : "#8c5a12"}">박스 ${boxReady ? "일치" : "대조필요"}</span>` : ""}<strong>${esc(c.name)}</strong><small>${esc(names || "품목 없음")} · ${d.boxes.length}박스</small></span><span class="progress">${p.done}/${p.total}</span></button><div class="stop-actions"><a href="${mapUrl}" target="_blank" rel="noopener">🗺️ 길찾기</a><button type="button" data-action="open-check" data-id="${d.id}">📦 하차 확인</button>${guideExists ? `<button class="handover-stop-button" type="button" data-action="open-store-guide" data-id="${d.id}" data-source="today">📝 점포 특이사항 ${guideOk ? "보기" : "확인 필요"}</button>` : ""}${d.status === "new" || (d.isUrgentAdditional && !d.urgentAcknowledged) ? `<button class="ack-button" style="background:${d.isUrgentAdditional ? "var(--red)" : "var(--amber)"}!important" type="button" data-action="${d.isUrgentAdditional ? "ack-urgent-order" : "ack-order"}" data-id="${d.id}">${d.isUrgentAdditional ? "🚨 긴급 추가 발주·순서 확인 완료" : "✓ 신규 발주 접수 확인"}</button>` : ""}</div></article>`;
         }
 
         function renderCustomers() {
@@ -5943,63 +5744,36 @@
         }
         function openWorkClosure() {
           const rows = deliveries().filter((d) => d.status !== "cancelled"),
+            completed = rows.filter((d) => d.status === "completed").length,
             closure = state.workClosures?.[workDate],
             stats = closure?.stats || errorStats(),
-            pendingUrgent =
-              urgentRows().length +
-              centralUrgentOrders.filter((row) =>
-                ["new", "acknowledged", "loaded"].includes(row.status),
-              ).length,
-            unresolvedIncidents = centralIncidents.filter(
-              (row) => !["resolved", "closed"].includes(row.status),
-            ).length,
             history = (state.workClosureHistory || [])
               .filter((row) => row.date === workDate)
               .slice(-8)
               .reverse()
               .map(
                 (row) =>
-                  `<div class="workflow-log">${esc(new Date(row.at).toLocaleString("ko-KR"))} · ${esc(row.by || "담당자 미설정")}<br>${row.type === "reopen" ? `전체 완료 취소: ${esc(row.reason)}` : `전체 배송 완료 · ${row.result === "issue" ? "관리자 확인 필요" : "문제 없음"}`}</div>`,
+                  `<div class="workflow-log">${esc(new Date(row.at).toLocaleString("ko-KR"))} · ${esc(row.by || "담당자 미설정")}<br>${row.type === "reopen" ? `마감 취소: ${esc(row.reason)}` : "업무 마감·보관 완료"}</div>`,
               )
               .join("");
           $("#closeDayModal").innerHTML = closure
-            ? `<div class="modal-card"><div class="modal-head"><div><h2>🏁 오늘 전체 배송 완료</h2><p>점포별 하차 시간 없이 하루 전체 완료만 기록했습니다.</p></div><button class="close-button" type="button" data-action="close-work-close">×</button></div><div class="modal-body"><div class="departure-ready-card"><div class="icon">${closure.result === "issue" ? "!" : "✓"}</div><h2>${closure.result === "issue" ? "배송 완료 · 관리자 확인 필요" : "문제 없이 전체 배송 완료"}</h2><p>${esc(new Date(closure.at).toLocaleString("ko-KR"))}</p><p>${esc(closure.by || "담당자 미설정")} · ${esc(closure.vehicle || "-")}호차</p></div><div class="error-stat-grid"><div><small>배정 점포</small><strong>${closure.deliveryCount || 0}곳</strong></div><div><small>긴급 미처리</small><strong>${closure.urgentPending || 0}건</strong></div><div><small>미해결 오류</small><strong>${closure.issueCount || 0}건</strong></div><div><small>마지막 동기화</small><strong>${closure.lastSyncAt ? esc(new Date(closure.lastSyncAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })) : "-"}</strong></div></div>${closure.note ? `<div class="${closure.result === "issue" ? "weigh-notice" : "weigh-ready"}"><b>완료 메모</b><br>${esc(closure.note)}</div>` : ""}${history}<button class="full-button warning-button" type="button" data-action="reopen-work-day">전체 완료 취소 · 다시 수정</button><button class="full-button outline-button" type="button" data-action="close-work-close">닫기</button></div></div>`
-            : `<div class="modal-card"><div class="modal-head"><div><h2>🏁 오늘 전체 배송 완료</h2><p>마지막 배송까지 끝난 뒤 한 번만 눌러 회사에 완료를 알립니다.</p></div><button class="close-button" type="button" data-action="close-work-close">×</button></div><div class="modal-body"><div class="loading-summary"><div><small>당일 배정 점포</small><strong>${rows.length}곳</strong></div><div><small>긴급 미처리</small><strong>${pendingUrgent}건</strong></div><div><small>미해결 오류</small><strong>${unresolvedIncidents}건</strong></div><div><small>중앙 연결</small><strong>${supabaseClient && supabaseSession ? "정상" : "확인 필요"}</strong></div></div><div class="senior-guide"><b>간단 사용법</b>문제가 없으면 초록색 버튼을 누르세요. 회사에 알릴 문제가 있으면 빨간색 버튼을 누르고 내용을 적으세요. 점포별 완료 시간은 기록하지 않습니다.</div>${pendingUrgent || unresolvedIncidents ? `<div class="weigh-notice">현재 긴급 미처리 또는 미해결 오류가 있습니다. 이 경우 ‘문제 있음’으로 완료해 관리자에게 알려 주세요.</div>` : `<div class="weigh-ready">✓ 별도 업무 보고 없이 전체 완료 시간과 문제 없음 상태가 관리자에게 전달됩니다.</div>`}<button class="full-button primary-button" type="button" data-action="close-work-day" data-result="normal" ${rows.length ? "" : "disabled"}>✓ 문제 없이 전체 배송 완료</button><button class="full-button danger-button" type="button" data-action="close-work-day" data-result="issue" ${rows.length ? "" : "disabled"}>! 배송 완료 · 관리자 확인 필요</button><button class="full-button outline-button" type="button" data-action="close-work-close">취소</button></div></div>`;
+            ? `<div class="modal-card"><div class="modal-head"><div><h2>📁 업무 마감 기록</h2><p>${esc(workDate)} 자료는 수정 잠금 상태입니다.</p></div><button class="close-button" type="button" data-action="close-work-close">×</button></div><div class="modal-body"><div class="departure-ready-card"><div class="icon">✓</div><h2>업무 마감·보관 완료</h2><p>${esc(new Date(closure.at).toLocaleString("ko-KR"))}</p><p>${esc(closure.by || "담당자 미설정")} · ${esc(closure.vehicle || "-")}호차</p></div><div class="error-stat-grid"><div><small>배송 완료</small><strong>${closure.completedCount}/${closure.deliveryCount}</strong></div><div><small>오류 방지</small><strong>${stats.prevented || 0}건</strong></div><div><small>상차 완료</small><strong>${stats.loaded || 0}/${stats.tasks || 0}</strong></div><div><small>밴드 남음</small><strong>${closure.bandRemaining || 0}개</strong></div></div>${history}<button class="full-button warning-button" type="button" data-action="reopen-work-day">마감 취소 · 다시 수정</button><button class="full-button outline-button" type="button" data-action="close-work-close">닫기</button></div></div>`
+            : `<div class="modal-card"><div class="modal-head"><div><h2>📁 오늘 업무 마감·보관</h2><p>마감하면 오늘 자료가 잠기고 자동 백업이 남습니다.</p></div><button class="close-button" type="button" data-action="close-work-close">×</button></div><div class="modal-body"><div class="loading-summary"><div><small>전체 배송</small><strong>${rows.length}</strong></div><div><small>배송 완료</small><strong>${completed}</strong></div><div><small>미완료</small><strong>${Math.max(0, rows.length - completed)}</strong></div><div><small>오류 방지</small><strong>${stats.prevented}</strong></div></div>${rows.length && completed === rows.length ? `<div class="weigh-ready">✓ 모든 배송이 완료되어 마감할 수 있습니다.</div>` : `<div class="weigh-notice">모든 배송의 하차 완료를 확인해야 업무를 마감할 수 있습니다.</div>`}<button class="full-button primary-button" type="button" data-action="close-work-day" ${rows.length && completed === rows.length ? "" : "disabled"}>오늘 업무 마감·자동 백업</button><button class="full-button outline-button" type="button" data-action="close-work-close">취소</button></div></div>`;
           $("#closeDayModal").classList.remove("hidden");
         }
-        function closeWorkDay(result = "normal") {
+        function closeWorkDay() {
           if (isWorkClosed()) return openWorkClosure();
           const rows = deliveries().filter((d) => d.status !== "cancelled"),
-            urgentPending =
-              urgentRows().length +
-              centralUrgentOrders.filter((row) =>
-                ["new", "acknowledged", "loaded"].includes(row.status),
-              ).length,
-            issueCount = centralIncidents.filter(
-              (row) => !["resolved", "closed"].includes(row.status),
-            ).length;
-          if (!rows.length) return alert("오늘 배정된 배송이 없습니다.");
-          if (result === "normal" && (urgentPending || issueCount))
-            return alert(
-              "긴급 미처리 또는 미해결 오류가 있습니다.\n‘배송 완료 · 관리자 확인 필요’로 완료해 주세요.",
-            );
-          let note = "";
-          if (result === "issue") {
-            const input = prompt(
-              "관리자가 확인해야 할 내용을 적어 주세요.\n예: 추가 발주 1건은 점포와 통화 후 내일 납품 예정",
-              "",
-            );
-            if (input === null) return;
-            note = String(input).trim();
-            if (!note) return alert("관리자 확인 내용을 반드시 입력해 주세요.");
-          } else if (
+            completed = rows.filter((d) => d.status === "completed").length;
+          if (!rows.length || completed !== rows.length)
+            return alert("모든 배송의 하차 완료를 먼저 확인해 주세요.");
+          if (
             !confirm(
-              `${workDate} 배송을 문제 없이 모두 완료했습니까?\n완료 시간만 회사에 전달되며 점포별 하차 시간은 기록하지 않습니다.`,
+              `${workDate} 업무를 마감할까요?\n마감 후에는 자료가 잠기며, 사유를 입력해야 다시 수정할 수 있습니다.`,
             )
-          ) {
+          )
             return;
-          }
-          saveAutoSnapshot(JSON.stringify(state), "전체 배송 완료 직전");
+          saveAutoSnapshot(JSON.stringify(state), "당일 업무 마감 직전");
           const stats = errorStats(),
             bandRemaining = bandSummaryRows().reduce(
               (sum, row) => sum + row.remaining,
@@ -6012,12 +5786,7 @@
               by: state.profile.driverName || "담당자 미설정",
               vehicle: state.profile.vehicleNumber || "",
               deliveryCount: rows.length,
-              completedCount: rows.length,
-              result,
-              note,
-              urgentPending,
-              issueCount,
-              lastSyncAt: new Date().toISOString(),
+              completedCount: completed,
               bandRemaining,
               stats,
             };
@@ -6029,10 +5798,9 @@
             date: workDate,
             at: record.at,
             by: record.by,
-            result,
           });
           state.workClosureHistory = state.workClosureHistory.slice(-200);
-          saveState("전체 배송 완료 전");
+          saveState("당일 업무 마감 전");
           renderToday();
           openWorkClosure();
         }
@@ -6040,12 +5808,12 @@
           const closure = state.workClosures?.[workDate];
           if (!closure) return;
           const reason = prompt(
-            "전체 배송 완료를 취소하고 다시 수정하는 이유를 입력해 주세요.\n예: 추가 발주 확인으로 배송 내용 수정",
+            "마감을 취소하고 다시 수정하는 이유를 입력해 주세요.\n예: 오배송 확인으로 거래명세 수정",
             "",
           );
           if (reason === null) return;
           if (!String(reason).trim())
-            return alert("전체 완료 취소 사유를 반드시 입력해 주세요.");
+            return alert("마감 취소 사유를 반드시 입력해 주세요.");
           state.workClosureHistory = state.workClosureHistory || [];
           state.workClosureHistory.push({
             type: "reopen",
@@ -6055,10 +5823,12 @@
             reason: String(reason).trim(),
           });
           delete state.workClosures[workDate];
-          saveState("전체 배송 완료 취소 전");
+          saveState("업무 마감 취소 전");
           closeModal("closeDayModal");
           renderToday();
-          alert("전체 배송 완료를 취소했습니다. 오늘 자료를 다시 수정할 수 있습니다.");
+          alert(
+            "업무 마감을 취소했습니다. 오늘 자료를 다시 수정할 수 있습니다.",
+          );
         }
 
         function openSetup() {
@@ -6329,7 +6099,7 @@
               )}</select></label><div class="two"><label class="field"><span>배송일</span><input class="control" name="deliveryDate" type="date" value="${esc(d.deliveryDate)}"></label><label class="field"><span>배송순서</span><input class="control" name="routeOrder" type="number" min="1" value="${d.routeOrder}"></label></div><label class="band-line" style="border-color:#d46a61;color:#8e1711;background:var(--red-soft)"><input name="isUrgentAdditional" type="checkbox" ${d.isUrgentAdditional ? "checked" : ""}>🚨 긴급 추가 발주로 등록</label><div class="heading" style="margin:6px 0 0"><h2 style="font-size:18px">어종·제품</h2><button class="mini" type="button" data-action="add-form-item">＋ 품목</button></div><div id="formItems">${d.items.map(renderItemEditor).join("")}</div><button class="full-button add-next-item" type="button" data-action="add-form-item">＋ 다음 품목 추가<small>현재 ${d.items.length}개 · 누르면 새 품목 입력칸으로 바로 이동</small></button><div class="heading" style="margin:6px 0 0"><h2 style="font-size:18px">박스·동봉품</h2><button class="mini" type="button" data-action="add-form-box">＋ 박스</button></div><div id="formBoxes">${d.boxes.map(renderBoxEditor).join("") || `<div class="empty">박스가 없으면 추가하지 않아도 됩니다.</div>`}</div><label class="field"><span>동봉품 전체 메모</span><textarea class="control" name="coPackNote">${esc(d.coPackNote)}</textarea></label><label class="field"><span>전날 미수금액</span><input class="control" name="previousBalance" type="number" min="0" value="${d.previousBalance || ""}"></label><label class="field"><span>전체 메모</span><textarea class="control" name="notes">${esc(d.notes)}</textarea></label><div class="total-preview"><span>예상 합계</span><b id="formTotal">${money(d.items.reduce((s, i) => s + itemAmount(i), 0) + Number(d.previousBalance || 0))}원</b></div><button class="full-button primary-button sticky-save" type="submit">발주 내용 저장</button></form></div>`;
         }
         function renderItemEditor(i, index) {
-          return `<article class="item-editor" data-form-item="${index}"><div class="item-editor-head"><strong>${index + 1}번 품목</strong><button type="button" data-action="remove-form-item" data-index="${index}" ${formDraft.items.length === 1 ? "disabled" : ""}>삭제</button></div><div class="three"><label class="field"><span>구분</span><select class="control" data-item-field="category">${categories.map((v) => `<option ${v === i.category ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종·품목</span><input class="control" data-item-field="species" value="${esc(i.species)}"></label><label class="field"><span>규격</span><input class="control" data-item-field="size" value="${esc(i.size)}"></label></div><div class="three"><label class="field"><span>원산지</span><input class="control" data-item-field="originCountry" list="originList" value="${esc(i.originCountry)}"></label><label class="field"><span>주문 수량</span><input class="control" data-item-field="requestedQty" type="number" min="0" step=".01" value="${i.requestedQty}"></label><label class="field"><span>주문 단위</span><select class="control" data-item-field="unit">${units.map((v) => `<option ${v === i.unit ? "selected" : ""}>${v}</option>`).join("")}</select></label></div><div class="three"><label class="field"><span>${(i.weighings || []).length ? "계근 자동 합계 kg" : "실제 중량 kg"}</span><input class="control" data-item-field="actualWeight" type="number" min="0" step=".001" value="${i.actualWeight ?? ""}" ${(i.weighings || []).length ? "disabled" : ""}></label><label class="field"><span>판매 단가</span><input class="control" data-item-field="unitPrice" type="number" min="0" value="${i.unitPrice || ""}"></label><label class="field"><span>가격 기준</span><select class="control" data-item-field="priceUnit">${units.map((v) => `<option value="${v}" ${v === i.priceUnit ? "selected" : ""}>${v}당</option>`).join("")}</select></label></div><div class="three"><label class="field"><span>운반 위치</span><select class="control" data-item-field="tankNumber"><option value="0">📦 박스 운반 · 수조 없음</option>${Array.from({ length: 6 }, (_, n) => `<option value="${n + 1}" ${Number(i.tankNumber) === n + 1 ? "selected" : ""}>💧 ${n + 1}번 수조 운반</option>`).join("")}</select><small style="color:var(--muted);line-height:1.4">박스로 가는 활어는 첫 번째 항목을 선택하세요.</small></label><label class="field"><span>작업·보관</span><input class="control" data-item-field="processing" value="${esc(i.processing)}"></label><label class="field"><span>필렛 작업비/kg</span><input class="control" data-item-field="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg || ""}" ${i.category === "필렛 제품" ? "" : "disabled"}></label></div><label class="band-line"><input data-item-field="rubberBand" type="checkbox" ${i.rubberBand ? "checked" : ""}>꼬리 고무밴드 작업</label><div class="two"><label class="field"><span>밴드 색상</span><input class="control" data-item-field="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand ? "" : "disabled"}></label><label class="field"><span>밴드 수량</span><input class="control" data-item-field="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity || ""}" ${i.rubberBand ? "" : "disabled"}></label></div><label class="field"><span>품목별 메모</span><input class="control" data-item-field="includedNote" value="${esc(i.includedNote)}"></label></article>`;
+          return `<article class="item-editor" data-form-item="${index}"><div class="item-editor-head"><strong>${index + 1}번 품목</strong><button type="button" data-action="remove-form-item" data-index="${index}" ${formDraft.items.length === 1 ? "disabled" : ""}>삭제</button></div><div class="three"><label class="field"><span>구분</span><select class="control" data-item-field="category">${categories.map((v) => `<option ${v === i.category ? "selected" : ""}>${v}</option>`).join("")}</select></label><label class="field"><span>어종·품목</span><input class="control" data-item-field="species" value="${esc(i.species)}"></label><label class="field"><span>규격</span><input class="control" data-item-field="size" value="${esc(i.size)}"></label></div><div class="three"><label class="field"><span>원산지</span><input class="control" data-item-field="originCountry" list="originList" value="${esc(i.originCountry)}"></label><label class="field"><span>주문 수량</span><input class="control" data-item-field="requestedQty" type="number" min="0" step=".01" value="${i.requestedQty}"></label><label class="field"><span>주문 단위</span><select class="control" data-item-field="unit">${units.map((v) => `<option ${v === i.unit ? "selected" : ""}>${v}</option>`).join("")}</select></label></div><div class="three"><label class="field"><span>${(i.weighings || []).length ? "계근 자동 합계 kg" : "실제 중량 kg"}</span><input class="control" data-item-field="actualWeight" type="number" min="0" step=".001" value="${i.actualWeight ?? ""}" ${(i.weighings || []).length ? "disabled" : ""}></label><label class="field"><span>판매 단가</span><input class="control" data-item-field="unitPrice" type="number" min="0" value="${i.unitPrice || ""}"></label><label class="field"><span>가격 기준</span><select class="control" data-item-field="priceUnit">${units.map((v) => `<option value="${v}" ${v === i.priceUnit ? "selected" : ""}>${v}당</option>`).join("")}</select></label></div><div class="three"><label class="field"><span>수조 위치</span><select class="control" data-item-field="tankNumber"><option value="0">박스·별도</option>${Array.from({ length: 6 }, (_, n) => `<option value="${n + 1}" ${Number(i.tankNumber) === n + 1 ? "selected" : ""}>${n + 1}번 수조</option>`).join("")}</select></label><label class="field"><span>작업·보관</span><input class="control" data-item-field="processing" value="${esc(i.processing)}"></label><label class="field"><span>필렛 작업비/kg</span><input class="control" data-item-field="processingFeePerKg" type="number" min="0" value="${i.processingFeePerKg || ""}" ${i.category === "필렛 제품" ? "" : "disabled"}></label></div><label class="band-line"><input data-item-field="rubberBand" type="checkbox" ${i.rubberBand ? "checked" : ""}>꼬리 고무밴드 작업</label><div class="two"><label class="field"><span>밴드 색상</span><input class="control" data-item-field="rubberBandColor" value="${esc(i.rubberBandColor)}" ${i.rubberBand ? "" : "disabled"}></label><label class="field"><span>밴드 수량</span><input class="control" data-item-field="rubberBandQuantity" type="number" min="0" value="${i.rubberBandQuantity || ""}" ${i.rubberBand ? "" : "disabled"}></label></div><label class="field"><span>품목별 메모</span><input class="control" data-item-field="includedNote" value="${esc(i.includedNote)}"></label></article>`;
         }
         function renderBoxEditor(b, index) {
           return `<div class="box-row" data-form-box="${index}"><span class="box-number">${index + 1}</span><input class="control" data-box-field="contents" value="${esc(b.contents)}" placeholder="박스 동봉 내역"><button type="button" data-action="remove-form-box" data-index="${index}">삭제</button></div>`;
@@ -6484,11 +6254,11 @@
                 const changes = i.tankHistory || [],
                   last = changes[changes.length - 1],
                   hasTank = Number(i.tankNumber) > 0;
-                return `<article class="tank-manager-row"><div><strong>${d.routeOrder}번 ${esc(c.name)} · ${esc(i.species)}</strong><small>${esc(quantityText(i))}${last ? ` · 최근 변경 ${tankLabel(last.from)} → ${tankLabel(last.to)}` : ""}</small><span class="tank-badge">운반 위치: ${tankLabel(i.tankNumber)}</span>${hasTank ? `<span class="load-status ${i.tankLoaded ? "done" : ""}">${i.tankLoaded ? "✓ 수조 상차 완료" : "○ 수조 상차 확인 필요"}</span>` : `<span class="load-status done">✓ 박스 운반 · 수조 확인 없음</span>`}</div><div class="load-controls" style="grid-template-columns:1fr;min-width:170px"><button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="manager" style="font-size:16px">운반 위치 변경</button>${hasTank ? `<button class="load-toggle ${i.tankLoaded ? "done" : ""}" type="button" data-action="toggle-tank-loaded" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="manager" style="font-size:16px">${i.tankLoaded ? "상차 완료 취소" : "✓ 실제 상차 완료"}</button>` : ""}</div></article>`;
+                return `<article class="tank-manager-row"><div><strong>${d.routeOrder}번 ${esc(c.name)} · ${esc(i.species)}</strong><small>${esc(quantityText(i))}${last ? ` · 최근 변경 ${tankLabel(last.from)} → ${tankLabel(last.to)}` : ""}</small><span class="tank-badge">현재 ${tankLabel(i.tankNumber)}</span>${hasTank ? `<span class="load-status ${i.tankLoaded ? "done" : ""}">${i.tankLoaded ? "✓ 실제 상차 완료" : "○ 실제 상차 확인 필요"}</span>` : ""}</div><div class="load-controls" style="grid-template-columns:1fr;min-width:170px"><button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="manager" style="font-size:16px">수조 바꾸기</button>${hasTank ? `<button class="load-toggle ${i.tankLoaded ? "done" : ""}" type="button" data-action="toggle-tank-loaded" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="manager" style="font-size:16px">${i.tankLoaded ? "상차 완료 취소" : "✓ 실제 상차 완료"}</button>` : ""}</div></article>`;
               })
               .join("");
           $("#tankModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>💧 운반 위치·수조 상차 확인</h2><p>수조 운반과 박스 운반을 품목별로 구분합니다.</p></div><button class="close-button" type="button" data-action="close-tank">×</button></div><div class="modal-body">${message ? `<div class="weigh-ready">✓ ${esc(message)}</div>` : ""}<div class="senior-guide"><b>수조 운반만 상차 확인이 필요합니다.</b>활어 계근 여부와 관계없이 거래명세서를 바로 인쇄·저장할 수 있습니다.</div><div class="tank-manager-list">${cards || `<div class="empty">등록된 운반 품목이 없습니다.</div>`}</div><button class="full-button outline-button" type="button" data-action="close-tank">배송 화면으로 돌아가기</button></div></div>`;
+            `<div class="modal-card"><div class="modal-head"><div><h2>💧 수조 실제 상차 확인</h2><p>어종을 수조에 넣은 직후 큰 완료 버튼을 누르세요.</p></div><button class="close-button" type="button" data-action="close-tank">×</button></div><div class="modal-body">${message ? `<div class="weigh-ready">✓ ${esc(message)}</div>` : ""}<div class="senior-guide"><b>현장 순서</b>① 거래처·어종 확인 → ② 실제 수조에 넣기 → ③ ‘실제 상차 완료’ 누르기</div><div class="tank-manager-list">${cards || `<div class="empty">수조에 상차할 배송 품목이 없습니다.</div>`}</div><button class="full-button outline-button" type="button" data-action="close-tank">배송 화면으로 돌아가기</button></div></div>`;
           $("#tankModal").classList.remove("hidden");
         }
         function openTankChange(deliveryId, itemId, source = "manager") {
@@ -6512,11 +6282,11 @@
           const choices = [0, 1, 2, 3, 4, 5, 6]
             .map(
               (n) =>
-                `<button class="tank-choice ${n === 0 ? "box-choice" : ""} ${tankPendingNumber === n ? "selected" : ""}" type="button" data-action="choose-tank" data-tank="${n}">${n ? tankLabel(n) : "📦 박스 운반 · 수조 없음"}</button>`,
+                `<button class="tank-choice ${n === 0 ? "box-choice" : ""} ${tankPendingNumber === n ? "selected" : ""}" type="button" data-action="choose-tank" data-tank="${n}">${n ? tankLabel(n) : "박스·별도 보관"}</button>`,
             )
             .join("");
           $("#tankModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)} · ${esc(i.species)}</h2><p>${d.routeOrder}번째 배송지 · ${esc(quantityText(i))}</p></div><button class="close-button" type="button" data-action="close-tank-change">×</button></div><div class="modal-body"><div id="tankChangePreview" class="tank-change-preview"><small>변경 전 → 변경 후</small><strong>${tankLabel(i.tankNumber)} → ${tankLabel(tankPendingNumber)}</strong></div><div class="senior-guide"><b>실제 운반 방법을 한 번 누르세요.</b>수조에 넣지 않는 품목은 ‘박스 운반’을 선택하면 됩니다.</div><div class="tank-choice-grid">${choices}</div><label class="field"><span>변경 이유</span><select id="tankReason" class="control"><option>박스 상태로 운반</option><option>추가 발주로 수조 재배치</option><option>수조 공간 부족</option><option>어종 분리</option><option>현장 작업 변경</option><option>기타</option></select></label><button id="confirmTankButton" class="full-button primary-button" type="button" data-action="confirm-tank-change" disabled>선택한 운반 위치로 변경 확정</button>${history ? `<div class="heading" style="margin:8px 0 0"><div><h2 style="font-size:19px">최근 변경 기록</h2><p>실수 여부를 확인할 수 있습니다.</p></div></div><div class="tank-history">${history}</div>` : ""}<button class="full-button outline-button" type="button" data-action="close-tank-change">${tankReturn === "manager" ? "품목 목록으로" : "변경하지 않고 돌아가기"}</button></div></div>`;
+            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)} · ${esc(i.species)}</h2><p>${d.routeOrder}번째 배송지 · ${esc(quantityText(i))}</p></div><button class="close-button" type="button" data-action="close-tank-change">×</button></div><div class="modal-body"><div id="tankChangePreview" class="tank-change-preview"><small>변경 전 → 변경 후</small><strong>${tankLabel(i.tankNumber)} → ${tankLabel(tankPendingNumber)}</strong></div><div class="senior-guide"><b>새로 넣을 위치를 한 번 누르세요.</b>선택한 수조는 진한 초록색으로 표시됩니다.</div><div class="tank-choice-grid">${choices}</div><label class="field"><span>변경 이유</span><select id="tankReason" class="control"><option>추가 발주로 수조 재배치</option><option>수조 공간 부족</option><option>어종 분리</option><option>현장 작업 변경</option><option>기타</option></select></label><button id="confirmTankButton" class="full-button primary-button" type="button" data-action="confirm-tank-change" disabled>선택한 수조로 변경 확정</button>${history ? `<div class="heading" style="margin:8px 0 0"><div><h2 style="font-size:19px">최근 변경 기록</h2><p>실수 여부를 확인할 수 있습니다.</p></div></div><div class="tank-history">${history}</div>` : ""}<button class="full-button outline-button" type="button" data-action="close-tank-change">${tankReturn === "manager" ? "품목 목록으로" : "변경하지 않고 돌아가기"}</button></div></div>`;
           $("#tankModal").classList.remove("hidden");
         }
         function chooseTank(value) {
@@ -6737,11 +6507,11 @@
                 const count = (i.weighings || []).length,
                   target = targetFishCount(i),
                   total = weightTotal(i);
-                return `<article class="weigh-row ${i.weighingConfirmed ? "confirmed" : ""}"><div><strong>${d.routeOrder}번 ${esc(c.name)} · ${esc(i.species)}</strong><small>${target ? `발주 ${target}마리 · ` : ""}계근 ${count}마리 / ${total.toFixed(3)}kg · ${tankLabel(i.tankNumber)}</small>${i.weighingConfirmed ? `<span class="tag" style="color:#155d32;background:#dff4e6">✓ 계근 확정</span>` : `<span class="tag">계근 필요</span>`}</div><button type="button" data-action="open-weigh-item" data-delivery-id="${d.id}" data-item-id="${i.id}">${i.weighingConfirmed ? "확인·수정" : "계근 입력"}</button></article>`;
+                return `<article class="weigh-row ${i.weighingConfirmed ? "confirmed" : ""}"><div><strong>${d.routeOrder}번 ${esc(c.name)} · ${esc(i.species)}</strong><small>${target ? `발주 ${target}마리 · ` : ""}계근 ${count}마리 / ${total.toFixed(3)}kg · ${i.tankNumber ? i.tankNumber + "번 수조" : "수조 미지정"}</small>${i.weighingConfirmed ? `<span class="tag" style="color:#155d32;background:#dff4e6">✓ 계근 확정</span>` : `<span class="tag">계근 필요</span>`}</div><button type="button" data-action="open-weigh-item" data-delivery-id="${d.id}" data-item-id="${i.id}">${i.weighingConfirmed ? "확인·수정" : "계근 입력"}</button></article>`;
               })
               .join("");
           $("#weighModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>⚖️ ${esc(state.profile.vehicleNumber)}호차 활어 계근 · 선택</h2><p>필요한 경우에만 입력하며, 입력한 값은 거래명세서에 자동 합산됩니다.</p></div><button class="close-button" type="button" data-action="close-weigh">×</button></div><div class="modal-body"><div class="weigh-summary"><div><small>발주 마릿수</small><strong>${ws.target || "-"}</strong></div><div><small>입력 마릿수</small><strong>${ws.entered}</strong></div><div><small>확정 품목</small><strong>${ws.confirmed}/${ws.totalItems}</strong></div></div>${ws.allDone ? `<div class="weigh-ready">✓ 선택 계근 자료가 거래명세서에 반영되었습니다.</div>` : `<div class="weigh-notice">계근은 선택 사항입니다. 필요할 때만 저울에서 나온 숫자를 입력하세요.</div>`}<div class="weigh-list">${rows || `<div class="empty">오늘 계근할 활어가 없습니다.</div>`}</div><button class="full-button outline-button" type="button" data-action="close-weigh">배송 화면으로 돌아가기</button></div></div>`;
+            `<div class="modal-card"><div class="modal-head"><div><h2>⚖️ ${esc(state.profile.vehicleNumber)}호차 활어 계근</h2><p>한 마리씩 입력하면 거래명세서에 자동 합산됩니다.</p></div><button class="close-button" type="button" data-action="close-weigh">×</button></div><div class="modal-body"><div class="weigh-summary"><div><small>발주 마릿수</small><strong>${ws.target || "-"}</strong></div><div><small>입력 마릿수</small><strong>${ws.entered}</strong></div><div><small>확정 품목</small><strong>${ws.confirmed}/${ws.totalItems}</strong></div></div>${ws.allDone ? `<div class="weigh-ready">✓ 호차 계근 완료 · 거래명세서 자동 작성 준비 완료</div>` : `<div class="weigh-notice">발주 거래처와 어종을 확인하고, 저울에서 나온 숫자를 순서대로 입력하세요.</div>`}<div class="weigh-list">${rows || `<div class="empty">오늘 계근할 활어가 없습니다.</div>`}</div><button class="full-button outline-button" type="button" data-action="close-weigh">배송 화면으로 돌아가기</button></div></div>`;
           $("#weighModal").classList.remove("hidden");
         }
         function findWeighItem() {
@@ -6766,7 +6536,7 @@
               )
               .join("");
           $("#weighModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)} · ${esc(i.species)}</h2><p>${d.routeOrder}번째 배송지 · ${target ? `발주 ${target}마리` : `수량 ${i.requestedQty}${esc(i.unit)}`}</p></div><button class="close-button" type="button" data-action="close-weigh">×</button></div><div class="modal-body weight-panel"><div class="weight-focus"><small>현재 계근 합계</small><strong>${total.toFixed(3)}kg</strong><small>${count}마리 입력${target ? ` / 발주 ${target}마리` : ""}</small>${mismatch && count ? `<b>마릿수가 ${count < target ? target - count + "마리 부족" : count - target + "마리 초과"}합니다.</b>` : ""}</div><div class="tank-current"><div><span>운반 위치</span><strong>${tankLabel(i.tankNumber)}</strong><small>${i.tankNumber ? "수조 상차 확인이 필요합니다." : "계근은 선택 사항이며 명세서는 바로 출력할 수 있습니다."}</small></div>${locked ? "" : `<button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="weigh">🔄 운반 위치 변경</button>`}</div>${locked ? `<div class="weigh-ready">배송 완료된 기록입니다.</div>` : `<form id="weighingForm" class="weight-entry"><input id="weightInput" class="weight-input" name="weight" type="number" inputmode="decimal" min="0.001" max="99.999" step="0.001" placeholder="0.000" aria-label="한 마리 중량 kg" required><button type="submit">저장 후 다음 마리</button></form>`}<div class="heading" style="margin:4px 0 0"><div><h2 style="font-size:19px">개별 계근 내역</h2><p>잘못 입력한 값은 바로 수정하거나 삭제합니다.</p></div>${count && !locked ? `<button class="mini" type="button" data-action="undo-last-weight">마지막 취소</button>` : ""}</div><div class="weight-history">${history || `<div class="empty">아직 입력한 중량이 없습니다.</div>`}</div>${locked ? "" : i.weighingConfirmed ? `<button class="full-button warning-button" type="button" data-action="reopen-weighing">계근 확정 취소 · 다시 수정</button>` : `<button class="full-button primary-button" type="button" data-action="confirm-weighing" ${count ? "" : "disabled"}>${mismatch ? "마릿수 확인 후 계근 확정" : "계근 완료 · 합계 확정"}</button>`}<button class="full-button outline-button" type="button" data-action="back-weigh-list">계근 목록으로</button></div></div>`;
+            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)} · ${esc(i.species)}</h2><p>${d.routeOrder}번째 배송지 · ${target ? `발주 ${target}마리` : `수량 ${i.requestedQty}${esc(i.unit)}`}</p></div><button class="close-button" type="button" data-action="close-weigh">×</button></div><div class="modal-body weight-panel"><div class="weight-focus"><small>현재 계근 합계</small><strong>${total.toFixed(3)}kg</strong><small>${count}마리 입력${target ? ` / 발주 ${target}마리` : ""}</small>${mismatch && count ? `<b>마릿수가 ${count < target ? target - count + "마리 부족" : count - target + "마리 초과"}합니다.</b>` : ""}</div><div class="tank-current"><div><span>상차할 위치</span><strong>${tankLabel(i.tankNumber)}</strong></div>${locked ? "" : `<button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="weigh">🔄 수조 변경</button>`}</div>${locked ? `<div class="weigh-ready">배송 완료된 기록입니다.</div>` : `<form id="weighingForm" class="weight-entry"><input id="weightInput" class="weight-input" name="weight" type="number" inputmode="decimal" min="0.001" max="99.999" step="0.001" placeholder="0.000" aria-label="한 마리 중량 kg" required><button type="submit">저장 후 다음 마리</button></form>`}<div class="heading" style="margin:4px 0 0"><div><h2 style="font-size:19px">개별 계근 내역</h2><p>잘못 입력한 값은 바로 수정하거나 삭제합니다.</p></div>${count && !locked ? `<button class="mini" type="button" data-action="undo-last-weight">마지막 취소</button>` : ""}</div><div class="weight-history">${history || `<div class="empty">아직 입력한 중량이 없습니다.</div>`}</div>${locked ? "" : i.weighingConfirmed ? `<button class="full-button warning-button" type="button" data-action="reopen-weighing">계근 확정 취소 · 다시 수정</button>` : `<button class="full-button primary-button" type="button" data-action="confirm-weighing" ${count ? "" : "disabled"}>${mismatch ? "마릿수 확인 후 계근 확정" : "계근 완료 · 합계 확정"}</button>`}<button class="full-button outline-button" type="button" data-action="back-weigh-list">계근 목록으로</button></div></div>`;
           $("#weighModal").classList.remove("hidden");
           setTimeout(() => $("#weightInput")?.focus(), 60);
         }
@@ -6876,6 +6646,8 @@
         function confirmWeighing() {
           const { d, i } = findWeighItem();
           if (!d || !i || !(i.weighings || []).length) return;
+          if (!i.tankNumber)
+            return alert("상차한 수조를 1~6번 중에서 먼저 선택해 주세요.");
           const target = targetFishCount(i),
             count = i.weighings.length;
           if (
@@ -7568,14 +7340,14 @@
           if (!d) return;
           const c = customerOf(d),
             p = progress(d),
-            locked = false,
+            locked = d.status === "completed",
             weighReady = deliveryWeighingReady(d),
             guideExists = hasHandover(c),
             guideOk = handoverAcknowledged(d, c);
           const itemHtml = d.items
             .map((i) => {
               const weightCount = (i.weighings || []).length;
-              return `<article class="check-card ${i.checked ? "checked" : ""}" data-check-item="${i.id}"><div class="check-main"><input type="checkbox" data-check-toggle="item" ${i.checked ? "checked" : ""} ${locked ? "disabled" : ""}><span class="check-copy"><strong>${esc(i.species)} · ${esc(quantityText(i))}</strong><small>${esc(i.size)} / ${esc(i.originCountry)} / ${esc(i.processing)}</small><span class="important-tags"><span class="tag">${tankLabel(i.tankNumber)}</span>${i.tankNumber ? `<span class="tag" style="color:${i.tankLoaded ? "#155d32" : "#7b3f0c"};background:${i.tankLoaded ? "#dff4e6" : "#ffedda"}">수조 실제 상차 ${i.tankLoaded ? "완료" : "미확인"}</span>` : `<span class="tag" style="color:#155d32;background:#dff4e6">박스 운반 · 수조 확인 없음</span>`}${isWeighable(i) ? `<span class="tag" style="color:${i.weighingConfirmed ? "#155d32" : "#7b3f0c"};background:${i.weighingConfirmed ? "#dff4e6" : "#ffedda"}">계근 ${weightCount}마리 · ${weightTotal(i).toFixed(3)}kg ${i.weighingConfirmed ? "확정" : "미확정"}</span>` : ""}${i.rubberBand ? `<span class="tag">밴드 ${esc(i.rubberBandColor)} ${i.rubberBandQuantity}개</span>` : ""}${i.includedNote ? `<span class="tag memo">${esc(i.includedNote)}</span>` : ""}</span></span></div><div class="tank-current"><div><span>현재 운반 위치</span><strong>${tankLabel(i.tankNumber)}</strong></div>${locked ? "" : `<button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="check">🔄 운반 위치 변경</button>`}</div><div class="check-inputs"><label class="field"><span>${weightCount ? "계근 합계 kg" : "실제 중량 kg"}</span><input class="control" data-check-field="actualWeight" type="number" min="0" step=".001" value="${i.actualWeight ?? ""}" ${locked || weightCount ? "disabled" : ""}></label><label class="field"><span>확정 단가</span><input class="control" data-check-field="unitPrice" type="number" min="0" value="${i.unitPrice || ""}" ${locked ? "disabled" : ""}></label></div>${isWeighable(i) && !locked ? `<button class="full-button outline-button" type="button" data-action="open-weigh-item" data-delivery-id="${d.id}" data-item-id="${i.id}">⚖️ 개별 계근 ${weightCount ? "확인·수정" : "입력"}</button>` : ""}</article>`;
+              return `<article class="check-card ${i.checked ? "checked" : ""}" data-check-item="${i.id}"><div class="check-main"><input type="checkbox" data-check-toggle="item" ${i.checked ? "checked" : ""} ${locked ? "disabled" : ""}><span class="check-copy"><strong>${esc(i.species)} · ${esc(quantityText(i))}</strong><small>${esc(i.size)} / ${esc(i.originCountry)} / ${esc(i.processing)}</small><span class="important-tags"><span class="tag">${tankLabel(i.tankNumber)}</span>${i.tankNumber ? `<span class="tag" style="color:${i.tankLoaded ? "#155d32" : "#7b3f0c"};background:${i.tankLoaded ? "#dff4e6" : "#ffedda"}">수조 실제 상차 ${i.tankLoaded ? "완료" : "미확인"}</span>` : ""}${isWeighable(i) ? `<span class="tag" style="color:${i.weighingConfirmed ? "#155d32" : "#7b3f0c"};background:${i.weighingConfirmed ? "#dff4e6" : "#ffedda"}">계근 ${weightCount}마리 · ${weightTotal(i).toFixed(3)}kg ${i.weighingConfirmed ? "확정" : "미확정"}</span>` : ""}${i.rubberBand ? `<span class="tag">밴드 ${esc(i.rubberBandColor)} ${i.rubberBandQuantity}개</span>` : ""}${i.includedNote ? `<span class="tag memo">${esc(i.includedNote)}</span>` : ""}</span></span></div><div class="tank-current"><div><span>현재 상차 위치</span><strong>${tankLabel(i.tankNumber)}</strong></div>${locked ? "" : `<button type="button" data-action="open-tank-change" data-delivery-id="${d.id}" data-item-id="${i.id}" data-source="check">🔄 수조 변경</button>`}</div><div class="check-inputs"><label class="field"><span>${weightCount ? "계근 합계 kg" : "실제 중량 kg"}</span><input class="control" data-check-field="actualWeight" type="number" min="0" step=".001" value="${i.actualWeight ?? ""}" ${locked || weightCount ? "disabled" : ""}></label><label class="field"><span>확정 단가</span><input class="control" data-check-field="unitPrice" type="number" min="0" value="${i.unitPrice || ""}" ${locked ? "disabled" : ""}></label></div>${isWeighable(i) && !locked ? `<button class="full-button outline-button" type="button" data-action="open-weigh-item" data-delivery-id="${d.id}" data-item-id="${i.id}">⚖️ 개별 계근 ${weightCount ? "확인·수정" : "입력"}</button>` : ""}</article>`;
             })
             .join("");
           const boxes = d.boxes
@@ -7586,23 +7358,12 @@
             .join("");
           const amount = d.items.reduce((s, i) => s + itemAmount(i), 0),
             allChecked = p.total > 0 && p.done === p.total,
-            canComplete = allChecked,
+            canComplete = allChecked && weighReady,
             boxMatched =
               !d.boxes.length ||
               (d.boxCountConfirmed && d.loadedBoxCount === d.boxes.length);
           $("#checkModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${p.done}/${p.total} 확인</p></div><button class="close-button" type="button" data-action="close-check">×</button></div><div class="modal-body">${notice ? `<div class="weigh-ready">✓ ${esc(notice)}<br>하차 확인 체크가 자동 해제되었습니다.</div>` : ""}${guideExists ? `<div class="handover-card ${guideOk ? "ready" : ""}"><div><strong>${guideOk ? "✓ 점포 특이사항 확인 완료" : "📝 점포 특이사항 확인 필요"}</strong><small>출입 방법·물건 위치·금지사항을 배송 전에 확인하세요.</small></div><button type="button" data-action="open-store-guide" data-id="${d.id}" data-source="check">내용 보기</button></div>` : ""}<div class="heading"><div><h2 style="font-size:18px">어종·운반 위치·요구사항</h2><p>수조 운반 또는 박스 운반과 실물을 대조하세요.</p></div></div>${itemHtml || `<div class="empty">품목이 없습니다.</div>`}<div class="heading" style="margin-top:6px"><div><h2 style="font-size:18px">박스·동봉품</h2><p>${esc(d.coPackNote || "동봉품 전체 메모 없음")}</p></div>${locked ? "" : `<button class="mini" type="button" data-action="add-check-box">＋ 박스</button>`}</div>${d.boxes.length ? `<div class="box-count-result ${boxMatched ? "ok" : "bad"}">출차 대조: 계획 ${d.boxes.length}박스 / 실제 ${d.loadedBoxCount}박스 · ${boxMatched ? "일치" : "대조 필요"}</div>` : ""}${boxes || `<div class="empty">등록된 박스가 없습니다.</div>`}${weighReady ? `<div class="weigh-ready no-print">✓ 활어 계근 자료가 거래명세서에 반영되었습니다.</div>` : `<div class="weigh-notice no-print">활어 계근은 선택 사항입니다. 계근하지 않아도 거래명세서 인쇄·저장과 하차 완료가 가능합니다.</div>`}<div class="balance-editor no-print"><div><strong>전미수(전날 미수)</strong><small>거래명세서에 항상 표시됩니다.</small></div><label class="field"><span>금액</span><input id="previousBalanceInput" class="control" type="number" inputmode="numeric" min="0" step="1" value="${Number(d.previousBalance) || 0}"></label><button type="button" data-action="save-previous-balance">수정 적용</button><small id="balanceSaved">금액을 수정한 뒤 ‘수정 적용’을 누르세요.</small></div><div id="statementView" class="statement">${statementHTML(d, c, amount)}</div><div class="output-grid no-print"><button type="button" data-action="print-statement">🖨️ 인쇄</button><button type="button" data-action="image-statement" data-format="png">PNG 저장</button><button type="button" data-action="image-statement" data-format="jpg">JPG 저장</button></div>${locked ? "" : `<button class="full-button outline-button no-print" type="button" data-action="edit-delivery" data-id="${d.id}">발주·포장 내용 수정</button>`}${locked ? `<button class="full-button warning-button no-print" type="button" data-action="undo-complete" data-id="${d.id}">하차 완료 취소 · 다시 확인</button>` : `<button class="full-button primary-button no-print" type="button" data-action="complete-delivery" data-id="${d.id}" ${canComplete ? "" : "disabled"}>${allChecked ? "모두 확인 · 하차 완료" : "어종과 박스를 모두 확인해 주세요"}</button>`}</div></div>`;
-          $("#checkModal")
-            .querySelectorAll(
-              '[data-action="complete-delivery"], [data-action="undo-complete"]',
-            )
-            .forEach((button) => button.remove());
-          $("#checkModal").innerHTML = $("#checkModal").innerHTML
-            .replaceAll("하차 확인 체크", "물품 확인 체크")
-            .replaceAll(
-              "거래명세서 인쇄·저장과 하차 완료가 가능합니다.",
-              "거래명세서 인쇄·저장이 가능합니다.",
-            );
+            `<div class="modal-card"><div class="modal-head"><div><h2>${esc(c.name)}</h2><p>${d.routeOrder}번째 배송지 · ${p.done}/${p.total} 확인</p></div><button class="close-button" type="button" data-action="close-check">×</button></div><div class="modal-body">${notice ? `<div class="weigh-ready">✓ ${esc(notice)}<br>하차 확인 체크가 자동 해제되었습니다.</div>` : ""}${guideExists ? `<div class="handover-card ${guideOk ? "ready" : ""}"><div><strong>${guideOk ? "✓ 점포 특이사항 확인 완료" : "📝 점포 특이사항 확인 필요"}</strong><small>출입 방법·물건 위치·금지사항을 배송 전에 확인하세요.</small></div><button type="button" data-action="open-store-guide" data-id="${d.id}" data-source="check">내용 보기</button></div>` : ""}<div class="heading"><div><h2 style="font-size:18px">어종·수조·요구사항</h2><p>실물과 대조한 뒤 체크하세요.</p></div></div>${itemHtml || `<div class="empty">품목이 없습니다.</div>`}<div class="heading" style="margin-top:6px"><div><h2 style="font-size:18px">박스·동봉품</h2><p>${esc(d.coPackNote || "동봉품 전체 메모 없음")}</p></div>${locked ? "" : `<button class="mini" type="button" data-action="add-check-box">＋ 박스</button>`}</div>${d.boxes.length ? `<div class="box-count-result ${boxMatched ? "ok" : "bad"}">출차 대조: 계획 ${d.boxes.length}박스 / 실제 ${d.loadedBoxCount}박스 · ${boxMatched ? "일치" : "대조 필요"}</div>` : ""}${boxes || `<div class="empty">등록된 박스가 없습니다.</div>`}${weighReady ? "" : `<div class="weigh-notice no-print">활어 계근을 모두 확정해야 거래명세서를 출력하고 하차 완료할 수 있습니다.</div>`}<div class="balance-editor no-print"><div><strong>전미수(전날 미수)</strong><small>거래명세서에 항상 표시됩니다.</small></div><label class="field"><span>금액</span><input id="previousBalanceInput" class="control" type="number" inputmode="numeric" min="0" step="1" value="${Number(d.previousBalance) || 0}"></label><button type="button" data-action="save-previous-balance">수정 적용</button><small id="balanceSaved">금액을 수정한 뒤 ‘수정 적용’을 누르세요.</small></div><div id="statementView" class="statement">${statementHTML(d, c, amount)}</div><div class="output-grid no-print"><button type="button" data-action="print-statement" ${weighReady ? "" : "disabled"}>🖨️ 인쇄</button><button type="button" data-action="image-statement" data-format="png" ${weighReady ? "" : "disabled"}>PNG 저장</button><button type="button" data-action="image-statement" data-format="jpg" ${weighReady ? "" : "disabled"}>JPG 저장</button></div>${locked ? "" : `<button class="full-button outline-button no-print" type="button" data-action="edit-delivery" data-id="${d.id}">발주·포장 내용 수정</button>`}${locked ? `<button class="full-button warning-button no-print" type="button" data-action="undo-complete" data-id="${d.id}">하차 완료 취소 · 다시 확인</button>` : `<button class="full-button primary-button no-print" type="button" data-action="complete-delivery" data-id="${d.id}" ${canComplete ? "" : "disabled"}>${!weighReady ? "활어 계근을 먼저 확정해 주세요" : allChecked ? "모두 확인 · 하차 완료" : "어종과 박스를 모두 확인해 주세요"}</button>`}</div></div>`;
           $("#checkModal").classList.remove("hidden");
         }
         function statementHTML(d, c, amount) {
@@ -7698,7 +7459,7 @@
         function purchaseGroups() {
           const groups = {};
           deliveries()
-            .filter((d) => d.status !== "cancelled")
+            .filter((d) => !["completed", "cancelled"].includes(d.status))
             .forEach((d) => {
               const c = customerOf(d);
               d.items.forEach((i) => {
@@ -7714,21 +7475,7 @@
                     ? `${i.rubberBandColor}-${i.rubberBandQuantity}`
                     : "",
                 ].join("||");
-                if (!groups[key])
-                  groups[key] = {
-                    category: i.category,
-                    species: i.species,
-                    size: i.size,
-                    originCountry: i.originCountry,
-                    processing: i.processing,
-                    unit: i.unit,
-                    includedNote: i.includedNote || "",
-                    rubberBand: Boolean(i.rubberBand),
-                    rubberBandColor: i.rubberBandColor || "",
-                    rubberBandQuantity: Number(i.rubberBandQuantity) || 0,
-                    stores: [],
-                    total: 0,
-                  };
+                if (!groups[key]) groups[key] = { ...i, stores: [], total: 0 };
                 groups[key].stores.push({
                   name: c.name,
                   qty: Number(i.requestedQty) || 0,
@@ -7736,97 +7483,13 @@
                 groups[key].total += Number(i.requestedQty) || 0;
               });
             });
-          return Object.values(groups)
-            .map((group) => ({
-              ...group,
-              total: Number(group.total.toFixed(3)),
-            }))
-            .sort(
-              (a, b) =>
-                a.category.localeCompare(b.category, "ko") ||
-                a.species.localeCompare(b.species, "ko") ||
-                a.size.localeCompare(b.size, "ko"),
-            );
+          return Object.values(groups);
         }
-        function purchaseFingerprint(groups = purchaseGroups()) {
-          return JSON.stringify(
-            groups.map((group) => ({
-              category: group.category,
-              species: group.species,
-              size: group.size,
-              originCountry: group.originCountry,
-              processing: group.processing,
-              unit: group.unit,
-              includedNote: group.includedNote,
-              rubberBand: group.rubberBand,
-              rubberBandColor: group.rubberBandColor,
-              rubberBandQuantity: group.rubberBandQuantity,
-              total: group.total,
-              stores: group.stores.map((store) => ({
-                name: store.name,
-                qty: store.qty,
-              })),
-            })),
-          );
-        }
-        function purchaseState() {
-          const groups = purchaseGroups(),
-            fingerprint = purchaseFingerprint(groups),
-            submission = state.purchaseSubmissions?.[workDate] || null;
-          return {
-            groups,
-            fingerprint,
-            submission,
-            isCurrent: Boolean(
-              submission && submission.fingerprint === fingerprint,
-            ),
-          };
-        }
-        async function submitPurchaseOrder() {
-          if (!ensureWorkOpen()) return;
-          const current = purchaseState();
-          if (!current.groups.length)
-            return alert("제출할 매입 품목이 없습니다.");
-          if (
-            !confirm(
-              `${workDate} ${state.profile.vehicleNumber}호차 매입전표를 구매 담당자에게 제출할까요?`,
-            )
-          )
-            return;
-          const previous = current.submission,
-            now = new Date().toISOString(),
-            note = String($("#purchaseNote")?.value || "").trim();
-          state.purchaseSubmissions = state.purchaseSubmissions || {};
-          state.purchaseSubmissions[workDate] = {
-            id: previous?.id || newId(),
-            workDate,
-            vehicleNumber: String(state.profile.vehicleNumber || ""),
-            driverName: state.profile.driverName || "",
-            companyName: state.profile.companyName || "",
-            submittedAt: now,
-            submittedBy: state.profile.driverName || "",
-            revision: (Number(previous?.revision) || 0) + 1,
-            note,
-            fingerprint: current.fingerprint,
-            groups: JSON.parse(JSON.stringify(current.groups)),
-          };
-          saveState("구매 담당자 매입전표 제출 전");
-          await syncCentralStatus("매입전표 제출");
-          openPurchase("구매 담당자에게 매입전표를 제출했습니다.");
-        }
-        function openPurchase(message = "") {
-          const current = purchaseState(),
-            groups = current.groups,
-            submission = current.submission,
-            statusText = current.isCurrent
-              ? `✓ 구매 담당자 제출 완료 · ${submission.revision}차`
-              : submission
-                ? "발주 내용 변경 · 매입전표 다시 제출 필요"
-                : "아직 구매 담당자에게 제출하지 않았습니다.",
-            statusClass = current.isCurrent ? "weigh-ready" : "weigh-notice";
-          const content = `<div id="purchaseSheet" class="purchase-sheet"><h2>호차별 매입전표</h2><p style="margin:3px 0;color:var(--muted);font-size:13px">${esc(state.profile.companyName || "장백수산")} · ${esc(workDate)} · ${esc(state.profile.vehicleNumber)}호차 · ${esc(state.profile.driverName)}</p>${submission ? `<p style="margin:3px 0 12px;color:var(--muted);font-size:12px">제출 ${esc(new Date(submission.submittedAt).toLocaleString("ko-KR"))} · ${submission.revision}차${submission.note ? ` · ${esc(submission.note)}` : ""}</p>` : ""}${groups.map((g) => `<article class="purchase-group"><strong>${esc(g.species)} · ${esc(g.size)}</strong><small>${esc(g.category)} / ${esc(g.originCountry)} / ${esc(g.processing)}${g.includedNote ? ` / ${esc(g.includedNote)}` : ""}${g.rubberBand ? ` / 밴드 ${esc(g.rubberBandColor)} ${g.rubberBandQuantity}개` : ""}</small>${g.stores.map((s) => `<div class="purchase-store"><span>${esc(s.name)}</span><span>${s.qty}${esc(g.unit)}</span></div>`).join("")}<div class="purchase-total"><span>총 매입 수량</span><span>${g.total}${esc(g.unit)}</span></div></article>`).join("") || `<div class="empty">매입할 품목이 없습니다.</div>`}</div>`;
+        function openPurchase() {
+          const groups = purchaseGroups();
+          const content = `<div id="purchaseSheet" class="purchase-sheet"><h2>당일 매입발주서</h2><p style="margin:3px 0;color:var(--muted);font-size:13px">${esc(workDate)} · ${esc(state.profile.vehicleNumber)}호차</p>${groups.map((g) => `<article class="purchase-group"><strong>${esc(g.species)} · ${esc(g.size)}</strong><small>${esc(g.category)} / ${esc(g.originCountry)} / ${esc(g.processing)}${g.includedNote ? ` / ${esc(g.includedNote)}` : ""}${g.rubberBand ? ` / 밴드 ${esc(g.rubberBandColor)} ${g.rubberBandQuantity}개` : ""}</small>${g.stores.map((s) => `<div class="purchase-store"><span>${esc(s.name)}</span><span>${s.qty}${esc(g.unit)}</span></div>`).join("")}<div class="purchase-total"><span>총 매입 수량</span><span>${g.total}${esc(g.unit)}</span></div></article>`).join("") || `<div class="empty">매입할 품목이 없습니다.</div>`}</div>`;
           $("#purchaseModal").innerHTML =
-            `<div class="modal-card"><div class="modal-head"><div><h2>호차별 매입전표 작성·제출</h2><p>발주 품목을 제품별로 합산해 회사 구매 담당자에게 전달합니다.</p></div><button class="close-button" type="button" data-action="close-purchase">×</button></div><div class="modal-body">${message ? `<div class="weigh-ready">✓ ${esc(message)}</div>` : ""}<div class="${statusClass}">${statusText}</div>${content}<label class="field no-print"><span>구매 담당자 전달 메모</span><input id="purchaseNote" class="control" value="${esc(submission?.note || "")}" placeholder="예: 광어 큰 사이즈 우선 매입"></label><button class="full-button primary-button no-print" type="button" data-action="submit-purchase" ${groups.length ? "" : "disabled"}>${current.isCurrent ? "✓ 제출 완료 · 다시 전달" : submission ? "변경된 매입전표 다시 제출" : "구매 담당자에게 매입전표 제출"}</button><div class="output-grid"><button type="button" data-action="print-purchase">🖨️ 인쇄</button><button type="button" data-action="image-purchase" data-format="png">PNG 저장</button><button type="button" data-action="image-purchase" data-format="jpg">JPG 저장</button></div></div></div>`;
+            `<div class="modal-card"><div class="modal-head"><div><h2>당일 매입발주서</h2><p>원산지·작업·메모가 다르면 별도 품목으로 표시됩니다.</p></div><button class="close-button" type="button" data-action="close-purchase">×</button></div><div class="modal-body">${content}<div class="output-grid"><button type="button" data-action="print-purchase">🖨️ 인쇄</button><button type="button" data-action="image-purchase" data-format="png">PNG 저장</button><button type="button" data-action="image-purchase" data-format="jpg">JPG 저장</button></div></div></div>`;
           $("#purchaseModal").classList.remove("hidden");
         }
         function printElement(html) {
@@ -8569,8 +8232,7 @@
           if (action === "close-error-stats") return closeModal("statsModal");
           if (action === "open-work-close") return openWorkClosure();
           if (action === "close-work-close") return closeModal("closeDayModal");
-          if (action === "close-work-day")
-            return closeWorkDay(b.dataset.result || "normal");
+          if (action === "close-work-day") return closeWorkDay();
           if (action === "reopen-work-day") return reopenWorkDay();
           if (action === "edit-store-handover") {
             closeModal("storeGuideModal");
@@ -8786,6 +8448,34 @@
             saveState("박스 삭제 전");
             return openChecklist(d.id);
           }
+          if (action === "complete-delivery") {
+            const d = state.deliveries.find(
+              (x) => x.id === Number(b.dataset.id),
+            );
+            if (!deliveryWeighingReady(d))
+              return alert("활어 계근을 먼저 확정해 주세요.");
+            if ((d.items || []).some((i) => i.tankNumber && !i.tankLoaded))
+              return alert(
+                "콜·복창·밴드·수조 확인을 포함한 상차 관제를 먼저 완료해 주세요.",
+              );
+            d.status = "completed";
+            d.completedAt = new Date().toISOString();
+            saveState();
+            closeModal("checkModal");
+            return render();
+          }
+          if (action === "undo-complete") {
+            if (confirm("하차 완료를 취소하고 다시 확인할까요?")) {
+              const d = state.deliveries.find(
+                (x) => x.id === Number(b.dataset.id),
+              );
+              d.status = "ready";
+              d.completedAt = null;
+              saveState();
+              openChecklist(d.id);
+            }
+            return;
+          }
           if (action === "print-statement")
             return printElement($("#statementView").outerHTML);
           if (action === "image-statement")
@@ -8795,7 +8485,6 @@
               `${customerOf(state.deliveries.find((d) => d.id === selectedDeliveryId)).name}_거래명세서_${workDate}`,
             );
           if (action === "open-purchase") return openPurchase();
-          if (action === "submit-purchase") return submitPurchaseOrder();
           if (action === "print-purchase")
             return printElement($("#purchaseSheet").outerHTML);
           if (action === "image-purchase")
@@ -8968,91 +8657,6 @@
         document.addEventListener("focusin", (e) => {
           if (e.target.dataset?.itemField === "rubberBandColor")
             e.target.setAttribute("list", "bandColorList");
-        });
-        document.addEventListener("click", async (e) => {
-          const button = e.target.closest("button"),
-            action = button?.dataset.action;
-          if (!action?.startsWith("central-")) return;
-          try {
-            if (action === "central-modal-close")
-              return closeModal("centralModal");
-            if (action === "central-store-guides") return openCentralStores();
-            if (action === "central-incident-new")
-              return openCentralIncident();
-            if (action === "central-refresh") {
-              await loadCentralWork();
-              return alert("관리자 자료를 새로 확인했습니다.");
-            }
-            if (centralWorkday?.is_closed)
-              return alert("관리자가 오늘 업무를 마감하여 변경할 수 없습니다.");
-            const id = Number(button.dataset.id);
-            if (action === "central-urgent-ack") {
-              if (!confirm("긴급 추가 발주와 배송 순서를 확인했습니까?"))
-                return;
-              await updateCentralUrgent(id, "acknowledged");
-              return alert("긴급 발주 확인을 관리자에게 전달했습니다.");
-            }
-            if (action === "central-urgent-loaded") {
-              if (!confirm("긴급 추가 품목을 차량에 실제로 상차했습니까?"))
-                return;
-              await updateCentralUrgent(id, "loaded");
-              return alert("상차 완료를 관리자에게 전달했습니다.");
-            }
-            if (action === "central-urgent-delivered") {
-              if (!confirm("긴급 추가 품목을 거래처에 납품했습니까?"))
-                return;
-              await updateCentralUrgent(id, "delivered");
-              return alert("긴급 발주 납품을 완료했습니다.");
-            }
-            if (action === "central-urgent-impossible") {
-              const reason = prompt("처리할 수 없는 이유를 입력해 주세요.");
-              if (!reason) return;
-              await updateCentralUrgent(id, "impossible", {
-                impossible_reason: reason,
-              });
-              return alert("처리 불가 사유를 관리자에게 전달했습니다.");
-            }
-          } catch (error) {
-            alert(error?.message || "관리자 서버에 저장하지 못했습니다.");
-          }
-        });
-        document.addEventListener("submit", async (e) => {
-          if (e.target.id !== "centralIncidentForm") return;
-          const form = e.target,
-            message = $("#centralIncidentMessage"),
-            fd = Object.fromEntries(new FormData(form));
-          if (centralWorkday?.is_closed) {
-            message.textContent = "관리자가 오늘 업무를 마감했습니다.";
-            return;
-          }
-          message.textContent = "관리자에게 보고하는 중입니다.";
-          try {
-            const { error } = await supabaseClient
-              .from("incident_reports")
-              .insert({
-                work_date: workDate,
-                driver_id: assignedDriverProfile.id,
-                store_id: fd.storeId || null,
-                vehicle_number: assignedDriverProfile.vehicle_number,
-                incident_type: fd.incidentType,
-                severity: fd.severity,
-                description: String(fd.description || "").trim(),
-                status: "reported",
-                created_by: assignedDriverProfile.id,
-              });
-            if (error) throw error;
-            closeModal("centralModal");
-            await loadCentralWork();
-            scheduleCentralSync("현장 오류 보고");
-            alert("관리자에게 오류를 보고했습니다.");
-          } catch (error) {
-            message.textContent =
-              error?.message || "오류 보고를 저장하지 못했습니다.";
-          }
-        });
-        document.addEventListener("change", (e) => {
-          if (e.target.id === "workDate")
-            setTimeout(loadCentralWork, 0);
         });
         setInterval(
           () => saveAutoSnapshot(JSON.stringify(state), "5분 정기 자동 백업"),

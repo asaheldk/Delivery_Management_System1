@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#071c2d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>장백수산 배송 관리자</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --navy: #071c2d;
+        --navy-2: #0b3451;
+        --teal: #087f76;
+        --teal-soft: #e7f7f4;
+        --ink: #122733;
+        --muted: #637985;
+        --line: #d8e3e8;
+        --bg: #eef4f6;
+        --white: #fff;
+        --green: #16834a;
+        --amber: #b76511;
+        --red: #ba2c36;
+        --shadow: 0 18px 50px rgba(5, 31, 49, 0.1);
+      }
+      * { box-sizing: border-box; }
+      html { min-width: 320px; background: var(--bg); }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 85% 0%, rgba(8,127,118,.09), transparent 34%),
+          var(--bg);
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      button:disabled { cursor: not-allowed; opacity: .55; }
+      input, select { font-size: 16px !important; }
+      .hidden { display: none !important; }
+      .login-shell {
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: max(22px, env(safe-area-inset-top)) 16px max(22px, env(safe-area-inset-bottom));
+      }
+      .login-card {
+        width: min(100%, 450px);
+        padding: 28px;
+        border: 1px solid rgba(255,255,255,.7);
+        border-radius: 28px;
+        background: rgba(255,255,255,.95);
+        box-shadow: var(--shadow);
+      }
+      .brand-mark {
+        width: 54px; height: 54px; display: grid; place-items: center;
+        border-radius: 18px; color: #fff;
+        background: linear-gradient(145deg, var(--navy-2), var(--teal));
+        box-shadow: 0 12px 24px rgba(8,127,118,.2); font-size: 25px;
+      }
+      .login-card h1 { margin: 20px 0 6px; font-size: 29px; letter-spacing: -.05em; }
+      .login-card > p { margin: 0 0 24px; color: var(--muted); line-height: 1.65; }
+      .field { display: grid; gap: 7px; margin-top: 15px; }
+      .field span { font-size: 13px; font-weight: 800; color: #3f5865; }
+      .control {
+        width: 100%; min-height: 50px; padding: 0 14px;
+        border: 1px solid #c8d7de; border-radius: 13px;
+        color: var(--ink); background: #fff; outline: 0;
+      }
+      .control:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(8,127,118,.12); }
+      .primary-button, .secondary-button, .danger-button {
+        min-height: 48px; padding: 0 16px; border-radius: 13px; font-weight: 850;
+      }
+      .primary-button { border: 0; color: #fff; background: linear-gradient(135deg, #086f69, #0b8e7f); }
+      .secondary-button { border: 1px solid #cbd9df; color: #274451; background: #fff; }
+      .danger-button { border: 1px solid #efb6bb; color: var(--red); background: #fff4f4; }
+      .full { width: 100%; margin-top: 20px; }
+      .message { min-height: 22px; margin-top: 12px; color: var(--red); font-size: 14px; font-weight: 750; }
+      .setup-note { margin-top: 16px; padding: 13px; border-radius: 13px; color: #76500a; background: #fff5d9; font-size: 13px; line-height: 1.55; }
+      .app-shell { min-height: 100svh; }
+      .topbar {
+        position: sticky; top: 0; z-index: 20;
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        min-height: 76px; padding: max(12px, env(safe-area-inset-top)) 24px 12px;
+        color: #fff; background: linear-gradient(120deg, var(--navy), var(--navy-2) 70%, #075d61);
+        box-shadow: 0 10px 28px rgba(4,25,40,.18);
+      }
+      .top-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .top-logo { width: 43px; height: 43px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 14px; background: rgba(255,255,255,.12); }
+      .top-brand strong { display: block; font-size: 19px; }
+      .top-brand small { display: block; margin-top: 3px; color: #b8d5df; }
+      .account { display: flex; align-items: center; gap: 10px; }
+      .account-copy { text-align: right; }
+      .account-copy strong, .account-copy small { display: block; }
+      .account-copy small { color: #b8d5df; font-size: 12px; }
+      .logout { min-height: 40px; border: 1px solid rgba(255,255,255,.24); border-radius: 11px; color: #fff; background: rgba(255,255,255,.08); }
+      .content { width: min(1440px, 100%); margin: auto; padding: 24px; }
+      .page-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+      .page-head h1 { margin: 0; font-size: clamp(25px, 4vw, 34px); letter-spacing: -.05em; }
+      .page-head p { margin: 6px 0 0; color: var(--muted); }
+      .page-actions { display: flex; align-items: center; gap: 9px; }
+      .date-control { width: 150px; }
+      .summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; }
+      .summary-card {
+        min-width: 0; padding: 18px; border: 1px solid rgba(210,225,231,.9);
+        border-radius: 19px; background: rgba(255,255,255,.92); box-shadow: 0 8px 24px rgba(9,43,64,.05);
+      }
+      .summary-card small { display: block; color: var(--muted); font-weight: 750; }
+      .summary-card strong { display: block; margin-top: 5px; font-size: 30px; letter-spacing: -.04em; }
+      .summary-card i { display: block; width: 32px; height: 4px; margin-top: 10px; border-radius: 99px; background: var(--teal); }
+      .summary-card.warn i { background: var(--amber); }
+      .summary-card.bad i { background: var(--red); }
+      .panel { margin-top: 16px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.94); box-shadow: 0 10px 32px rgba(9,43,64,.06); overflow: hidden; }
+      .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px; border-bottom: 1px solid var(--line); }
+      .panel-head h2 { margin: 0; font-size: 20px; }
+      .panel-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+      .filters { display: flex; gap: 8px; }
+      .filters .control { min-height: 42px; }
+      .search { width: 220px; }
+      .driver-table { width: 100%; border-collapse: collapse; }
+      .driver-table th { padding: 11px 14px; color: #5b737f; background: #f6f9fa; font-size: 12px; text-align: left; }
+      .driver-table td { padding: 14px; border-top: 1px solid #e7eef1; vertical-align: middle; }
+      .driver-table tbody tr:hover { background: #f8fbfc; }
+      .driver-name { display: flex; align-items: center; gap: 10px; }
+      .avatar { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #0a556a, #0a9381); font-weight: 900; }
+      .driver-name strong, .driver-name small { display: block; }
+      .driver-name small { margin-top: 3px; color: var(--muted); }
+      .vehicle { display: inline-grid; place-items: center; min-width: 54px; min-height: 34px; border-radius: 11px; color: #075f59; background: var(--teal-soft); font-weight: 900; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 10px; border-radius: 99px; background: #eef3f5; color: #536b76; font-size: 12px; font-weight: 850; }
+      .badge::before { width: 7px; height: 7px; border-radius: 50%; background: #91a3ab; content: ""; }
+      .badge.online { color: #10693d; background: #eaf8f0; }
+      .badge.online::before { background: #21a55e; box-shadow: 0 0 0 4px rgba(33,165,94,.12); }
+      .badge.disabled { color: #a32630; background: #fff0f1; }
+      .badge.disabled::before { background: #d23b47; }
+      .progress-wrap { min-width: 130px; }
+      .progress-copy { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 800; }
+      .progress-bar { height: 7px; margin-top: 7px; border-radius: 99px; background: #e6eef1; overflow: hidden; }
+      .progress-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #0b8276, #2ab99a); }
+      .row-actions { display: flex; justify-content: flex-end; gap: 6px; }
+      .mini { min-height: 37px; padding: 0 11px; border: 1px solid #d4e0e5; border-radius: 10px; color: #274653; background: #fff; font-size: 13px; font-weight: 800; }
+      .empty { padding: 48px 20px; color: var(--muted); text-align: center; }
+      .mobile-list { display: none; }
+      .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(3,20,31,.72); backdrop-filter: blur(7px); }
+      .modal-card { width: min(100%, 560px); max-height: calc(100dvh - 28px); overflow-y: auto; border-radius: 24px; background: #fff; box-shadow: 0 30px 90px rgba(0,0,0,.3); }
+      .modal-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 18px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.95); }
+      .modal-head h2 { margin: 0; font-size: 22px; }
+      .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+      .close { width: 40px; height: 40px; border: 0; border-radius: 12px; background: #eef3f5; font-size: 22px; }
+      .modal-body { padding: 18px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+      .form-grid .wide { grid-column: 1/-1; }
+      .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 20px; }
+      .detail-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+      .detail-stat { padding: 14px; border-radius: 15px; background: #f1f6f7; text-align: center; }
+      .detail-stat small, .detail-stat strong { display: block; }
+      .detail-stat small { color: var(--muted); font-size: 12px; }
+      .detail-stat strong { margin-top: 4px; font-size: 21px; }
+      .route-list { display: grid; gap: 8px; margin-top: 16px; }
+      .route-item { padding: 13px; border: 1px solid var(--line); border-radius: 14px; }
+      .route-item strong, .route-item small { display: block; }
+      .route-item small { margin-top: 4px; color: var(--muted); }
+      .toast { position: fixed; right: 18px; bottom: 18px; z-index: 80; max-width: 360px; padding: 14px 16px; border-radius: 14px; color: #fff; background: #126b47; box-shadow: 0 16px 42px rgba(0,0,0,.24); font-weight: 800; }
+      .toast.bad { background: var(--red); }
+      @media (max-width: 1050px) { .summary-grid { grid-template-columns: repeat(3,1fr); } }
+      @media (max-width: 760px) {
+        .topbar { padding-right: 14px; padding-left: 14px; }
+        .account-copy { display: none; }
+        .content { padding: 17px 12px calc(24px + env(safe-area-inset-bottom)); }
+        .page-head { align-items: stretch; flex-direction: column; }
+        .page-actions { display: grid; grid-template-columns: 1fr 1fr; }
+        .date-control { width: 100%; }
+        .summary-grid { grid-template-columns: repeat(2,1fr); }
+        .summary-card { padding: 15px; }
+        .summary-card strong { font-size: 27px; }
+        .panel-head { align-items: stretch; flex-direction: column; }
+        .filters { display: grid; grid-template-columns: 1fr 120px; }
+        .search { width: 100%; }
+        .driver-table { display: none; }
+        .mobile-list { display: grid; gap: 10px; padding: 12px; }
+        .driver-card { padding: 14px; border: 1px solid var(--line); border-radius: 17px; background: #fff; }
+        .driver-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .driver-card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+        .driver-card .progress-wrap { margin-top: 14px; }
+        .driver-card .row-actions { display: grid; grid-template-columns: 1fr 1fr; margin-top: 13px; }
+        .mini { min-height: 42px; }
+        .modal { align-items: end; padding: max(8px, env(safe-area-inset-top)) 0 0; }
+        .modal-card { width: 100%; max-height: calc(100dvh - max(8px, env(safe-area-inset-top))); border-radius: 24px 24px 0 0; }
+      }
+      @media (max-width: 420px) {
+        .login-card { padding: 22px 18px; border-radius: 22px; }
+        .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .summary-card small { font-size: 12px; }
+        .summary-card strong { font-size: 24px; }
+        .form-grid, .form-actions { grid-template-columns: 1fr; }
+        .detail-grid { grid-template-columns: repeat(2,1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <section id="loginView" class="login-shell">
+      <form id="loginForm" class="login-card">
+        <div class="brand-mark">管</div>
+        <h1>배송 통합 관리자</h1>
+        <p>배송원 계정과 호차 배정, 오늘 업무 진행 상황을 한 화면에서 확인합니다.</p>
+        <label class="field"><span>관리자 이메일</span><input class="control" name="email" type="email" autocomplete="username" required /></label>
+        <label class="field"><span>비밀번호</span><input class="control" name="password" type="password" autocomplete="current-password" required /></label>
+        <button class="primary-button full" type="submit">관리자 로그인</button>
+        <div id="loginMessage" class="message"></div>
+        <div id="setupNote" class="setup-note hidden">Vercel 환경변수와 Supabase 설정이 필요합니다. 함께 제공된 설치 안내서를 순서대로 진행해 주세요.</div>
+        <button id="demoButton" class="secondary-button full hidden" type="button">화면 미리보기</button>
+      </form>
+    </section>
+
+    <div id="adminApp" class="app-shell hidden">
+      <header class="topbar">
+        <div class="top-brand"><span class="top-logo">🚚</span><div><strong>장백수산 배송 관제</strong><small>DRIVER OPERATIONS CENTER</small></div></div>
+        <div class="account"><div class="account-copy"><strong id="adminName">관리자</strong><small id="adminEmail"></small></div><button id="logoutButton" class="logout" type="button">로그아웃</button></div>
+      </header>
+      <main class="content">
+        <section class="page-head">
+          <div><h1>배송원 전체 현황</h1><p id="syncText">최근 상태를 불러오는 중입니다.</p></div>
+          <div class="page-actions"><input id="workDate" class="control date-control" type="date" /><button id="newDriverButton" class="primary-button" type="button">＋ 배송원 등록</button></div>
+        </section>
+        <section id="summaryGrid" class="summary-grid"></section>
+        <section class="panel">
+          <header class="panel-head"><div><h2>배송원·호차 관리</h2><p>호차 변경과 계정 정지는 저장 즉시 배송원 화면에 적용됩니다.</p></div><div class="filters"><input id="searchInput" class="control search" type="search" placeholder="이름·아이디·호차 검색" /><select id="statusFilter" class="control"><option value="all">전체 상태</option><option value="online">접속 중</option><option value="working">업무 중</option><option value="completed">완료</option><option value="disabled">사용 정지</option></select></div></header>
+          <div id="desktopRows"></div>
+          <div id="mobileRows" class="mobile-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="formModal" class="modal hidden"></div>
+    <div id="detailModal" class="modal hidden"></div>
+    <div id="toast" class="toast hidden"></div>
+
+    <script>
+      (() => {
+        "use strict";
+        const $ = (s) => document.querySelector(s);
+        const esc = (v) => String(v ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[c]);
+        const localDate = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); const tz = d.getTimezoneOffset()*60000; return new Date(d.getTime()-tz).toISOString().slice(0,10); };
+        const demoMode = new URLSearchParams(location.search).get("demo") === "1";
+        let client = null, session = null, adminProfile = null, config = null;
+        let drivers = [], statuses = [], snapshots = [], search = "", filter = "all", pollTimer = null;
+
+        const demoDrivers = [
+          {id:"d1",employee_code:"driver01",full_name:"김영수",vehicle_number:1,phone:"010-1111-1111",active:true},
+          {id:"d2",employee_code:"driver02",full_name:"박성호",vehicle_number:2,phone:"010-2222-2222",active:true},
+          {id:"d3",employee_code:"driver07",full_name:"이정민",vehicle_number:7,phone:"010-7777-7777",active:true},
+          {id:"d4",employee_code:"driver12",full_name:"최동현",vehicle_number:12,phone:"010-1212-1212",active:false},
+        ];
+        const now = Date.now();
+        const demoStatuses = [
+          {driver_id:"d1",work_state:"delivering",delivery_total:13,delivery_completed:5,tank_total:9,tank_loaded:9,box_total:12,box_checked:12,urgent_pending:0,issue_count:0,prevented_errors:2,last_sync_at:new Date(now-24000).toISOString()},
+          {driver_id:"d2",work_state:"working",delivery_total:10,delivery_completed:0,tank_total:7,tank_loaded:5,box_total:8,box_checked:6,urgent_pending:1,issue_count:3,prevented_errors:1,last_sync_at:new Date(now-48000).toISOString()},
+          {driver_id:"d3",work_state:"completed",delivery_total:9,delivery_completed:9,tank_total:6,tank_loaded:6,box_total:7,box_checked:7,urgent_pending:0,issue_count:0,prevented_errors:0,last_sync_at:new Date(now-180000).toISOString()},
+        ];
+
+        function showToast(message, bad=false) { const el=$("#toast"); el.textContent=message; el.classList.toggle("bad",bad); el.classList.remove("hidden"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>el.classList.add("hidden"),3200); }
+        function fmtTime(value) { if(!value) return "접속 기록 없음"; const sec=Math.max(0,Math.floor((Date.now()-new Date(value).getTime())/1000)); if(sec<60)return `${sec}초 전`; if(sec<3600)return `${Math.floor(sec/60)}분 전`; return new Date(value).toLocaleString("ko-KR"); }
+        function online(status) { return status?.last_sync_at && Date.now()-new Date(status.last_sync_at).getTime()<130000; }
+        function stateLabel(value) { return ({not_started:"미시작",working:"출차 준비",departure_ready:"출차 준비 완료",delivering:"배송 중",completed:"배송 완료"})[value]||"미시작"; }
+        function statusOf(id) { return statuses.find(s=>s.driver_id===id)||{driver_id:id,work_state:"not_started",delivery_total:0,delivery_completed:0,tank_total:0,tank_loaded:0,box_total:0,box_checked:0,urgent_pending:0,issue_count:0,prevented_errors:0}; }
+        function progress(s) { return s.delivery_total ? Math.round((s.delivery_completed/s.delivery_total)*100) : 0; }
+        function initials(name) { return String(name||"배").trim().slice(-2); }
+
+        async function getConfig() {
+          try { const r=await fetch("/api/config",{cache:"no-store"}); if(!r.ok)throw new Error(); return await r.json(); }
+          catch { return {configured:false}; }
+        }
+        async function boot() {
+          $("#workDate").value=localDate(1);
+          if(demoMode) return enterDemo();
+          config=await getConfig();
+          if(!config.configured || !window.supabase?.createClient) {
+            $("#setupNote").classList.remove("hidden"); $("#demoButton").classList.remove("hidden"); return;
+          }
+          client=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true}});
+          const {data}=await client.auth.getSession();
+          if(data.session) await acceptSession(data.session);
+        }
+        function enterDemo() { drivers=demoDrivers; statuses=demoStatuses; snapshots=[]; adminProfile={full_name:"데모 관리자"}; session={user:{email:"admin@demo.local"}}; showApp(); }
+        async function acceptSession(nextSession) {
+          session=nextSession;
+          const {data,error}=await client.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
+          if(error || data?.role!=="admin" || !data.active) { await client.auth.signOut(); session=null; throw new Error("관리자 권한이 없는 계정입니다."); }
+          adminProfile=data; showApp(); await loadData();
+        }
+        function showApp() {
+          $("#loginView").classList.add("hidden"); $("#adminApp").classList.remove("hidden");
+          $("#adminName").textContent=adminProfile?.full_name||"관리자"; $("#adminEmail").textContent=session?.user?.email||"";
+          render(); if(!demoMode){ clearInterval(pollTimer); pollTimer=setInterval(loadData,30000); }
+        }
+        async function loadData() {
+          if(!client||!session)return;
+          $("#syncText").textContent="배송원 상태를 갱신하는 중입니다.";
+          const date=$("#workDate").value;
+          const [p,s,n]=await Promise.all([
+            client.from("profiles").select("*").eq("role","driver").order("vehicle_number"),
+            client.from("driver_daily_status").select("*").eq("work_date",date),
+            client.from("driver_state_snapshots").select("driver_id,work_date,payload,updated_at").eq("work_date",date),
+          ]);
+          if(p.error||s.error||n.error){ showToast(p.error?.message||s.error?.message||n.error?.message||"자료를 불러오지 못했습니다.",true); return; }
+          drivers=p.data||[]; statuses=s.data||[]; snapshots=n.data||[];
+          $("#syncText").textContent=`${new Date().toLocaleTimeString("ko-KR")} 기준 · 30초마다 자동 갱신`;
+          render();
+        }
+        function visibleDrivers() {
+          const q=search.toLowerCase();
+          return drivers.filter(d=>{
+            const s=statusOf(d.id), isOnline=online(s);
+            const match=!q||`${d.full_name} ${d.employee_code} ${d.vehicle_number}`.toLowerCase().includes(q);
+            const stateMatch=filter==="all" || (filter==="online"&&isOnline) || (filter==="working"&&!["not_started","completed"].includes(s.work_state)) || (filter==="completed"&&s.work_state==="completed") || (filter==="disabled"&&!d.active);
+            return match&&stateMatch;
+          });
+        }
+        function render() {
+          const active=drivers.filter(d=>d.active), onlineCount=active.filter(d=>online(statusOf(d.id))).length;
+          const completed=active.filter(d=>statusOf(d.id).work_state==="completed").length;
+          const urgent=statuses.reduce((a,s)=>a+(Number(s.urgent_pending)||0),0);
+          const issues=statuses.reduce((a,s)=>a+(Number(s.issue_count)||0),0);
+          $("#summaryGrid").innerHTML=[
+            ["전체 배송원",drivers.length,""],["현재 접속",onlineCount,""],["배송 완료",completed,""],["긴급 발주",urgent,urgent?"warn":""],["확인 문제",issues,issues?"bad":""]
+          ].map(x=>`<article class="summary-card ${x[2]}"><small>${x[0]}</small><strong>${x[1]}</strong><i></i></article>`).join("");
+          const list=visibleDrivers();
+          $("#desktopRows").innerHTML=list.length?`<table class="driver-table"><thead><tr><th>배송원</th><th>호차</th><th>접속</th><th>업무 상태</th><th>배송 진행</th><th>상차·박스</th><th></th></tr></thead><tbody>${list.map(rowHtml).join("")}</tbody></table>`:`<div class="empty">조건에 맞는 배송원이 없습니다.</div>`;
+          $("#mobileRows").innerHTML=list.length?list.map(cardHtml).join(""):`<div class="empty">조건에 맞는 배송원이 없습니다.</div>`;
+        }
+        function statusBadge(d,s){ if(!d.active)return `<span class="badge disabled">사용 정지</span>`; return `<span class="badge ${online(s)?"online":""}">${online(s)?"접속 중":"오프라인"}</span>`; }
+        function rowHtml(d) { const s=statusOf(d.id), pct=progress(s); return `<tr><td><div class="driver-name"><span class="avatar">${esc(initials(d.full_name))}</span><span><strong>${esc(d.full_name)}</strong><small>${esc(d.employee_code)}${d.phone?` · ${esc(d.phone)}`:""}</small></span></div></td><td><span class="vehicle">${d.vehicle_number||"-"}호</span></td><td>${statusBadge(d,s)}<small style="display:block;margin-top:5px;color:var(--muted)">${esc(fmtTime(s.last_sync_at))}</small></td><td><span class="badge">${esc(stateLabel(s.work_state))}</span>${s.urgent_pending?`<small style="display:block;margin-top:5px;color:var(--red);font-weight:800">긴급 ${s.urgent_pending}건</small>`:""}</td><td><div class="progress-wrap"><div class="progress-copy"><span>${s.delivery_completed}/${s.delivery_total}</span><b>${pct}%</b></div><div class="progress-bar"><i style="width:${pct}%"></i></div></div></td><td><strong>${s.tank_loaded}/${s.tank_total}</strong> 수조<br><small style="color:var(--muted)">${s.box_checked}/${s.box_total} 박스</small></td><td><div class="row-actions"><button class="mini" data-action="details" data-id="${d.id}">현황</button><button class="mini" data-action="edit" data-id="${d.id}">계정</button></div></td></tr>`; }
+        function cardHtml(d) { const s=statusOf(d.id), pct=progress(s); return `<article class="driver-card"><div class="driver-card-head"><div class="driver-name"><span class="avatar">${esc(initials(d.full_name))}</span><span><strong>${esc(d.full_name)}</strong><small>${esc(d.employee_code)}</small></span></div><span class="vehicle">${d.vehicle_number||"-"}호</span></div><div class="driver-card-meta">${statusBadge(d,s)}<span class="badge">${esc(stateLabel(s.work_state))}</span>${s.urgent_pending?`<span class="badge disabled">긴급 ${s.urgent_pending}</span>`:""}</div><div class="progress-wrap"><div class="progress-copy"><span>배송 ${s.delivery_completed}/${s.delivery_total}</span><b>${pct}%</b></div><div class="progress-bar"><i style="width:${pct}%"></i></div></div><div class="row-actions"><button class="mini" data-action="details" data-id="${d.id}">업무 현황</button><button class="mini" data-action="edit" data-id="${d.id}">계정·호차</button></div></article>`; }
+
+        function openDriverForm(driver=null) {
+          const editing=Boolean(driver), d=driver||{};
+          $("#formModal").innerHTML=`<div class="modal-card"><header class="modal-head"><div><h2>${editing?"배송원 계정 수정":"새 배송원 등록"}</h2><p>${editing?"호차 배정과 계정 사용 상태를 변경합니다.":"아이디와 임시 비밀번호를 만들어 전달합니다."}</p></div><button class="close" data-close="form" type="button">×</button></header><form id="driverForm" class="modal-body" data-id="${d.id||""}"><div class="form-grid"><label class="field"><span>배송원 아이디</span><input class="control" name="employeeCode" value="${esc(d.employee_code||"")}" pattern="[a-z0-9_-]{3,24}" ${editing?"readonly":""} required /></label><label class="field"><span>배정 호차</span><input class="control" name="vehicleNumber" type="number" inputmode="numeric" min="1" max="999" value="${esc(d.vehicle_number||"")}" required /></label><label class="field wide"><span>배송원 이름</span><input class="control" name="fullName" value="${esc(d.full_name||"")}" required /></label><label class="field wide"><span>연락처</span><input class="control" name="phone" type="tel" value="${esc(d.phone||"")}" /></label>${editing?`<label class="field wide"><span>계정 상태</span><select class="control" name="active"><option value="true" ${d.active?"selected":""}>사용 중</option><option value="false" ${!d.active?"selected":""}>사용 정지</option></select></label>`:`<label class="field wide"><span>임시 비밀번호 · 8자리 이상</span><input class="control" name="password" type="text" minlength="8" required /></label>`}</div><div id="formMessage" class="message"></div><div class="form-actions">${editing?`<button class="secondary-button" data-action="reset-password" type="button">비밀번호 초기화</button>`:`<button class="secondary-button" data-close="form" type="button">취소</button>`}<button class="primary-button" type="submit">${editing?"변경 저장":"배송원 계정 생성"}</button></div></form></div>`;
+          $("#formModal").classList.remove("hidden");
+        }
+        function openDetails(id) {
+          const d=drivers.find(x=>x.id===id), s=statusOf(id), snap=snapshots.find(x=>x.driver_id===id), rows=(snap?.payload?.deliveries||[]).filter(x=>x.deliveryDate===$("#workDate").value&&x.status!=="cancelled").sort((a,b)=>a.routeOrder-b.routeOrder);
+          $("#detailModal").innerHTML=`<div class="modal-card"><header class="modal-head"><div><h2>${esc(d?.full_name||"배송원")} · ${esc(d?.vehicle_number||"-")}호차</h2><p>${esc($("#workDate").value)} 업무 현황 · ${esc(fmtTime(s.last_sync_at))}</p></div><button class="close" data-close="detail" type="button">×</button></header><div class="modal-body"><div class="detail-grid"><div class="detail-stat"><small>배송</small><strong>${s.delivery_completed}/${s.delivery_total}</strong></div><div class="detail-stat"><small>수조 상차</small><strong>${s.tank_loaded}/${s.tank_total}</strong></div><div class="detail-stat"><small>박스</small><strong>${s.box_checked}/${s.box_total}</strong></div><div class="detail-stat"><small>긴급 발주</small><strong>${s.urgent_pending}</strong></div><div class="detail-stat"><small>확인 문제</small><strong>${s.issue_count}</strong></div><div class="detail-stat"><small>오류 예방</small><strong>${s.prevented_errors}</strong></div></div><div class="route-list">${rows.length?rows.map(x=>`<article class="route-item"><strong>${x.routeOrder||"-"}번 · ${esc((snap.payload.customers||[]).find(c=>c.id===x.customerId)?.name||x.fallbackStoreName||"거래처")}</strong><small>${esc(stateLabel(x.status==="completed"?"completed":"delivering"))} · 품목 ${(x.items||[]).length}개 · 박스 ${(x.boxes||[]).length}개</small></article>`).join(""):`<div class="empty">동기화된 배송 상세 내역이 없습니다.</div>`}</div></div></div>`;
+          $("#detailModal").classList.remove("hidden");
+        }
+        async function api(path,body) { const r=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session.access_token}`},body:JSON.stringify(body)}); const data=await r.json().catch(()=>({})); if(!r.ok)throw new Error(data.error||"요청을 처리하지 못했습니다."); return data; }
+
+        $("#loginForm").addEventListener("submit",async e=>{ e.preventDefault(); const m=$("#loginMessage"), fd=Object.fromEntries(new FormData(e.target)); m.textContent="로그인 확인 중입니다."; try { const {data,error}=await client.auth.signInWithPassword({email:String(fd.email).trim(),password:String(fd.password)}); if(error)throw error; await acceptSession(data.session); m.textContent=""; } catch(err){ m.textContent=err.message||"로그인하지 못했습니다."; } });
+        $("#demoButton").addEventListener("click",enterDemo);
+        $("#logoutButton").addEventListener("click",async()=>{ if(client)await client.auth.signOut(); clearInterval(pollTimer); location.reload(); });
+        $("#newDriverButton").addEventListener("click",()=>openDriverForm());
+        $("#workDate").addEventListener("change",()=>demoMode?render():loadData());
+        $("#searchInput").addEventListener("input",e=>{search=e.target.value;render();});
+        $("#statusFilter").addEventListener("change",e=>{filter=e.target.value;render();});
+        document.addEventListener("click",async e=>{
+          const b=e.target.closest("button"); if(!b)return;
+          if(b.dataset.close){$(b.dataset.close==="form"?"#formModal":"#detailModal").classList.add("hidden");return;}
+          if(b.dataset.action==="edit")return openDriverForm(drivers.find(x=>x.id===b.dataset.id));
+          if(b.dataset.action==="details")return openDetails(b.dataset.id);
+          if(b.dataset.action==="reset-password"){
+            if(demoMode)return showToast("데모 화면에서는 변경되지 않습니다.");
+            const form=$("#driverForm"), password=prompt("새 임시 비밀번호를 8자리 이상 입력하세요."); if(!password)return;
+            try{await api("/api/admin/reset-password",{driverId:form.dataset.id,password});showToast("임시 비밀번호를 변경했습니다.");}catch(err){showToast(err.message,true);} return;
+          }
+        });
+        document.addEventListener("submit",async e=>{
+          if(e.target.id!=="driverForm")return; e.preventDefault();
+          const form=e.target, fd=Object.fromEntries(new FormData(form)), id=form.dataset.id, message=$("#formMessage"); message.textContent="저장 중입니다.";
+          if(demoMode){message.textContent="";$("#formModal").classList.add("hidden");showToast("데모 화면에서는 실제 저장되지 않습니다.");return;}
+          try{
+            if(id){ const {error}=await client.from("profiles").update({full_name:String(fd.fullName).trim(),phone:String(fd.phone||"").trim(),vehicle_number:Number(fd.vehicleNumber),active:fd.active==="true",updated_at:new Date().toISOString()}).eq("id",id); if(error)throw error; showToast("배송원 정보와 호차를 변경했습니다."); }
+            else { const result=await api("/api/admin/create-driver",fd); showToast(`${result.driver.full_name} 배송원 계정을 만들었습니다.`); }
+            $("#formModal").classList.add("hidden"); await loadData();
+          }catch(err){message.textContent=err.message||"저장하지 못했습니다.";}
+        });
+        boot();
+      })();
+    </script>
+  </body>
+</html>
