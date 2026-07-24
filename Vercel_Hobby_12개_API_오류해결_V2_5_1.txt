@@ -1,0 +1,114 @@
+Vercel 오류 해결 안내
+장백수산 배송 통합 관리자 V2.5.1
+
+==================================================
+오류 원인
+==================================================
+
+Vercel 화면에 아래 문구가 나온 경우입니다.
+
+No more than 12 Serverless Functions can be added to a Deployment
+on the Hobby plan.
+
+이 오류는 프로그램 문법 오류가 아닙니다.
+Vercel 무료 Hobby 요금제는 서버 함수 파일을 최대 12개까지만 허용합니다.
+
+이전 배포 파일에는 서버 함수가 13개 들어가 있어 배포가 중단되었습니다.
+V2.5.1에서는 새 기능을 기존 관리자 API에 통합하여
+서버 함수 파일을 11개로 줄였습니다.
+
+Vercel 유료 요금제로 변경하거나 Supabase를 수정할 필요가 없습니다.
+
+==================================================
+가장 쉬운 해결 방법
+==================================================
+
+1. 새로 제공된
+   장백수산_배송_중앙관리_V2_5_1_Hobby배포수정.zip
+   파일을 다운로드합니다.
+
+2. ZIP 파일의 압축을 풉니다.
+
+3. GitHub의 Delivery_Management_System1 저장소에 들어갑니다.
+
+4. GitHub에서 아래 두 파일이 보이면 먼저 삭제합니다.
+
+   api/admin/update-driver-workday.js
+   api/admin/reset-departure.js
+
+5. ZIP 압축을 푼 폴더의 파일을 GitHub에 업로드합니다.
+
+6. 업로드할 때 아래 폴더를 반드시 포함합니다.
+
+   api 폴더
+   lib 폴더
+
+7. GitHub에서 Commit changes를 누릅니다.
+
+8. Vercel의 Deployments 화면으로 이동합니다.
+
+9. 새로운 배포가 자동으로 시작되는지 확인합니다.
+
+10. 상태가 초록색 Ready가 되면 완료입니다.
+
+11. 관리자 페이지에 접속한 뒤
+    상단 “업데이트 새로고침” 버튼을 누릅니다.
+
+12. 관리자 화면에 V2.5.1이 표시되는지 확인합니다.
+
+==================================================
+GitHub에서 이전 API 파일 삭제 방법
+==================================================
+
+1. GitHub 저장소에서 api 폴더를 누릅니다.
+
+2. admin 폴더를 누릅니다.
+
+3. update-driver-workday.js 파일을 누릅니다.
+
+4. 오른쪽 위 점 3개 또는 휴지통 아이콘을 누릅니다.
+
+5. Delete file을 누릅니다.
+
+6. Commit changes를 누릅니다.
+
+7. 같은 방법으로 reset-departure.js도 삭제합니다.
+
+==================================================
+정상 파일 구조
+==================================================
+
+api
+ ├─ config.js
+ └─ admin
+     ├─ auth.js
+     ├─ create-driver.js
+     ├─ create-staff.js
+     ├─ delete-driver.js
+     ├─ delete-staff.js
+     ├─ reset-password.js
+     ├─ store-secret.js
+     ├─ update-driver.js
+     ├─ update-role.js
+     └─ update-self.js
+
+lib
+ └─ admin-workday-actions.js
+
+api 폴더 안 JavaScript 파일은 총 11개입니다.
+lib 폴더의 파일은 Vercel 서버 함수로 계산되지 않습니다.
+
+==================================================
+주의 사항
+==================================================
+
+단순히 Vercel에서 Redeploy만 누르면 같은 오류가 반복됩니다.
+
+반드시 GitHub에서 아래 두 이전 파일을 삭제하고
+V2.5.1 파일을 업로드한 다음 새 배포를 진행해야 합니다.
+
+- api/admin/update-driver-workday.js
+- api/admin/reset-departure.js
+
+Supabase SQL은 새로 실행하지 않아도 됩니다.
+Vercel 환경변수도 다시 입력할 필요가 없습니다.
