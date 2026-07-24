@@ -1,0 +1,35 @@
+최종 2차 SQL 실행 순서
+=======================
+
+현재 사진은 이전 SQL을 다시 실행한 화면입니다.
+
+아래 순서 그대로 진행해 주세요.
+
+1. Supabase SQL Editor에서 + 버튼을 눌러 완전히 새로운 Query를 만듭니다.
+
+2. 기존 Query에 입력했던 내용은 복사하지 않습니다.
+
+3. 아래 파일을 새로 다운로드합니다.
+   최종_2차_departure_checks_테이블생성_SQL.txt
+
+4. 다운로드한 파일을 열고 Ctrl+A를 눌러 전체 선택합니다.
+
+5. Ctrl+C로 복사합니다.
+
+6. Supabase의 새로운 빈 Query에 Ctrl+V로 붙여 넣습니다.
+
+7. 붙여 넣은 화면 위쪽에 반드시 아래 문구가 있는지 확인합니다.
+   create or replace function public.departure_current_role()
+
+8. 화면에서 has_permission이라는 문구가 보이면 이전 SQL이므로 실행하면 안 됩니다.
+
+9. Run을 누릅니다.
+
+10. 경고창이 나오면 Run query를 누릅니다.
+
+11. Results에 아래 값이 나오면 성공입니다.
+    created_table: public.departure_checks
+
+12. 관리자 페이지로 돌아가 업데이트 새로고침을 누릅니다.
+
+13. 다시 출차 승인을 누릅니다.

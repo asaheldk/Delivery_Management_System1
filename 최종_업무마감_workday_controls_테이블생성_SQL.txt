@@ -1,0 +1,114 @@
+-- 장백수산 관리자 '오늘 업무 마감' 오류 수정
+-- 오류: Could not find the table 'public.workday_controls' in the schema cache
+-- 새로운 빈 Query에 이 파일 전체만 붙여 넣고 실행하세요.
+
+create table if not exists public.workday_controls (
+  work_date date primary key,
+  is_closed boolean not null default false,
+  closed_at timestamptz,
+  closed_by uuid references public.profiles(id) on delete set null,
+  close_reason text not null default '',
+  backup_status text not null default 'pending'
+    check (
+      backup_status in (
+        'pending',
+        'healthy',
+        'warning',
+        'failed'
+      )
+    ),
+  backup_checked_at timestamptz,
+  backup_note text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+-- 앞서 생성한 함수가 없어도 실행되도록 다시 안전하게 생성합니다.
+create or replace function public.departure_current_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role::text
+  from public.profiles
+  where id = auth.uid()
+    and active = true
+  limit 1;
+$$;
+
+revoke all on function public.departure_current_role() from public;
+grant execute on function public.departure_current_role() to authenticated;
+
+alter table public.workday_controls enable row level security;
+
+drop policy if exists workday_select_v2
+on public.workday_controls;
+
+create policy workday_select_v2
+on public.workday_controls
+for select
+to authenticated
+using (
+  public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'accounting_manager',
+    'field_manager',
+    'viewer',
+    'driver'
+  )
+);
+
+drop policy if exists workday_insert_v2
+on public.workday_controls;
+
+create policy workday_insert_v2
+on public.workday_controls
+for insert
+to authenticated
+with check (
+  public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'accounting_manager',
+    'field_manager'
+  )
+);
+
+drop policy if exists workday_update_v2
+on public.workday_controls;
+
+create policy workday_update_v2
+on public.workday_controls
+for update
+to authenticated
+using (
+  public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'accounting_manager',
+    'field_manager'
+  )
+)
+with check (
+  public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'accounting_manager',
+    'field_manager'
+  )
+);
+
+grant select, insert, update
+on table public.workday_controls
+to authenticated;
+
+notify pgrst, 'reload schema';
+
+select to_regclass('public.workday_controls') as created_table;
+

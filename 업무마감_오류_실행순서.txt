@@ -1,0 +1,39 @@
+관리자 '오늘 업무 마감' 오류 해결 순서
+========================================
+
+오류 문구
+---------
+Could not find the table 'public.workday_controls' in the schema cache
+
+해결 순서
+---------
+1. Supabase → SQL Editor로 이동합니다.
+
+2. 위쪽 + 버튼을 눌러 새로운 빈 Query를 만듭니다.
+
+3. 아래 파일을 새로 다운로드합니다.
+   최종_업무마감_workday_controls_테이블생성_SQL.txt
+
+4. 파일을 열고 Ctrl+A → Ctrl+C로 전체 복사합니다.
+
+5. 새로운 빈 Query에 Ctrl+V로 붙여 넣습니다.
+
+6. Run을 누릅니다.
+
+7. 경고창이 나오면 Run query를 누릅니다.
+
+8. Results에 아래 값이 나오면 성공입니다.
+   created_table: workday_controls
+
+9. 관리자 페이지로 돌아갑니다.
+
+10. 상단 업데이트 새로고침을 누릅니다.
+
+11. 다시 오늘 업무 마감을 누릅니다.
+
+중요
+----
+- 기존 전체 배송 완료 기록은 삭제되지 않습니다.
+- GitHub와 Vercel은 다시 배포하지 않아도 됩니다.
+- 이 SQL은 workday_controls 테이블만 새로 만들고 권한을 설정합니다.
+

@@ -1,0 +1,119 @@
+-- 최종 2차 수정본
+-- 기존 SQL 탭의 내용을 전부 삭제하고 이 파일 전체만 붙여 넣으세요.
+-- has_permission, is_admin, is_active_driver 함수를 사용하지 않습니다.
+
+create table if not exists public.departure_checks (
+  driver_id uuid not null references public.profiles(id) on delete cascade,
+  work_date date not null,
+  vehicle_number integer not null check (vehicle_number between 1 and 999),
+  orders_checked boolean not null default false,
+  tanks_checked boolean not null default false,
+  boxes_checked boolean not null default false,
+  urgent_checked boolean not null default false,
+  handover_checked boolean not null default false,
+  driver_ready boolean not null default false,
+  approved boolean not null default false,
+  approved_by uuid references public.profiles(id) on delete set null,
+  approved_at timestamptz,
+  reject_reason text not null default '',
+  updated_at timestamptz not null default now(),
+  primary key (driver_id, work_date)
+);
+
+create or replace function public.departure_current_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role::text
+  from public.profiles
+  where id = auth.uid()
+    and active = true
+  limit 1;
+$$;
+
+revoke all on function public.departure_current_role() from public;
+grant execute on function public.departure_current_role() to authenticated;
+
+alter table public.departure_checks enable row level security;
+
+drop policy if exists departure_select_v2
+on public.departure_checks;
+
+create policy departure_select_v2
+on public.departure_checks
+for select
+to authenticated
+using (
+  driver_id = auth.uid()
+  or public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'field_manager'
+  )
+);
+
+drop policy if exists departure_insert_v2
+on public.departure_checks;
+
+create policy departure_insert_v2
+on public.departure_checks
+for insert
+to authenticated
+with check (
+  (
+    driver_id = auth.uid()
+    and public.departure_current_role() = 'driver'
+    and approved = false
+  )
+  or public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'field_manager'
+  )
+);
+
+drop policy if exists departure_update_v2
+on public.departure_checks;
+
+create policy departure_update_v2
+on public.departure_checks
+for update
+to authenticated
+using (
+  (
+    driver_id = auth.uid()
+    and approved = false
+  )
+  or public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'field_manager'
+  )
+)
+with check (
+  (
+    driver_id = auth.uid()
+    and public.departure_current_role() = 'driver'
+    and approved = false
+  )
+  or public.departure_current_role() in (
+    'admin',
+    'super_admin',
+    'dispatch_manager',
+    'field_manager'
+  )
+);
+
+grant select, insert, update
+on table public.departure_checks
+to authenticated;
+
+notify pgrst, 'reload schema';
+
+select to_regclass('public.departure_checks') as created_table;
